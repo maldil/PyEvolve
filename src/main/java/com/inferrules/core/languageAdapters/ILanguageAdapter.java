@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
 import static com.inferrules.utils.Utilities.joinTokens;
 import static java.util.Collections.singletonList;
 
-public interface Code2Node {
+public interface ILanguageAdapter {
 
     Node parse(String codeSnippet);
 

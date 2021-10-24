@@ -14,15 +14,12 @@ import java.util.stream.Collectors;
 
 import static com.inferrules.core.languageAdapters.LanguageSpecificInfo.Language.PYTHON3;
 
-public class PythonAdapter implements Code2Node {
+public class PythonAdapter implements ILanguageAdapter {
     @Override
     public Node parse(String codeSnippet) {
         List<String> tokenList = tokenize(codeSnippet);
         var tokens = new CommonTokenStream(new com.inferrules.parsers.PythonLexer(CharStreams.fromString(codeSnippet)));
-        PythonParser parser = new PythonParser(tokens);
-        List<ParseTree> parseTrees = parse(parser, tokenList.size());
-        Node n =  parseTrees2Node(parseTrees, PYTHON3, tokenList);
-        return n;
+        return parseTrees2Node(parse(new PythonParser(tokens), tokenList.size()), PYTHON3, tokenList);
     }
 
 

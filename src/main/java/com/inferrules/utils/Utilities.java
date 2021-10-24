@@ -43,7 +43,7 @@ public class Utilities {
                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public static <X,Y> Map.Entry<X,Y> asEntry(X x, Y y){
+    public static <X,Y> AbstractMap.SimpleImmutableEntry<X,Y> asEntry(X x, Y y){
         return new AbstractMap.SimpleImmutableEntry<>(x,y);
     }
 

@@ -13,11 +13,11 @@ import java.nio.file.Files;
 public class Runner {
 
     public static void main(String[] args) throws IOException {
-        String javaClassContent1 = "abc.def(x.y());";
-        String javaClassContent2 = "abc.xyz(x.y());";
+        String javaClassContent1 = "Utils.transform(x);";
+        String javaClassContent2 = "x.map(Utils::transform);";
         String pyClassContent1 = "count=0\n" + "for e in es:\n" +
                 "        count += e" ;
-        String pyClassContent2 = "count = np.sum(es)\n";
+        String pyClassContent2 = "count = sum([1 for y in es])\n";
         PythonAdapter adp = new PythonAdapter();
         JavaAdapter jadp = new JavaAdapter();
         Template tpl = new Template(pyClassContent1,adp, true);

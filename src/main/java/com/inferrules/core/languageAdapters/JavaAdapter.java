@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class JavaAdapter implements Code2Node{
+public class JavaAdapter implements ILanguageAdapter {
 
     @Override
     public Node parse(String codeSnippet) {
