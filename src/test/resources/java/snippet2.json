@@ -1,0 +1,158 @@
+{
+  "codeSnippet": "x.map(Utils::transform);",
+  "sourceInterval": {
+    "a": 0,
+    "b": 8
+  },
+  "Template": ":[l0];",
+  "TemplateVarsMapping": [
+    {
+      "key": {
+        "kind": "ANYTHING",
+        "Name": "l0",
+        "Text": ":[l0]"
+      },
+      "value": {
+        "codeSnippet": "x.map(Utils::transform)",
+        "sourceInterval": {
+          "a": 0,
+          "b": 7
+        },
+        "Template": ":[[l1]].:[[l2]](:[l3]",
+        "TemplateVarsMapping": [
+          {
+            "key": {
+              "kind": "WORD",
+              "Name": "l1",
+              "Text": ":[[l1]]"
+            },
+            "value": {
+              "codeSnippet": "x",
+              "sourceInterval": {
+                "a": 0,
+                "b": 0
+              },
+              "Template": ":[[l1]]",
+              "TemplateVarsMapping": [
+                {
+                  "key": {
+                    "kind": "WORD",
+                    "Name": "l1",
+                    "Text": ":[[l1]]"
+                  },
+                  "value": {
+                    "codeSnippet": "x",
+                    "sourceInterval": {
+                      "a": 0,
+                      "b": 0
+                    },
+                    "Template": "x",
+                    "TemplateVarsMapping": []
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "key": {
+              "kind": "WORD",
+              "Name": "l2",
+              "Text": ":[[l2]]"
+            },
+            "value": {
+              "codeSnippet": "map",
+              "sourceInterval": {
+                "a": 2,
+                "b": 2
+              },
+              "Template": "map",
+              "TemplateVarsMapping": []
+            }
+          },
+          {
+            "key": {
+              "kind": "ANYTHING",
+              "Name": "l3",
+              "Text": ":[l3]"
+            },
+            "value": {
+              "codeSnippet": "Utils::transform",
+              "sourceInterval": {
+                "a": 4,
+                "b": 6
+              },
+              "Template": ":[[l4]]:[l5]:[[l6]]",
+              "TemplateVarsMapping": [
+                {
+                  "key": {
+                    "kind": "WORD",
+                    "Name": "l4",
+                    "Text": ":[[l4]]"
+                  },
+                  "value": {
+                    "codeSnippet": "Utils",
+                    "sourceInterval": {
+                      "a": 4,
+                      "b": 4
+                    },
+                    "Template": ":[[l4]]",
+                    "TemplateVarsMapping": [
+                      {
+                        "key": {
+                          "kind": "WORD",
+                          "Name": "l4",
+                          "Text": ":[[l4]]"
+                        },
+                        "value": {
+                          "codeSnippet": "Utils",
+                          "sourceInterval": {
+                            "a": 4,
+                            "b": 4
+                          },
+                          "Template": "Utils",
+                          "TemplateVarsMapping": []
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": {
+                    "kind": "ANYTHING",
+                    "Name": "l5",
+                    "Text": ":[l5]"
+                  },
+                  "value": {
+                    "codeSnippet": "::",
+                    "sourceInterval": {
+                      "a": 5,
+                      "b": 5
+                    },
+                    "Template": "::",
+                    "TemplateVarsMapping": []
+                  }
+                },
+                {
+                  "key": {
+                    "kind": "WORD",
+                    "Name": "l6",
+                    "Text": ":[[l6]]"
+                  },
+                  "value": {
+                    "codeSnippet": "transform",
+                    "sourceInterval": {
+                      "a": 6,
+                      "b": 6
+                    },
+                    "Template": "transform",
+                    "TemplateVarsMapping": []
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

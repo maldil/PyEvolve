@@ -6,42 +6,36 @@ import com.inferrules.core.languageAdapters.JavaAdapter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 
 public class TestJavaTemplates {
 
+
     @Test
     void testTemplates() throws IOException, URISyntaxException {
-        String snippet1 = "Utils.transform(x);";
-//        String snippet2 = "x.map(Utils::transform);";
-
-        Template t = new Template(snippet1, new JavaAdapter(), true);
-
-        Template.TemplateNode expectedTemplateNode = new Gson().fromJson(Files.readString(getFileFromResource("snippet1.json").toPath()), Template.TemplateNode.class);
-        Assertions.assertEquals(new Gson().toJson(t.getTemplateNode()),new Gson().toJson(expectedTemplateNode));
-        System.out.println();
-
+        Map<String, String> scenarios = Map.of("Utils.transform(x);", "java/snippet1.json",
+                "x.map(Utils::transform);", "java/snippet2.json");
+        for(var scenario : scenarios.entrySet()){
+            Template.TemplateNode t = new Template(scenario.getKey(), new JavaAdapter(), true).getTemplateNode();
+            Template.TemplateNode expectedTemplateNode = readTemplateNodeFromResource(scenario.getValue());
+            Assertions.assertEquals(t.toJson(),expectedTemplateNode.toJson());
+        }
     }
 
-    private File getFileFromResource(String fileName) throws URISyntaxException {
-
+    private Template.TemplateNode readTemplateNodeFromResource(String fileName) throws URISyntaxException, IOException {
         ClassLoader classLoader = getClass().getClassLoader();
         URL resource = classLoader.getResource(fileName);
         if (resource == null) {
             throw new IllegalArgumentException("file not found! " + fileName);
         } else {
+            return new Gson().fromJson(Files.readString(Paths.get(resource.toURI())), Template.TemplateNode.class);
 
-            // failed if files have whitespaces or special characters
-            //return new File(resource.getFile());
-
-            return new File(resource.toURI());
         }
-
     }
 
 }

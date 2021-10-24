@@ -35,7 +35,7 @@ public class Template {
     }
 
     public String getTemplateNodeAsJson(){
-        return new Gson().toJson(TemplateNode);
+        return TemplateNode.toJson();
     }
 
     public class TemplateNode {
@@ -51,6 +51,10 @@ public class Template {
             this.TemplateVarsMapping = templateVariableMapping;
             this.codeSnippet = codeSnippet;
             this.sourceInterval = sourceInterval;
+        }
+
+        public String toJson(){
+            return new Gson().toJson(this,TemplateNode.class);
         }
 
         public TemplateNode(Node n) {

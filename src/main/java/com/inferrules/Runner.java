@@ -21,12 +21,12 @@ public class Runner {
         PythonAdapter adp = new PythonAdapter();
         JavaAdapter jadp = new JavaAdapter();
         Template tpl = new Template(pyClassContent1,adp, true);
-        Template tpr = new Template(pyClassContent2,adp, false);
+        Template tpr = new Template(pyClassContent2,adp, true);
 
         RewriteRule pyRw = new RewriteRule(tpl, tpr);
 
         Template jtpl = new Template(javaClassContent1,jadp, true);
-        Template jtpr = new Template(javaClassContent2,jadp, false);
+        Template jtpr = new Template(javaClassContent2,jadp, true);
         RewriteRule jRw = new RewriteRule(jtpl, jtpr);
         System.out.println();
     }
