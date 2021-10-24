@@ -18,7 +18,7 @@ public class PythonAdapter implements ILanguageAdapter {
     @Override
     public Node parse(String codeSnippet) {
         List<String> tokenList = tokenize(codeSnippet);
-        var tokens = new CommonTokenStream(new com.inferrules.parsers.PythonLexer(CharStreams.fromString(codeSnippet)));
+        var tokens = new CommonTokenStream(new PythonLexer(CharStreams.fromString(codeSnippet)));
         return parseTrees2Node(parse(new PythonParser(tokens), tokenList.size()), PYTHON3, tokenList);
     }
 

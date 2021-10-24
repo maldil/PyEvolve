@@ -17,6 +17,7 @@ import io.vavr.control.Try;
 import org.antlr.v4.runtime.misc.Interval;
 
 public class Utilities {
+
     public static Try<String> runBashCommand(String command){
         String[] cmd = {"/bin/sh", "-c", command };
         return Try.of(() -> Runtime.getRuntime().exec(cmd))

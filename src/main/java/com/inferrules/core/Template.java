@@ -62,13 +62,14 @@ public class Template {
             this.sourceInterval = n.getSourceInterval();
             Map<Interval, TemplateVariable> childReplacements = new HashMap<>();
             this.TemplateVarsMapping = new ArrayList<>();
-            n.getChildren().stream().filter(Node::isNotKwdOrSymb)
-                    .forEach(child -> {
-                        var tVar =  CodeToTemplateVars.computeIfAbsent(child.getText(),
-                                c -> new TemplateVariable("" + VarNameSeed + (currentIndex++), c));
-                        childReplacements.put(child.getSourceInterval(), tVar);
-                        TemplateVarsMapping.add(asEntry(tVar, new TemplateNode(child)));
-                    });
+            for (Node child : n.getChildren()) {
+                if (child.isNotKwdOrSymb()) {
+                    var tVar = CodeToTemplateVars.computeIfAbsent(child.getText(),
+                            c -> new TemplateVariable("" + VarNameSeed + (currentIndex++), c));
+                    childReplacements.put(child.getSourceInterval(), tVar);
+                    TemplateVarsMapping.add(asEntry(tVar, new TemplateNode(child)));
+                }
+            }
             this.Template = constructTemplate(childReplacements, n.getSourceInterval());
         }
 

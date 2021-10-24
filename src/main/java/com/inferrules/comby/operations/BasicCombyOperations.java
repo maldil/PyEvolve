@@ -19,9 +19,9 @@ public class BasicCombyOperations {
     private static final String substituteCommand = "comby '' '{0}' -substitute '[{1}]'";
     private static final String defaultLanguage = ".java";
 
-    public static Try<Match> getPerfectMatch(String template, Node source, String language) {
-        return getMatch(template, source, language, true).map(x -> x.getMatches().get(0));
-    }
+//    public static Try<Match> getPerfectMatch(String template, Node source, String language) {
+//        return getMatch(template, source, language, true).map(x -> x.getMatches().get(0));
+//    }
 
 
     public static Try<CombyMatch> getMatch(String template, Node source, String language, boolean isPerfect) {
