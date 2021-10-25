@@ -29,4 +29,12 @@ public class LanguageSpecificInfo {
     public static List<String> getSymbols(Language language) {
         return configs.get(language).getSymbols();
     }
+
+    public static ILanguageAdapter getAdapter(Language l){
+        switch (l){
+            case JAVA:return new JavaAdapter();
+            case PYTHON3:return new PythonAdapter();
+        }
+        return new JavaAdapter();
+    }
 }

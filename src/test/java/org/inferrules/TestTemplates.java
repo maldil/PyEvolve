@@ -1,6 +1,7 @@
 package org.inferrules;
 
 import com.inferrules.core.Template;
+import com.inferrules.core.VariableNameGenerator;
 import com.inferrules.core.languageAdapters.JavaAdapter;
 import com.inferrules.core.languageAdapters.PythonAdapter;
 import org.junit.jupiter.api.Assertions;
@@ -23,7 +24,7 @@ public class TestTemplates {
 
         JavaAdapter languageAdapter = new JavaAdapter();
         for(var scenario : scenarios.entrySet()){
-            Template.TemplateNode t = new Template(scenario.getKey(), languageAdapter, true).getTemplateNode();
+            Template.TemplateNode t = new Template(scenario.getKey(), languageAdapter, new VariableNameGenerator(true ? 'l' : 'r')).getTemplateNode();
             Template.TemplateNode expectedTemplateNode = readTemplateNodeFromResource(scenario.getValue());
             Assertions.assertEquals(t.toJson(),expectedTemplateNode.toJson());
         }
@@ -46,7 +47,7 @@ public class TestTemplates {
         PythonAdapter languageAdapter = new PythonAdapter();
 
         for(var scenario : scenarios.entrySet()){
-            Template.TemplateNode t = new Template(scenario.getKey(), languageAdapter, true).getTemplateNode();
+            Template.TemplateNode t = new Template(scenario.getKey(), languageAdapter, new VariableNameGenerator(true ? 'l' : 'r')).getTemplateNode();
             Template.TemplateNode expectedTemplateNode = readTemplateNodeFromResource(scenario.getValue());
             Assertions.assertEquals(t.toJson(),expectedTemplateNode.toJson());
         }

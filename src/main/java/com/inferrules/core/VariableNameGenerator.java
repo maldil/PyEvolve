@@ -5,9 +5,14 @@ import java.util.Map;
 
 public class VariableNameGenerator {
 
-    private final char VarNameSeed;
-    private int currentIndex = 0;
+    private char VarNameSeed;
+    private int CurrentIndex = 0;
     private final Map<String, TemplateVariable> CodeToTemplateVars;
+
+    public void resetButKeepCache(char seed) {
+        VarNameSeed = seed;
+        CurrentIndex = 0;
+    }
 
     public VariableNameGenerator(char seed) {
         VarNameSeed = seed;
@@ -17,6 +22,6 @@ public class VariableNameGenerator {
 
     public TemplateVariable getNameOrElseNew(String childText){
         return  CodeToTemplateVars.computeIfAbsent(childText,
-                c -> new TemplateVariable("" + VarNameSeed + (currentIndex++), c));
+                c -> new TemplateVariable("" + VarNameSeed + (CurrentIndex++), c));
     }
 }
