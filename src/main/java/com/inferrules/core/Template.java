@@ -1,6 +1,7 @@
 package com.inferrules.core;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.inferrules.core.languageAdapters.ILanguageAdapter;
 import org.antlr.v4.runtime.misc.Interval;
 import java.util.*;
@@ -54,7 +55,8 @@ public class Template {
         }
 
         public String toJson(){
-            return new Gson().toJson(this,TemplateNode.class);
+            return new GsonBuilder().disableHtmlEscaping()
+                    .create().toJson(this,TemplateNode.class);
         }
 
         public TemplateNode(Node n) {
@@ -116,7 +118,7 @@ public class Template {
                         template.append(cr.getValue().asText());
                         foundChild = true;
                         if (child.b > child.a)
-                            curr += child.b;
+                            curr = child.b;
                         break;
                     }
                 }

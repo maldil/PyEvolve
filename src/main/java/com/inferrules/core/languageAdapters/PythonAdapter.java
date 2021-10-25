@@ -27,9 +27,10 @@ public class PythonAdapter implements ILanguageAdapter {
         List<ParseTree> pts = new ArrayList<>();
         int curr_end = 0;
         while (curr_end <= n){
-            ParseTree pt = parser.single_input();
-            pts.add(pt);
-            curr_end = pt.getSourceInterval().a> pt.getSourceInterval().b ? curr_end+1 :pt.getSourceInterval().b;
+            ParseTree pt = parser.file_input();
+            if(!pt.getText().equals("<EOF>"))
+                pts.add(pt);
+            curr_end = pt.getSourceInterval().a>= pt.getSourceInterval().b ? curr_end+1 :pt.getSourceInterval().b;
         }
         return pts;
     }

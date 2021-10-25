@@ -18,7 +18,7 @@
           "a": 0,
           "b": 7
         },
-        "Template": ":[[l1]].:[[l2]](:[l3]",
+        "Template": ":[[l1]].:[[l2]](:[l3])",
         "TemplateVarsMapping": [
           {
             "key": {

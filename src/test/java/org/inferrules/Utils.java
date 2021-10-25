@@ -9,10 +9,10 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class TestUtils {
+public class Utils {
 
     public static Template.TemplateNode readTemplateNodeFromResource(String fileName) throws URISyntaxException, IOException {
-        ClassLoader classLoader = TestUtils.class.getClassLoader();
+        ClassLoader classLoader = Utils.class.getClassLoader();
         URL resource = classLoader.getResource(fileName);
         if (resource == null) {
             throw new IllegalArgumentException("file not found! " + fileName);

@@ -1,6 +1,5 @@
 package org.inferrules;
 
-import com.google.gson.Gson;
 import com.inferrules.core.Template;
 import com.inferrules.core.languageAdapters.JavaAdapter;
 import com.inferrules.core.languageAdapters.PythonAdapter;
@@ -9,14 +8,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Map;
 
-import static org.inferrules.TestUtils.readTemplateNodeFromResource;
+import static org.inferrules.Utils.readTemplateNodeFromResource;
 
-public class TestJavaTemplates {
+public class TestTemplates {
 
 
     @Test
@@ -33,8 +29,17 @@ public class TestJavaTemplates {
 
     @Test
     void testPythonTemplates() throws IOException, URISyntaxException {
-        Map<String, String> scenarios = Map.of("count=0\n" + "for e in es:\n" + "        count += e" , "python/snippet1.json",
-                "count = np.sum(es)\n", "java/snippet2.json");
+        Map<String, String> scenarios = Map.of("count = 0\n" +
+                "for e in es:\n" +
+                "        count += e\n" +
+                "print(count)\n" , "python/snippet1.json",
+                "count = sum([1 for y in es])\n", "python/snippet3.json",
+                "count = 0\n" +
+                        "for e in es:\n" +
+                        "        y = sq(count)\n" +
+                        "        if not y:\n" +
+                        "                count += e\n" +
+                        "print(count)","python/snippet2.json");
         PythonAdapter languageAdapter = new PythonAdapter();
         for(var scenario : scenarios.entrySet()){
             Template.TemplateNode t = new Template(scenario.getKey(), languageAdapter, true).getTemplateNode();
