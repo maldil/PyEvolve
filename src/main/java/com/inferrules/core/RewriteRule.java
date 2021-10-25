@@ -11,18 +11,18 @@ import static java.util.stream.Collectors.toMap;
 
 public class RewriteRule {
 
-    private final String Match;
-    private final String Replace;
+    private final Template Before;
+    private final Template After;
 
     public RewriteRule(Template before, Template after) {
-        this.Replace = null;
-        this.Match = null;
+        this.Before = before;
+        this.After = after;
     }
 
 
-    public Map<String, ValueDifference<TemplateVariable>> intersection(Template t1, Template t2){
-        return Maps.difference(t1.getCodeToTemplateVars(), t2.getCodeToTemplateVars())
-                .entriesDiffering();
-    }
+//    public Map<String, ValueDifference<TemplateVariable>> intersection(){
+//        return Maps.difference(Before.getCodeToTemplateVars(), After.getCodeToTemplateVars())
+//                .entriesDiffering();
+//    }
 
 }

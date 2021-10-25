@@ -36,7 +36,8 @@ public class Runner {
         Template tpr = new Template(pyClassContent2, adp, true);
         Template jtpl = new Template(javaClassContent1, jadp, true);
         Template jtpr = new Template(javaClassContent2, jadp, true);
-//        RewriteRule jRw = new RewriteRule(jtpl, jtpr);
+        RewriteRule jRw = new RewriteRule(jtpl, jtpr);
+        RewriteRule pRw = new RewriteRule(tpl, tpr);
         System.out.println();
     }
 }
