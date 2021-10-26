@@ -17,42 +17,42 @@ import static org.inferrules.Utils.readTemplateNodeFromResource;
 public class TestRewriteRules {
 
 
-    @Test
-    void testJavaTemplates() throws IOException, URISyntaxException {
-        Map<String, String> scenarios = Map.of(
-                "Utils.transform(x);", "java/snippet1.json",
-                "x.map(Utils::transform);", "java/snippet2.json");
-
-        JavaAdapter languageAdapter = new JavaAdapter();
-        for(var scenario : scenarios.entrySet()){
-            TemplateNode t = new Template(scenario.getKey(), languageAdapter, new VariableNameGenerator('l')).getTemplateNode();
-            TemplateNode expectedTemplateNode = readTemplateNodeFromResource(scenario.getValue());
-            Assertions.assertEquals(t.toJson(),expectedTemplateNode.toJson());
-        }
-    }
-
-    @Test
-    void testPythonTemplates() throws IOException, URISyntaxException {
-        Map<String, String> scenarios = Map.of(
-                "count = 0\n" +
-                "for e in es:\n" +
-                "        count += e\n" +
-                "print(count)\n" , "python/snippet1.json",
-                "count = sum([1 for y in es])\n", "python/snippet3.json",
-                "count = 0\n" +
-                        "for e in es:\n" +
-                        "        y = sq(count)\n" +
-                        "        if not y:\n" +
-                        "                count += e\n" +
-                        "print(count)","python/snippet2.json");
-        PythonAdapter languageAdapter = new PythonAdapter();
-
-        for(var scenario : scenarios.entrySet()){
-            TemplateNode t = new Template(scenario.getKey(), languageAdapter, new VariableNameGenerator(true ? 'l' : 'r')).getTemplateNode();
-            TemplateNode expectedTemplateNode = readTemplateNodeFromResource(scenario.getValue());
-            Assertions.assertEquals(expectedTemplateNode.toJson(),t.toJson());
-        }
-    }
+//    @Test
+//    void testJavaTemplates() throws IOException, URISyntaxException {
+//        Map<String, String> scenarios = Map.of(
+//                "Utils.transform(x);", "java/snippet1.json",
+//                "x.map(Utils::transform);", "java/snippet2.json");
+//
+//        JavaAdapter languageAdapter = new JavaAdapter();
+//        for(var scenario : scenarios.entrySet()){
+//            TemplateNode t = new Template(scenario.getKey(), languageAdapter, new VariableNameGenerator('l')).getTemplateNode();
+//            TemplateNode expectedTemplateNode = readTemplateNodeFromResource(scenario.getValue());
+//            Assertions.assertEquals(t.toJson(),expectedTemplateNode.toJson());
+//        }
+//    }
+//
+//    @Test
+//    void testPythonTemplates() throws IOException, URISyntaxException {
+//        Map<String, String> scenarios = Map.of(
+//                "count = 0\n" +
+//                "for e in es:\n" +
+//                "        count += e\n" +
+//                "print(count)\n" , "python/snippet1.json",
+//                "count = sum([1 for y in es])\n", "python/snippet3.json",
+//                "count = 0\n" +
+//                        "for e in es:\n" +
+//                        "        y = sq(count)\n" +
+//                        "        if not y:\n" +
+//                        "                count += e\n" +
+//                        "print(count)","python/snippet2.json");
+//        PythonAdapter languageAdapter = new PythonAdapter();
+//
+//        for(var scenario : scenarios.entrySet()){
+//            TemplateNode t = new Template(scenario.getKey(), languageAdapter, new VariableNameGenerator(true ? 'l' : 'r')).getTemplateNode();
+//            TemplateNode expectedTemplateNode = readTemplateNodeFromResource(scenario.getValue());
+//            Assertions.assertEquals(expectedTemplateNode.toJson(),t.toJson());
+//        }
+//    }
 
 
 }
