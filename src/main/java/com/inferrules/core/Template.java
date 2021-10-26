@@ -2,10 +2,14 @@ package com.inferrules.core;
 
 import com.inferrules.core.languageAdapters.ILanguageAdapter;
 
+import java.util.List;
 import java.util.Set;
 
 public class Template {
+    /*
+        The template should be at least decomposed to a point where all the repeated template variable appear
 
+     */
     private final String CompleteSnippet;
     private final Node Root;
     private final TemplateNode TemplateNode;
@@ -15,6 +19,8 @@ public class Template {
         this.Root = languageAdapter.parse(codeSnippet);
         this.TemplateNode = new TemplateNode(Root, nameGenerator, languageAdapter.tokenize(codeSnippet));
     }
+
+
 
     public String getTemplateNodeAsJson(){
         return TemplateNode.toJson();
@@ -28,7 +34,7 @@ public class Template {
         return Root;
     }
 
-    public Set<TemplateVariable> getAllVariables() { return TemplateNode.getAllVariables(); }
+    public List<TemplateVariable> getAllVariables() { return TemplateNode.getAllVariables(); }
 
     public TemplateNode getTemplateNode() {
         return TemplateNode;
