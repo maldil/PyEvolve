@@ -19,13 +19,20 @@ public class TemplateNode {
     private final List<Tuple2<TemplateVariable, TemplateNode>> TemplateVarsMapping;
     private final Interval sourceInterval;
 
+    public String getCodeSnippet() {
+        return codeSnippet;
+    }
+
+    public Interval getSourceInterval() {
+        return sourceInterval;
+    }
 
     public String toJson() {
         return new GsonBuilder().disableHtmlEscaping()
                 .create().toJson(this, TemplateNode.class);
     }
 
-    private TemplateNode(String codeSnippet, String template,
+    public TemplateNode(String codeSnippet, String template,
                          List<Tuple2<TemplateVariable, TemplateNode>> templateVarsMapping, Interval sourceInterval) {
         this.codeSnippet = codeSnippet;
         this.Template = template;
@@ -33,7 +40,7 @@ public class TemplateNode {
         this.sourceInterval = sourceInterval;
     }
 
-    private Set<TemplateVariable> getAllVariables() {
+    public Set<TemplateVariable> getAllVariables() {
         return TemplateVarsMapping.stream()
                 .flatMap(x -> Stream.concat(Stream.of(x._1()), x._2.getAllVariables().stream()))
                 .collect(Collectors.toSet());
@@ -66,6 +73,14 @@ public class TemplateNode {
         return String.join(" -> ", this.codeSnippet, this.getTemplate());
     }
 
+    public boolean isChild(TemplateVariable candidate){
+        return TemplateVarsMapping.stream().anyMatch(x->x._1().equals(candidate));
+    }
+
+    public boolean isDescendant(TemplateVariable candidate){
+        return isChild(candidate) || (!TemplateVarsMapping.isEmpty() && TemplateVarsMapping.stream().anyMatch(x->x._2().isDescendant(candidate)));
+    }
+
     /*
     abc.def(xyz.gw())
         mappings:
@@ -82,7 +97,7 @@ public class TemplateNode {
 
     private String constructTemplate(List<Tuple2<TemplateVariable, TemplateNode>> mappings, Interval interval, List<String> allTokens) {
         // Interval = (From, to)
-        Map<Interval, TemplateVariable> childReplacements = mappings.stream().collect(toMap(x -> x._2().sourceInterval, x -> x._1()));
+        Map<Interval, TemplateVariable> childReplacements = mappings.stream().collect(toMap(x -> x._2().sourceInterval, Tuple2::_1));
         StringBuilder template = new StringBuilder();
         int curr = interval.a;
         while (curr <= interval.b) {
@@ -107,6 +122,8 @@ public class TemplateNode {
     public String getTemplate() {
         return Template;
     }
+
+
 
 //        public TemplateNode concretizeNode(Set<String> except) {
 //            Map<Interval, TemplateVariable> newChildReplacements = new HashMap<>();

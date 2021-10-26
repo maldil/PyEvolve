@@ -1,5 +1,7 @@
 package com.inferrules.core;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.inferrules.core.languageAdapters.ILanguageAdapter;
 import com.inferrules.core.languageAdapters.LanguageSpecificInfo;
 
@@ -20,7 +22,22 @@ public class RewriteRule {
         this.Before = new Template(beforeSnippet, adapter, l);
         l.resetButKeepCache('r');
         this.After = new Template(afterSnippet, adapter, l);
+        ImmutableSet<TemplateVariable> intrx = Sets.intersection(Before.getAllVariables(), After.getAllVariables()).immutableCopy();
     }
+
+    public static TemplateNode getMatchRule(ImmutableSet<TemplateVariable> intrx){
+            /*
+            if all children -> return n
+            for c in children:
+                if 
+             */
+        return null;
+
+    }
+
+
+
+
 
 
 

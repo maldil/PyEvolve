@@ -2,6 +2,8 @@ package com.inferrules.core;
 
 import com.inferrules.core.languageAdapters.ILanguageAdapter;
 
+import java.util.Set;
+
 public class Template {
 
     private final String CompleteSnippet;
@@ -25,6 +27,8 @@ public class Template {
     public Node getRoot() {
         return Root;
     }
+
+    public Set<TemplateVariable> getAllVariables() { return TemplateNode.getAllVariables(); }
 
     public TemplateNode getTemplateNode() {
         return TemplateNode;
