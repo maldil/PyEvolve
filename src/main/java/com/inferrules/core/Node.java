@@ -8,13 +8,13 @@ import java.util.List;
 
 public class Node {
 
-    private final String value;
+    private final String value; // space and new line aware
     private final LanguageSpecificInfo.Language language;
     private final boolean isKeyword;
     private final boolean isSymbol;
     private final List<Node> children;
     private final Interval sourceInterval;
-    private final String text;
+    private final String text; // no spaces and new lines
 
     public Node(String value, LanguageSpecificInfo.Language language, Interval sourceInterval, String text) {
         this.text = text;

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public class TemplateVariable {
+
     private final Kind kind;
     private final String Name;
     private final String Text;

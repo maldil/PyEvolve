@@ -1,478 +1,461 @@
 {
-    "codeSnippet": "count = 0\nfor e in es:\n        count += e\nprint(count)\n<EOF>",
-    "sourceInterval": {
-        "a": 0,
-        "b": 34
-    },
-    "Template": ":[l0]",
+    "codeSnippet": "count = 0\nfor e in es:\n        count += e\nprint(count)\n",
+    "Template": ":[l0]:[l4]:[l9]",
     "TemplateVarsMapping": [
         {
-            "key": {
+            "_1": {
                 "kind": "ANYTHING",
                 "Name": "l0",
                 "Text": ":[l0]"
             },
-            "value": {
-                "codeSnippet": "count = 0\nfor e in es:\n        count += e\nprint(count)\n",
-                "sourceInterval": {
-                    "a": 0,
-                    "b": 32
-                },
-                "Template": ":[l1]:[l5]:[l10]",
+            "_2": {
+                "codeSnippet": "count = 0\n",
+                "Template": ":[l0]\n",
                 "TemplateVarsMapping": [
                     {
-                        "key": {
+                        "_1": {
                             "kind": "ANYTHING",
-                            "Name": "l1",
-                            "Text": ":[l1]"
+                            "Name": "l0",
+                            "Text": ":[l0]"
                         },
-                        "value": {
-                            "codeSnippet": "count = 0\n",
-                            "sourceInterval": {
-                                "a": 0,
-                                "b": 6
-                            },
-                            "Template": ":[l1]\n",
+                        "_2": {
+                            "codeSnippet": "count = 0",
+                            "Template": ":[[l1]] :[l2]",
                             "TemplateVarsMapping": [
                                 {
-                                    "key": {
-                                        "kind": "ANYTHING",
+                                    "_1": {
+                                        "kind": "WORD",
                                         "Name": "l1",
-                                        "Text": ":[l1]"
+                                        "Text": ":[[l1]]"
                                     },
-                                    "value": {
-                                        "codeSnippet": "count = 0",
-                                        "sourceInterval": {
-                                            "a": 0,
-                                            "b": 4
-                                        },
-                                        "Template": ":[[l2]] :[l3]",
+                                    "_2": {
+                                        "codeSnippet": "count",
+                                        "Template": ":[[l1]]",
                                         "TemplateVarsMapping": [
                                             {
-                                                "key": {
+                                                "_1": {
                                                     "kind": "WORD",
-                                                    "Name": "l2",
-                                                    "Text": ":[[l2]]"
+                                                    "Name": "l1",
+                                                    "Text": ":[[l1]]"
                                                 },
-                                                "value": {
+                                                "_2": {
                                                     "codeSnippet": "count",
+                                                    "Template": "count",
+                                                    "TemplateVarsMapping": [],
                                                     "sourceInterval": {
                                                         "a": 0,
                                                         "b": 0
-                                                    },
-                                                    "Template": ":[[l2]]",
-                                                    "TemplateVarsMapping": [
-                                                        {
-                                                            "key": {
-                                                                "kind": "WORD",
-                                                                "Name": "l2",
-                                                                "Text": ":[[l2]]"
-                                                            },
-                                                            "value": {
-                                                                "codeSnippet": "count",
-                                                                "sourceInterval": {
-                                                                    "a": 0,
-                                                                    "b": 0
-                                                                },
-                                                                "Template": "count",
-                                                                "TemplateVarsMapping": []
-                                                            }
-                                                        }
-                                                    ]
+                                                    }
                                                 }
-                                            },
+                                            }
+                                        ],
+                                        "sourceInterval": {
+                                            "a": 0,
+                                            "b": 0
+                                        }
+                                    }
+                                },
+                                {
+                                    "_1": {
+                                        "kind": "ANYTHING",
+                                        "Name": "l2",
+                                        "Text": ":[l2]"
+                                    },
+                                    "_2": {
+                                        "codeSnippet": "= 0",
+                                        "Template": "= :[[l3]]",
+                                        "TemplateVarsMapping": [
                                             {
-                                                "key": {
-                                                    "kind": "ANYTHING",
+                                                "_1": {
+                                                    "kind": "WORD",
                                                     "Name": "l3",
-                                                    "Text": ":[l3]"
+                                                    "Text": ":[[l3]]"
                                                 },
-                                                "value": {
-                                                    "codeSnippet": "= 0",
-                                                    "sourceInterval": {
-                                                        "a": 2,
-                                                        "b": 4
-                                                    },
-                                                    "Template": "= :[[l4]]",
+                                                "_2": {
+                                                    "codeSnippet": "0",
+                                                    "Template": ":[[l3]]",
                                                     "TemplateVarsMapping": [
                                                         {
-                                                            "key": {
+                                                            "_1": {
                                                                 "kind": "WORD",
-                                                                "Name": "l4",
-                                                                "Text": ":[[l4]]"
+                                                                "Name": "l3",
+                                                                "Text": ":[[l3]]"
                                                             },
-                                                            "value": {
+                                                            "_2": {
                                                                 "codeSnippet": "0",
+                                                                "Template": "0",
+                                                                "TemplateVarsMapping": [],
                                                                 "sourceInterval": {
                                                                     "a": 4,
                                                                     "b": 4
-                                                                },
-                                                                "Template": ":[[l4]]",
-                                                                "TemplateVarsMapping": [
-                                                                    {
-                                                                        "key": {
-                                                                            "kind": "WORD",
-                                                                            "Name": "l4",
-                                                                            "Text": ":[[l4]]"
-                                                                        },
-                                                                        "value": {
-                                                                            "codeSnippet": "0",
-                                                                            "sourceInterval": {
-                                                                                "a": 4,
-                                                                                "b": 4
-                                                                            },
-                                                                            "Template": "0",
-                                                                            "TemplateVarsMapping": []
-                                                                        }
-                                                                    }
-                                                                ]
+                                                                }
                                                             }
                                                         }
-                                                    ]
+                                                    ],
+                                                    "sourceInterval": {
+                                                        "a": 4,
+                                                        "b": 4
+                                                    }
                                                 }
                                             }
-                                        ]
+                                        ],
+                                        "sourceInterval": {
+                                            "a": 2,
+                                            "b": 4
+                                        }
                                     }
                                 }
-                            ]
+                            ],
+                            "sourceInterval": {
+                                "a": 0,
+                                "b": 4
+                            }
+                        }
+                    }
+                ],
+                "sourceInterval": {
+                    "a": 0,
+                    "b": 6
+                }
+            }
+        },
+        {
+            "_1": {
+                "kind": "ANYTHING",
+                "Name": "l4",
+                "Text": ":[l4]"
+            },
+            "_2": {
+                "codeSnippet": "for e in es:\n        count += e\n",
+                "Template": "for :[[l5]] in :[[l6]]:\n:[l7]",
+                "TemplateVarsMapping": [
+                    {
+                        "_1": {
+                            "kind": "WORD",
+                            "Name": "l5",
+                            "Text": ":[[l5]]"
+                        },
+                        "_2": {
+                            "codeSnippet": "e",
+                            "Template": ":[[l5]]",
+                            "TemplateVarsMapping": [
+                                {
+                                    "_1": {
+                                        "kind": "WORD",
+                                        "Name": "l5",
+                                        "Text": ":[[l5]]"
+                                    },
+                                    "_2": {
+                                        "codeSnippet": "e",
+                                        "Template": "e",
+                                        "TemplateVarsMapping": [],
+                                        "sourceInterval": {
+                                            "a": 9,
+                                            "b": 9
+                                        }
+                                    }
+                                }
+                            ],
+                            "sourceInterval": {
+                                "a": 9,
+                                "b": 9
+                            }
                         }
                     },
                     {
-                        "key": {
-                            "kind": "ANYTHING",
-                            "Name": "l5",
-                            "Text": ":[l5]"
+                        "_1": {
+                            "kind": "WORD",
+                            "Name": "l6",
+                            "Text": ":[[l6]]"
                         },
-                        "value": {
-                            "codeSnippet": "for e in es:\n        count += e\n",
-                            "sourceInterval": {
-                                "a": 7,
-                                "b": 26
-                            },
-                            "Template": "for :[[l6]] in :[[l7]]:\n:[l8]",
+                        "_2": {
+                            "codeSnippet": "es",
+                            "Template": ":[[l6]]",
                             "TemplateVarsMapping": [
                                 {
-                                    "key": {
+                                    "_1": {
                                         "kind": "WORD",
                                         "Name": "l6",
                                         "Text": ":[[l6]]"
                                     },
-                                    "value": {
-                                        "codeSnippet": "e",
-                                        "sourceInterval": {
-                                            "a": 9,
-                                            "b": 9
-                                        },
-                                        "Template": ":[[l6]]",
-                                        "TemplateVarsMapping": [
-                                            {
-                                                "key": {
-                                                    "kind": "WORD",
-                                                    "Name": "l6",
-                                                    "Text": ":[[l6]]"
-                                                },
-                                                "value": {
-                                                    "codeSnippet": "e",
-                                                    "sourceInterval": {
-                                                        "a": 9,
-                                                        "b": 9
-                                                    },
-                                                    "Template": "e",
-                                                    "TemplateVarsMapping": []
-                                                }
-                                            }
-                                        ]
-                                    }
-                                },
-                                {
-                                    "key": {
-                                        "kind": "WORD",
-                                        "Name": "l7",
-                                        "Text": ":[[l7]]"
-                                    },
-                                    "value": {
+                                    "_2": {
                                         "codeSnippet": "es",
+                                        "Template": "es",
+                                        "TemplateVarsMapping": [],
                                         "sourceInterval": {
                                             "a": 13,
                                             "b": 13
-                                        },
-                                        "Template": ":[[l7]]",
-                                        "TemplateVarsMapping": [
-                                            {
-                                                "key": {
-                                                    "kind": "WORD",
-                                                    "Name": "l7",
-                                                    "Text": ":[[l7]]"
-                                                },
-                                                "value": {
-                                                    "codeSnippet": "es",
-                                                    "sourceInterval": {
-                                                        "a": 13,
-                                                        "b": 13
-                                                    },
-                                                    "Template": "es",
-                                                    "TemplateVarsMapping": []
-                                                }
-                                            }
-                                        ]
+                                        }
                                     }
-                                },
+                                }
+                            ],
+                            "sourceInterval": {
+                                "a": 13,
+                                "b": 13
+                            }
+                        }
+                    },
+                    {
+                        "_1": {
+                            "kind": "ANYTHING",
+                            "Name": "l7",
+                            "Text": ":[l7]"
+                        },
+                        "_2": {
+                            "codeSnippet": "        count += e\n",
+                            "Template": "        :[l7]",
+                            "TemplateVarsMapping": [
                                 {
-                                    "key": {
+                                    "_1": {
                                         "kind": "ANYTHING",
-                                        "Name": "l8",
-                                        "Text": ":[l8]"
+                                        "Name": "l7",
+                                        "Text": ":[l7]"
                                     },
-                                    "value": {
-                                        "codeSnippet": "        count += e\n",
-                                        "sourceInterval": {
-                                            "a": 16,
-                                            "b": 26
-                                        },
-                                        "Template": "        :[l8]",
+                                    "_2": {
+                                        "codeSnippet": "count += e\n",
+                                        "Template": ":[l7]\n",
                                         "TemplateVarsMapping": [
                                             {
-                                                "key": {
+                                                "_1": {
                                                     "kind": "ANYTHING",
-                                                    "Name": "l8",
-                                                    "Text": ":[l8]"
+                                                    "Name": "l7",
+                                                    "Text": ":[l7]"
                                                 },
-                                                "value": {
-                                                    "codeSnippet": "count += e\n",
-                                                    "sourceInterval": {
-                                                        "a": 19,
-                                                        "b": 25
-                                                    },
-                                                    "Template": ":[l8]\n",
+                                                "_2": {
+                                                    "codeSnippet": "count += e",
+                                                    "Template": ":[[l1]] :[l8]",
                                                     "TemplateVarsMapping": [
                                                         {
-                                                            "key": {
+                                                            "_1": {
+                                                                "kind": "WORD",
+                                                                "Name": "l1",
+                                                                "Text": ":[[l1]]"
+                                                            },
+                                                            "_2": {
+                                                                "codeSnippet": "count",
+                                                                "Template": ":[[l1]]",
+                                                                "TemplateVarsMapping": [
+                                                                    {
+                                                                        "_1": {
+                                                                            "kind": "WORD",
+                                                                            "Name": "l1",
+                                                                            "Text": ":[[l1]]"
+                                                                        },
+                                                                        "_2": {
+                                                                            "codeSnippet": "count",
+                                                                            "Template": "count",
+                                                                            "TemplateVarsMapping": [],
+                                                                            "sourceInterval": {
+                                                                                "a": 19,
+                                                                                "b": 19
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                ],
+                                                                "sourceInterval": {
+                                                                    "a": 19,
+                                                                    "b": 19
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            "_1": {
                                                                 "kind": "ANYTHING",
                                                                 "Name": "l8",
                                                                 "Text": ":[l8]"
                                                             },
-                                                            "value": {
-                                                                "codeSnippet": "count += e",
-                                                                "sourceInterval": {
-                                                                    "a": 19,
-                                                                    "b": 23
-                                                                },
-                                                                "Template": ":[[l2]] :[l9]",
+                                                            "_2": {
+                                                                "codeSnippet": "+= e",
+                                                                "Template": "+= :[[l5]]",
                                                                 "TemplateVarsMapping": [
                                                                     {
-                                                                        "key": {
+                                                                        "_1": {
                                                                             "kind": "WORD",
-                                                                            "Name": "l2",
-                                                                            "Text": ":[[l2]]"
+                                                                            "Name": "l5",
+                                                                            "Text": ":[[l5]]"
                                                                         },
-                                                                        "value": {
-                                                                            "codeSnippet": "count",
-                                                                            "sourceInterval": {
-                                                                                "a": 19,
-                                                                                "b": 19
-                                                                            },
-                                                                            "Template": ":[[l2]]",
+                                                                        "_2": {
+                                                                            "codeSnippet": "e",
+                                                                            "Template": ":[[l5]]",
                                                                             "TemplateVarsMapping": [
                                                                                 {
-                                                                                    "key": {
+                                                                                    "_1": {
                                                                                         "kind": "WORD",
-                                                                                        "Name": "l2",
-                                                                                        "Text": ":[[l2]]"
+                                                                                        "Name": "l5",
+                                                                                        "Text": ":[[l5]]"
                                                                                     },
-                                                                                    "value": {
-                                                                                        "codeSnippet": "count",
-                                                                                        "sourceInterval": {
-                                                                                            "a": 19,
-                                                                                            "b": 19
-                                                                                        },
-                                                                                        "Template": "count",
-                                                                                        "TemplateVarsMapping": []
-                                                                                    }
-                                                                                }
-                                                                            ]
-                                                                        }
-                                                                    },
-                                                                    {
-                                                                        "key": {
-                                                                            "kind": "ANYTHING",
-                                                                            "Name": "l9",
-                                                                            "Text": ":[l9]"
-                                                                        },
-                                                                        "value": {
-                                                                            "codeSnippet": "+= e",
-                                                                            "sourceInterval": {
-                                                                                "a": 21,
-                                                                                "b": 23
-                                                                            },
-                                                                            "Template": "+= :[[l6]]",
-                                                                            "TemplateVarsMapping": [
-                                                                                {
-                                                                                    "key": {
-                                                                                        "kind": "WORD",
-                                                                                        "Name": "l6",
-                                                                                        "Text": ":[[l6]]"
-                                                                                    },
-                                                                                    "value": {
+                                                                                    "_2": {
                                                                                         "codeSnippet": "e",
+                                                                                        "Template": "e",
+                                                                                        "TemplateVarsMapping": [],
                                                                                         "sourceInterval": {
                                                                                             "a": 23,
                                                                                             "b": 23
-                                                                                        },
-                                                                                        "Template": ":[[l6]]",
-                                                                                        "TemplateVarsMapping": [
-                                                                                            {
-                                                                                                "key": {
-                                                                                                    "kind": "WORD",
-                                                                                                    "Name": "l6",
-                                                                                                    "Text": ":[[l6]]"
-                                                                                                },
-                                                                                                "value": {
-                                                                                                    "codeSnippet": "e",
-                                                                                                    "sourceInterval": {
-                                                                                                        "a": 23,
-                                                                                                        "b": 23
-                                                                                                    },
-                                                                                                    "Template": "e",
-                                                                                                    "TemplateVarsMapping": []
-                                                                                                }
-                                                                                            }
-                                                                                        ]
+                                                                                        }
                                                                                     }
                                                                                 }
-                                                                            ]
+                                                                            ],
+                                                                            "sourceInterval": {
+                                                                                "a": 23,
+                                                                                "b": 23
+                                                                            }
                                                                         }
                                                                     }
-                                                                ]
+                                                                ],
+                                                                "sourceInterval": {
+                                                                    "a": 21,
+                                                                    "b": 23
+                                                                }
                                                             }
                                                         }
-                                                    ]
+                                                    ],
+                                                    "sourceInterval": {
+                                                        "a": 19,
+                                                        "b": 23
+                                                    }
                                                 }
                                             }
-                                        ]
+                                        ],
+                                        "sourceInterval": {
+                                            "a": 19,
+                                            "b": 25
+                                        }
                                     }
                                 }
-                            ]
-                        }
-                    },
-                    {
-                        "key": {
-                            "kind": "ANYTHING",
-                            "Name": "l10",
-                            "Text": ":[l10]"
-                        },
-                        "value": {
-                            "codeSnippet": "print(count)\n",
+                            ],
                             "sourceInterval": {
-                                "a": 27,
-                                "b": 32
-                            },
-                            "Template": ":[l10]\n",
+                                "a": 16,
+                                "b": 26
+                            }
+                        }
+                    }
+                ],
+                "sourceInterval": {
+                    "a": 7,
+                    "b": 26
+                }
+            }
+        },
+        {
+            "_1": {
+                "kind": "ANYTHING",
+                "Name": "l9",
+                "Text": ":[l9]"
+            },
+            "_2": {
+                "codeSnippet": "print(count)\n",
+                "Template": ":[l9]\n",
+                "TemplateVarsMapping": [
+                    {
+                        "_1": {
+                            "kind": "ANYTHING",
+                            "Name": "l9",
+                            "Text": ":[l9]"
+                        },
+                        "_2": {
+                            "codeSnippet": "print(count)",
+                            "Template": ":[[l10]]:[l11]",
                             "TemplateVarsMapping": [
                                 {
-                                    "key": {
-                                        "kind": "ANYTHING",
+                                    "_1": {
+                                        "kind": "WORD",
                                         "Name": "l10",
-                                        "Text": ":[l10]"
+                                        "Text": ":[[l10]]"
                                     },
-                                    "value": {
-                                        "codeSnippet": "print(count)",
-                                        "sourceInterval": {
-                                            "a": 27,
-                                            "b": 30
-                                        },
-                                        "Template": ":[[l11]]:[l12]",
+                                    "_2": {
+                                        "codeSnippet": "print",
+                                        "Template": ":[[l10]]",
                                         "TemplateVarsMapping": [
                                             {
-                                                "key": {
+                                                "_1": {
                                                     "kind": "WORD",
-                                                    "Name": "l11",
-                                                    "Text": ":[[l11]]"
+                                                    "Name": "l10",
+                                                    "Text": ":[[l10]]"
                                                 },
-                                                "value": {
+                                                "_2": {
                                                     "codeSnippet": "print",
+                                                    "Template": "print",
+                                                    "TemplateVarsMapping": [],
                                                     "sourceInterval": {
                                                         "a": 27,
                                                         "b": 27
-                                                    },
-                                                    "Template": ":[[l11]]",
-                                                    "TemplateVarsMapping": [
-                                                        {
-                                                            "key": {
-                                                                "kind": "WORD",
-                                                                "Name": "l11",
-                                                                "Text": ":[[l11]]"
-                                                            },
-                                                            "value": {
-                                                                "codeSnippet": "print",
-                                                                "sourceInterval": {
-                                                                    "a": 27,
-                                                                    "b": 27
-                                                                },
-                                                                "Template": "print",
-                                                                "TemplateVarsMapping": []
-                                                            }
-                                                        }
-                                                    ]
+                                                    }
                                                 }
-                                            },
+                                            }
+                                        ],
+                                        "sourceInterval": {
+                                            "a": 27,
+                                            "b": 27
+                                        }
+                                    }
+                                },
+                                {
+                                    "_1": {
+                                        "kind": "ANYTHING",
+                                        "Name": "l11",
+                                        "Text": ":[l11]"
+                                    },
+                                    "_2": {
+                                        "codeSnippet": "(count)",
+                                        "Template": "(:[[l1]])",
+                                        "TemplateVarsMapping": [
                                             {
-                                                "key": {
-                                                    "kind": "ANYTHING",
-                                                    "Name": "l12",
-                                                    "Text": ":[l12]"
+                                                "_1": {
+                                                    "kind": "WORD",
+                                                    "Name": "l1",
+                                                    "Text": ":[[l1]]"
                                                 },
-                                                "value": {
-                                                    "codeSnippet": "(count)",
-                                                    "sourceInterval": {
-                                                        "a": 28,
-                                                        "b": 30
-                                                    },
-                                                    "Template": "(:[[l2]])",
+                                                "_2": {
+                                                    "codeSnippet": "count",
+                                                    "Template": ":[[l1]]",
                                                     "TemplateVarsMapping": [
                                                         {
-                                                            "key": {
+                                                            "_1": {
                                                                 "kind": "WORD",
-                                                                "Name": "l2",
-                                                                "Text": ":[[l2]]"
+                                                                "Name": "l1",
+                                                                "Text": ":[[l1]]"
                                                             },
-                                                            "value": {
+                                                            "_2": {
                                                                 "codeSnippet": "count",
+                                                                "Template": "count",
+                                                                "TemplateVarsMapping": [],
                                                                 "sourceInterval": {
                                                                     "a": 29,
                                                                     "b": 29
-                                                                },
-                                                                "Template": ":[[l2]]",
-                                                                "TemplateVarsMapping": [
-                                                                    {
-                                                                        "key": {
-                                                                            "kind": "WORD",
-                                                                            "Name": "l2",
-                                                                            "Text": ":[[l2]]"
-                                                                        },
-                                                                        "value": {
-                                                                            "codeSnippet": "count",
-                                                                            "sourceInterval": {
-                                                                                "a": 29,
-                                                                                "b": 29
-                                                                            },
-                                                                            "Template": "count",
-                                                                            "TemplateVarsMapping": []
-                                                                        }
-                                                                    }
-                                                                ]
+                                                                }
                                                             }
                                                         }
-                                                    ]
+                                                    ],
+                                                    "sourceInterval": {
+                                                        "a": 29,
+                                                        "b": 29
+                                                    }
                                                 }
                                             }
-                                        ]
+                                        ],
+                                        "sourceInterval": {
+                                            "a": 28,
+                                            "b": 30
+                                        }
                                     }
                                 }
-                            ]
+                            ],
+                            "sourceInterval": {
+                                "a": 27,
+                                "b": 30
+                            }
                         }
                     }
-                ]
+                ],
+                "sourceInterval": {
+                    "a": 27,
+                    "b": 32
+                }
             }
         }
-    ]
+    ],
+    "sourceInterval": {
+        "a": 0,
+        "b": 32
+    }
 }

@@ -1,158 +1,158 @@
 {
   "codeSnippet": "x.map(Utils::transform);",
-  "sourceInterval": {
-    "a": 0,
-    "b": 8
-  },
   "Template": ":[l0];",
   "TemplateVarsMapping": [
     {
-      "key": {
+      "_1": {
         "kind": "ANYTHING",
         "Name": "l0",
         "Text": ":[l0]"
       },
-      "value": {
+      "_2": {
         "codeSnippet": "x.map(Utils::transform)",
-        "sourceInterval": {
-          "a": 0,
-          "b": 7
-        },
         "Template": ":[[l1]].:[[l2]](:[l3])",
         "TemplateVarsMapping": [
           {
-            "key": {
+            "_1": {
               "kind": "WORD",
               "Name": "l1",
               "Text": ":[[l1]]"
             },
-            "value": {
+            "_2": {
               "codeSnippet": "x",
-              "sourceInterval": {
-                "a": 0,
-                "b": 0
-              },
               "Template": ":[[l1]]",
               "TemplateVarsMapping": [
                 {
-                  "key": {
+                  "_1": {
                     "kind": "WORD",
                     "Name": "l1",
                     "Text": ":[[l1]]"
                   },
-                  "value": {
+                  "_2": {
                     "codeSnippet": "x",
+                    "Template": "x",
+                    "TemplateVarsMapping": [],
                     "sourceInterval": {
                       "a": 0,
                       "b": 0
-                    },
-                    "Template": "x",
-                    "TemplateVarsMapping": []
+                    }
                   }
                 }
-              ]
+              ],
+              "sourceInterval": {
+                "a": 0,
+                "b": 0
+              }
             }
           },
           {
-            "key": {
+            "_1": {
               "kind": "WORD",
               "Name": "l2",
               "Text": ":[[l2]]"
             },
-            "value": {
+            "_2": {
               "codeSnippet": "map",
+              "Template": "map",
+              "TemplateVarsMapping": [],
               "sourceInterval": {
                 "a": 2,
                 "b": 2
-              },
-              "Template": "map",
-              "TemplateVarsMapping": []
+              }
             }
           },
           {
-            "key": {
+            "_1": {
               "kind": "ANYTHING",
               "Name": "l3",
               "Text": ":[l3]"
             },
-            "value": {
+            "_2": {
               "codeSnippet": "Utils::transform",
-              "sourceInterval": {
-                "a": 4,
-                "b": 6
-              },
               "Template": ":[[l4]]:[l5]:[[l6]]",
               "TemplateVarsMapping": [
                 {
-                  "key": {
+                  "_1": {
                     "kind": "WORD",
                     "Name": "l4",
                     "Text": ":[[l4]]"
                   },
-                  "value": {
+                  "_2": {
                     "codeSnippet": "Utils",
-                    "sourceInterval": {
-                      "a": 4,
-                      "b": 4
-                    },
                     "Template": ":[[l4]]",
                     "TemplateVarsMapping": [
                       {
-                        "key": {
+                        "_1": {
                           "kind": "WORD",
                           "Name": "l4",
                           "Text": ":[[l4]]"
                         },
-                        "value": {
+                        "_2": {
                           "codeSnippet": "Utils",
+                          "Template": "Utils",
+                          "TemplateVarsMapping": [],
                           "sourceInterval": {
                             "a": 4,
                             "b": 4
-                          },
-                          "Template": "Utils",
-                          "TemplateVarsMapping": []
+                          }
                         }
                       }
-                    ]
+                    ],
+                    "sourceInterval": {
+                      "a": 4,
+                      "b": 4
+                    }
                   }
                 },
                 {
-                  "key": {
+                  "_1": {
                     "kind": "ANYTHING",
                     "Name": "l5",
                     "Text": ":[l5]"
                   },
-                  "value": {
+                  "_2": {
                     "codeSnippet": "::",
+                    "Template": "::",
+                    "TemplateVarsMapping": [],
                     "sourceInterval": {
                       "a": 5,
                       "b": 5
-                    },
-                    "Template": "::",
-                    "TemplateVarsMapping": []
+                    }
                   }
                 },
                 {
-                  "key": {
+                  "_1": {
                     "kind": "WORD",
                     "Name": "l6",
                     "Text": ":[[l6]]"
                   },
-                  "value": {
+                  "_2": {
                     "codeSnippet": "transform",
+                    "Template": "transform",
+                    "TemplateVarsMapping": [],
                     "sourceInterval": {
                       "a": 6,
                       "b": 6
-                    },
-                    "Template": "transform",
-                    "TemplateVarsMapping": []
+                    }
                   }
                 }
-              ]
+              ],
+              "sourceInterval": {
+                "a": 4,
+                "b": 6
+              }
             }
           }
-        ]
+        ],
+        "sourceInterval": {
+          "a": 0,
+          "b": 7
+        }
       }
     }
-  ]
+  ],
+  "sourceInterval": {
+    "a": 0,
+    "b": 8
+  }
 }

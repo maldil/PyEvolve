@@ -7,7 +7,7 @@ public class VariableNameGenerator {
 
     private char VarNameSeed;
     private int CurrentIndex = 0;
-    private final Map<String, TemplateVariable> CodeToTemplateVars;
+    private final Map<String, TemplateVariable> CodeToTemplateVars; // codeSnippet -> variableName
 
     public void resetButKeepCache(char seed) {
         VarNameSeed = seed;
