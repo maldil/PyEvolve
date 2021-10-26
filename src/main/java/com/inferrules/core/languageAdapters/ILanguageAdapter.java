@@ -18,12 +18,6 @@ public interface ILanguageAdapter {
 
     List<String> tokenize(String codeSnippet);
 
-//    default Node parseTrees2Node(List<ParseTree> parseTrees, LanguageSpecificInfo.Language language, List<String> tokens) {
-//        List<Node> nodes = parseTrees.stream().map(x -> parseTree2Node(x, language, tokens)).collect(Collectors.toList());
-//        String text = parseTrees.stream().map(x->x.getText()).collect(Collectors.joining());
-//        return new Node(String.join("",tokens), nodes, language, new Interval(0, tokens.size()), text);
-//    }
-
     default Node parseTree2Node(ParseTree parseTree, LanguageSpecificInfo.Language language, List<String> tokens) {
         Interval sourceInterval = parseTree.getSourceInterval();
         switch (parseTree.getChildCount()) {

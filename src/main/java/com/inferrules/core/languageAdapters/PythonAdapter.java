@@ -22,19 +22,6 @@ public class PythonAdapter implements ILanguageAdapter {
         return parseTree2Node(new PythonParser(tokens).file_input(), PYTHON3, tokenList);
     }
 
-
-//    private List<ParseTree> parse(PythonParser parser, int n){
-//        List<ParseTree> pts = new ArrayList<>();
-//        int curr_end = 0;
-//        while (curr_end <= n){
-//            ParseTree pt = parser.file_input();
-//            if(!pt.getText().equals("<EOF>"))
-//                pts.add(pt);
-//            curr_end = pt.getSourceInterval().a>= pt.getSourceInterval().b ? curr_end+1 :pt.getSourceInterval().b;
-//        }
-//        return pts;
-//    }
-
     @Override
     public List<String> tokenize(String codeSnippet) {
         CommonTokenStream x = new CommonTokenStream(new PythonLexer(CharStreams.fromString(codeSnippet)));
