@@ -3,11 +3,10 @@ package com.inferrules.core;
 import com.google.gson.GsonBuilder;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import io.vavr.collection.Tree;
 import org.antlr.v4.runtime.misc.Interval;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,12 +39,20 @@ public class TemplateNode {
         this.SourceInterval = sourceInterval;
     }
 
+    public Tree.Node<TemplateVariable> getTemplateVariableTree(TemplateVariable tv) {
+        List<Tree.Node<TemplateVariable>> cs = getTemplateVarsMapping().stream()
+                .map(x -> new Tree.Node<>(x._1(), io.vavr.collection.List.ofAll(x._2().getTemplateVarsMapping().stream().map(y -> y._2().getTemplateVariableTree(y._1()))
+                        .collect(toList()))))
+                .collect(toList());
+        return new Tree.Node<>(tv, io.vavr.collection.List.ofAll(cs));
+    }
+
     private Node compress(String text, Node n ){
         return n.getChildren().stream().filter(x -> x.getText().equals(text))
                 .findFirst().map(node -> compress(text, node)).orElse(n);
     }
 
-    public TemplateNode surfaceTemplateVariables(List<TemplateVariable> templateVariables, List<String> allTokens){
+    public TemplateNode surfaceTemplateVariables(Collection<TemplateVariable> templateVariables, List<String> allTokens){
         TemplateNode r = new TemplateNode(this.Template, new ArrayList<>(this.TemplateVarsMapping),
                 this.CodeSnippet, this.SourceInterval);
         List<Tuple2<TemplateVariable, TemplateNode>> variableMapping = helper(templateVariables, r);
@@ -53,7 +60,12 @@ public class TemplateNode {
         return new TemplateNode(newTemplate, variableMapping, r.CodeSnippet, r.SourceInterval);
     }
 
-    public List<Tuple2<TemplateVariable, TemplateNode>> helper(List<TemplateVariable> tmpltVars, TemplateNode root){
+    public TemplateNode concretizeTemplateVars(Collection<TemplateVariable> templateVariables, List<String> allTokens){
+        var ls = this.TemplateVarsMapping.stream().filter(x-> !templateVariables.contains(x._1())).collect(toList());
+        return new TemplateNode(constructTemplate(ls, SourceInterval,allTokens), ls, CodeSnippet, SourceInterval);
+    }
+
+    public List<Tuple2<TemplateVariable, TemplateNode>> helper(Collection<TemplateVariable> tmpltVars, TemplateNode root){
         return root.getTemplateVarsMapping().stream()
                 .flatMap(varMapping -> {
                     if (tmpltVars.contains(varMapping._1()) || tmpltVars.stream().noneMatch(x -> varMapping._2().isDescendant(x)))
@@ -77,6 +89,13 @@ public class TemplateNode {
         return TemplateVarsMapping.stream()
                 .flatMap(x -> Stream.concat(Stream.of(x._1()), x._2.getAllVariables().stream()))
                 .collect(Collectors.toList());
+    }
+
+
+    public Set<TemplateVariable> getTemplateVariableSet() {
+        return TemplateVarsMapping.stream()
+                .flatMap(x -> Stream.concat(Stream.of(x._1()), x._2.getAllVariables().stream()))
+                .collect(Collectors.toSet());
     }
 
 

@@ -23,6 +23,10 @@ public class TemplateVariable {
         this.Text = MessageFormat.format(type.getTemplate(), Name);
     }
 
+    public static TemplateVariable getDummy(){
+        return new TemplateVariable("dummy","abc");
+    }
+
     public boolean hasName(String n){
         return n.equals(Name);
     }

@@ -1,36 +1,50 @@
 package com.inferrules.core;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.inferrules.core.languageAdapters.ILanguageAdapter;
 import com.inferrules.core.languageAdapters.LanguageSpecificInfo;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Collection;
 
 import static java.util.stream.Collectors.toMap;
 
 public class RewriteRule {
 
-    private final Template Before;
-    private final Template After;
-    private String beforeSnippet;
-    private String afterSnippet;
+    private final TemplateNode Match;
 
+    private final TemplateNode Replace;
     public RewriteRule(String beforeSnippet, String afterSnippet, LanguageSpecificInfo.Language language) {
-        this.beforeSnippet = beforeSnippet;
-        this.afterSnippet = afterSnippet;
         ILanguageAdapter adapter = LanguageSpecificInfo.getAdapter(language);
         VariableNameGenerator l = new VariableNameGenerator('l');
-        this.Before = new Template(beforeSnippet, adapter, l);
+        var beforeTemplate = new Template(beforeSnippet, adapter, l);
         l.resetButKeepCache('r');
-        this.After = new Template(afterSnippet, adapter, l);
-        Set<TemplateVariable> intrx = Before.getOptimumTemplateNode().getAllVariables()
-                .stream().filter(x -> After.getOptimumTemplateNode().getAllVariables().stream().anyMatch(y -> y.equals(x)))
-                .collect(Collectors.toSet());
+        var afterTemplate = new Template(afterSnippet, adapter, l);
 
 
+        TemplateNode afterTemplateNode = afterTemplate.getOptimumTemplateNode();
+        TemplateNode beforeTemplateNode = beforeTemplate.getOptimumTemplateNode();
+        Collection<TemplateVariable> commonVars = Sets.intersection(beforeTemplateNode.getTemplateVariableSet(),
+                afterTemplateNode.getTemplateVariableSet());
+        Collection<TemplateVariable> varsOnlyInBefore = Sets.difference(beforeTemplateNode.getTemplateVariableSet(),
+                afterTemplateNode.getTemplateVariableSet())
+                .immutableCopy();
+        Collection<TemplateVariable> varOnlyInAfter = Sets.difference(afterTemplateNode.getTemplateVariableSet(),
+                beforeTemplateNode.getTemplateVariableSet())
+                .immutableCopy();
+//        var varTree = afterTemplate.getOptimumTemplateNode().getTemplateVariableTree(TemplateVariable.getDummy());
+        // remove leaves if parent is present
+        afterTemplateNode = afterTemplateNode.surfaceTemplateVariables(commonVars, afterTemplate.getAllTokens());
+        this.Match = beforeTemplateNode.concretizeTemplateVars(varsOnlyInBefore, beforeTemplate.getAllTokens());
+        this.Replace = afterTemplateNode.concretizeTemplateVars(varOnlyInAfter, afterTemplate.getAllTokens());
+        System.out.println();
+    }
+
+    public TemplateNode getMatch() {
+        return Match;
+    }
+
+    public TemplateNode getReplace() {
+        return Replace;
     }
 
 

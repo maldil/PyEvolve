@@ -1,9 +1,11 @@
 package org.inferrules;
 
+import com.inferrules.core.RewriteRule;
 import com.inferrules.core.Template;
 import com.inferrules.core.TemplateNode;
 import com.inferrules.core.VariableNameGenerator;
 import com.inferrules.core.languageAdapters.JavaAdapter;
+import com.inferrules.core.languageAdapters.LanguageSpecificInfo;
 import com.inferrules.core.languageAdapters.PythonAdapter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,8 +31,23 @@ public class TestRewriteRules {
 //        }
 //    }
 //
-//    @Test
-//    void testPythonTemplates() throws IOException, URISyntaxException {
+    @Test
+    void testPythonTemplates() throws IOException, URISyntaxException {
+
+        Map<String, String> scenarios = Map.of(
+                """
+                        count = 0
+                        for e in es:
+                                count += e
+                        print(count)
+                        """, "count = sum([1 for y in es])\n");
+
+        for (var sc : scenarios.entrySet()){
+            RewriteRule rw = new RewriteRule(sc.getKey(), sc.getValue(), LanguageSpecificInfo.Language.PYTHON3);
+            System.out.println();
+        }
+
+    }
 //        Map<String, String> scenarios = Map.of(
 //                "count = 0\n" +
 //                "for e in es:\n" +
