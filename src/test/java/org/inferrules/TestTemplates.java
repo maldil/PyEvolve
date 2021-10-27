@@ -61,6 +61,8 @@ public class TestTemplates {
         for(var scenario : scenarios.entrySet()){
             Template t = new Template(scenario.getKey(), languageAdapter, new VariableNameGenerator('l'));
             Template expectedTemplateNode = readTemplateFromResource(scenario.getValue());
+            System.out.println(t.toJSON());
+            System.out.println(expectedTemplateNode.toJSON());
             Assertions.assertEquals(t.toJSON(), expectedTemplateNode.toJSON());
 
         }
