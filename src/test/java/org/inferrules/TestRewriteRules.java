@@ -34,18 +34,18 @@ public class TestRewriteRules {
     @Test
     void testPythonTemplates() throws IOException, URISyntaxException {
 
-        Map<String, String> scenarios = Map.of(
-                """
-                        count = 0
-                        for e in es:
-                                count += e
-                        print(count)
-                        """, "count = sum([1 for y in es])\n");
-
-        for (var sc : scenarios.entrySet()){
-            RewriteRule rw = new RewriteRule(sc.getKey(), sc.getValue(), LanguageSpecificInfo.Language.PYTHON3);
-            System.out.println();
-        }
+//        Map<String, String> scenarios = Map.of(
+//                """
+//                        count = 0
+//                        for e in es:
+//                                count += e
+//                        print(count)
+//                        """, "count = sum([1 for y in es])\n");
+//
+//        for (var sc : scenarios.entrySet()){
+//            RewriteRule rw = new RewriteRule(sc.getKey(), sc.getValue(), LanguageSpecificInfo.Language.PYTHON3);
+//            System.out.println();
+//        }
 
     }
 //        Map<String, String> scenarios = Map.of(
