@@ -1,90 +1,46 @@
 package com.inferrules.core;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.inferrules.core.languageAdapters.ILanguageAdapter;
+import io.vavr.collection.Tree;
 
 import java.util.List;
-import java.util.Set;
+
+import static java.util.stream.Collectors.toList;
 
 public class Template {
-    /*
-        The template should be at least decomposed to a point where all the repeated template variable appear
 
-     */
-    private final String CompleteSnippet;
-    private final Node Root;
-    private final TemplateNode TemplateNode;
+    private final TemplateNode CompleteTemplate;
+    private final TemplateNode OptimumTemplateNode;
 
     public Template(String codeSnippet, ILanguageAdapter languageAdapter, VariableNameGenerator nameGenerator) {
-        this.CompleteSnippet = codeSnippet;
-        this.Root = languageAdapter.parse(codeSnippet);
-        this.TemplateNode = new TemplateNode(Root, nameGenerator, languageAdapter.tokenize(codeSnippet));
+        var root = languageAdapter.parse(codeSnippet);
+        List<String> allTokens = languageAdapter.tokenize(codeSnippet);
+        CompleteTemplate = new TemplateNode(root, nameGenerator, allTokens);
+        var templateVariableTree = getTemplateVariableTree(CompleteTemplate, new TemplateVariable("dummy","abc"));
+        List<TemplateVariable> repeatedLeafTvs = CompleteTemplate.getRepeatedTemplateVariables().stream().filter(x -> !templateVariableTree.traverse()
+                                            .filter(z -> z.get().equals(x) && z.isLeaf()).isEmpty()).collect(toList());
+        OptimumTemplateNode = CompleteTemplate.surfaceTemplateVariables(repeatedLeafTvs, allTokens);
     }
 
-
-
-    public String getTemplateNodeAsJson(){
-        return TemplateNode.toJson();
+    public TemplateNode getOptimumTemplateNode() {
+        return OptimumTemplateNode;
+    }
+    public TemplateNode getCompleteTemplate() {
+        return CompleteTemplate;
     }
 
-    public String getCompleteSnippet() {
-        return CompleteSnippet;
+    public Tree.Node<TemplateVariable> getTemplateVariableTree(TemplateNode tn, TemplateVariable tv) {
+         List<Tree.Node<TemplateVariable>> cs = tn.getTemplateVarsMapping().stream()
+                .map(x -> new Tree.Node<>(x._1(), io.vavr.collection.List.ofAll(x._2().getTemplateVarsMapping().stream().map(y -> getTemplateVariableTree(y._2(), y._1()))
+                        .collect(toList()))))
+                .collect(toList());
+         return new Tree.Node<>(tv, io.vavr.collection.List.ofAll(cs));
     }
 
-    public Node getRoot() {
-        return Root;
-    }
-
-    public List<TemplateVariable> getAllVariables() { return TemplateNode.getAllVariables(); }
-
-    public TemplateNode getTemplateNode() {
-        return TemplateNode;
+    public String toJSON(){
+        return new GsonBuilder().disableHtmlEscaping().create().toJson(this, Template.class);
     }
 }
 
-
-//    private TemplateNode renameTemplateNode(TemplateNode tn, TemplateVariable before, String after){
-//        String newTemplate = tn.Template.replace(before.getName(), after);
-//        var newTemplateVariableMapping = tn.TemplateVarsMapping.stream().map(x -> asEntry(x.getKey().equals(before) ? x.getKey().rename(after) : x.getKey(), x.getValue()))
-//                .collect(Collectors.toList());
-//        return new TemplateNode(newTemplate, newTemplateVariableMapping, tn.codeSnippet, tn.sourceInterval);
-//    }
-
-//    public static TemplateNode renameTemplateVariable(TemplateNode tn, String before, String after) {
-//        tn.TemplateVarsMapping.stream().filter(x->x.getKey().hasName(before));
-//
-//
-//        List<SimpleImmutableEntry<TemplateVariable, TemplateNode>> newTemplateVariableMapping = TemplateVarsMapping.stream()
-//                .map(x -> asEntry(x.getKey().hasName(before) ? x.getKey().rename(after) : x.getKey(), x.getValue()))
-//                .collect(Collectors.toList());
-//        String newTemplate = Template.replace(before, after);
-//        return new TemplateNode(newTemplate, newTemplateVariableMapping, codeSnippet, sourceInterval);
-//    }
-
-
-//    public TemplateNode decomposeTemplateVariable(String templateVariableName) {
-//        Map<Interval, TemplateVariable> newChildReplacements = new HashMap<>();
-//        List<SimpleImmutableEntry<TemplateVariable, TemplateNode>> newTemplateVariableMapping = new ArrayList<>();
-//        for (var entry : TemplateVarsMapping) {
-//            if (entry.getKey().getName().equals(templateVariableName))
-//                for (var decomposedChildTmplVarEntry : entry.getValue().TemplateVarsMapping) {
-//                    newChildReplacements.put(decomposedChildTmplVarEntry.getValue().sourceInterval, decomposedChildTmplVarEntry.getKey());
-//                    newTemplateVariableMapping.add(asEntry(decomposedChildTmplVarEntry.getKey(), decomposedChildTmplVarEntry.getValue()));
-//                }
-//            else {
-//                newChildReplacements.put(entry.getValue().sourceInterval, entry.getKey());
-//                newTemplateVariableMapping.add(asEntry(entry.getKey(), entry.getValue()));
-//            }
-//        }
-//        String newTemplate = constructTemplate(newChildReplacements, sourceInterval);
-//        return new TemplateNode(newTemplate, newTemplateVariableMapping, codeSnippet, sourceInterval);
-//    }
-
-
-//        public TemplateNode(String template, List<SimpleImmutableEntry<TemplateVariable, TemplateNode>> templateVariableMapping,
-//                            String codeSnippet, Interval sourceInterval, VariableNameGenerator nameGenerator) {
-//            this.Template = template;
-//            this.TemplateVarsMapping = templateVariableMapping;
-//            this.codeSnippet = codeSnippet;
-//            this.sourceInterval = sourceInterval;
-//            this.nameGenerator = nameGenerator;
-//        }

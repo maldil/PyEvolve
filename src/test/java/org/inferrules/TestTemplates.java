@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import static org.inferrules.Utils.readTemplateNodeFromResource;
+import static org.inferrules.Utils.readTemplateFromResource;
 
 public class TestTemplates {
 
@@ -25,17 +25,18 @@ public class TestTemplates {
 
         JavaAdapter languageAdapter = new JavaAdapter();
         for(var scenario : scenarios.entrySet()){
-            TemplateNode t = new Template(scenario.getKey(), languageAdapter, new VariableNameGenerator('l')).getTemplateNode();
-            TemplateNode expectedTemplateNode = readTemplateNodeFromResource(scenario.getValue());
-            Assertions.assertEquals(t.toJson(),expectedTemplateNode.toJson());
+            Template t = new Template(scenario.getKey(), languageAdapter, new VariableNameGenerator('l'));
+            Template expectedTemplateNode = readTemplateFromResource(scenario.getValue());
+            Assertions.assertEquals(t.toJSON(), expectedTemplateNode.toJSON());
         }
     }
 
     @Test
-    void testPythonTemplates() throws IOException, URISyntaxException {
+    void testPythonTemplates() throws URISyntaxException, IOException {
         Map<String, String> scenarios = Map.of(
                 "count = 0\n" +
                 "for e in es:\n" +
+                "        z += y\n" +
                 "        count += e\n" +
                 "print(count)\n" , "python/snippet1.json",
                 "count = sum([1 for y in es])\n", "python/snippet3.json",
@@ -51,15 +52,15 @@ public class TestTemplates {
                     "   for k in range(image1.shape[2]):\n" +
                     "\terror = image1[i, j, k] - image2[i, j, k]\n" +
                     "\tmse += error * error\n" +
-                    "\treturn mse / ((image1.shape[0] - 2 * border_size) * (image1.shape[1] - 2 * border_size) * image1.shape[2])","python/snippet3.json"
+                    "\treturn mse / ((image1.shape[0] - 2 * border_size) * (image1.shape[1] - 2 * border_size) * image1.shape[2])","python/snippet4.json"
         );
         PythonAdapter languageAdapter = new PythonAdapter();
 
         for(var scenario : scenarios.entrySet()){
-            Template l = new Template(scenario.getKey(), languageAdapter, new VariableNameGenerator('l'));
-            TemplateNode t = l.getTemplateNode();
-            TemplateNode expectedTemplateNode = readTemplateNodeFromResource(scenario.getValue());
-            Assertions.assertEquals(expectedTemplateNode.toJson(),t.toJson());
+            Template t = new Template(scenario.getKey(), languageAdapter, new VariableNameGenerator('l'));
+            Template expectedTemplateNode = readTemplateFromResource(scenario.getValue());
+            Assertions.assertEquals(t.toJSON(), expectedTemplateNode.toJSON());
+
         }
     }
 

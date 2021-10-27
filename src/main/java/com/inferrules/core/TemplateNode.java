@@ -5,6 +5,7 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.antlr.v4.runtime.misc.Interval;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,22 +14,64 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.*;
 
 public class TemplateNode {
-    private final String codeSnippet;
+    private final String CodeSnippet;
     private final String Template;
     private final List<Tuple2<TemplateVariable, TemplateNode>> TemplateVarsMapping;
-    private final Interval sourceInterval;
+    private final Interval SourceInterval;
 
-    public String getCodeSnippet() {
-        return codeSnippet;
+    public TemplateNode(Node r, VariableNameGenerator nameGenerator, List<String> allTokens) {
+        var n = compress(r.getText(), r);
+        CodeSnippet = n.getValue();
+        SourceInterval = n.getSourceInterval();
+        TemplateVarsMapping = n.getChildren().stream()
+                .filter(Node::isNotKwdOrSymb)
+                .map(x -> Tuple.of(nameGenerator.getNameOrElseNew(x.getText()),
+                                                new TemplateNode(x, nameGenerator, allTokens)))
+                .collect(Collectors.toList());
+
+        Template = constructTemplate(TemplateVarsMapping, n.getSourceInterval(), allTokens);
     }
 
-    public Interval getSourceInterval() {
-        return sourceInterval;
+    TemplateNode(String template, List<Tuple2<TemplateVariable, TemplateNode>> templateVariableMapping,
+                 String codeSnippet, Interval sourceInterval) {
+        this.Template = template;
+        this.TemplateVarsMapping = templateVariableMapping;
+        this.CodeSnippet = codeSnippet;
+        this.SourceInterval = sourceInterval;
+    }
+
+    private Node compress(String text, Node n ){
+        return n.getChildren().stream().filter(x -> x.getText().equals(text))
+                .findFirst().map(node -> compress(text, node)).orElse(n);
+    }
+
+    public TemplateNode surfaceTemplateVariables(List<TemplateVariable> templateVariables, List<String> allTokens){
+        TemplateNode r = new TemplateNode(this.Template, new ArrayList<>(this.TemplateVarsMapping),
+                this.CodeSnippet, this.SourceInterval);
+        List<Tuple2<TemplateVariable, TemplateNode>> variableMapping = helper(templateVariables, r);
+        var newTemplate = constructTemplate(variableMapping, SourceInterval,allTokens);
+        return new TemplateNode(newTemplate, variableMapping, r.CodeSnippet, r.SourceInterval);
+    }
+
+    public List<Tuple2<TemplateVariable, TemplateNode>> helper(List<TemplateVariable> tmpltVars, TemplateNode root){
+        return root.getTemplateVarsMapping().stream()
+                .flatMap(varMapping -> {
+                    if (tmpltVars.contains(varMapping._1()) || tmpltVars.stream().noneMatch(x -> varMapping._2().isDescendant(x)))
+                        return Stream.of(varMapping);
+                    return varMapping._2().getTemplateVarsMapping().isEmpty() ? Stream.empty() : helper(tmpltVars, varMapping._2()).stream();
+                })
+                .collect(toList());
+    }
+
+
+    public String getCodeSnippet() {
+        return CodeSnippet;
     }
 
     public String toJson() {
         return new GsonBuilder().disableHtmlEscaping().create().toJson(this, TemplateNode.class);
     }
+
 
     public List<TemplateVariable> getAllVariables() {
         return TemplateVarsMapping.stream()
@@ -36,32 +79,22 @@ public class TemplateNode {
                 .collect(Collectors.toList());
     }
 
-    public Map<TemplateVariable, Long> getAllVariablesCount() {
+
+    public List<TemplateVariable> getRepeatedTemplateVariables() {
         return TemplateVarsMapping.stream()
                 .flatMap(x -> Stream.concat(Stream.of(x._1()), x._2.getAllVariables().stream()))
-                .collect(groupingBy(x->x, counting()));
+                .collect(groupingBy(x->x, counting()))
+                .entrySet().stream()
+                .filter(x -> x.getValue() > 1).map(Map.Entry::getKey).collect(Collectors.toList());
     }
 
     public List<Tuple2<TemplateVariable, TemplateNode>> getTemplateVarsMapping() {
         return TemplateVarsMapping;
     }
 
-    public TemplateNode(Node n, VariableNameGenerator nameGenerator, List<String> allTokens) {
-        this.codeSnippet = n.getValue();
-        this.sourceInterval = n.getSourceInterval();
-        this.TemplateVarsMapping = n.getChildren().stream().filter(Node::isNotKwdOrSymb)
-                // If the parent and child node are same by text (i.e. no white space n stuff), then skip n and decompose child
-                .flatMap(child -> child.getText().equals(n.getText()) ?
-                        child.getChildren().stream().map(x -> Tuple.of(nameGenerator.getNameOrElseNew(x.getText()),
-                                new TemplateNode(x, nameGenerator, allTokens)))
-                        : Stream.of(Tuple.of(nameGenerator.getNameOrElseNew(child.getText()), new TemplateNode(child, nameGenerator, allTokens))))
-                .collect(Collectors.toList());
-        this.Template = constructTemplate(TemplateVarsMapping, n.getSourceInterval(), allTokens);
-    }
-
     @Override
     public String toString() {
-        return String.join(" -> ", this.codeSnippet, this.getTemplate());
+        return String.join(" -> ", this.CodeSnippet, this.getTemplate());
     }
 
     public boolean isChild(TemplateVariable candidate){
@@ -73,7 +106,7 @@ public class TemplateNode {
     }
 
     private String constructTemplate(List<Tuple2<TemplateVariable, TemplateNode>> mappings, Interval interval, List<String> allTokens) {
-        Map<Interval, TemplateVariable> childReplacements = mappings.stream().collect(toMap(x -> x._2().sourceInterval, Tuple2::_1));
+        Map<Interval, TemplateVariable> childReplacements = mappings.stream().collect(toMap(x -> x._2().SourceInterval, Tuple2::_1, (a, b)->a));
         StringBuilder template = new StringBuilder();
         int curr = interval.a;
         while (curr <= interval.b) {
@@ -88,66 +121,14 @@ public class TemplateNode {
                     break;
                 }
             }
-            if (!foundChild && curr < allTokens.size())
+            if (!foundChild && curr < allTokens.size() && !allTokens.get(curr).equals("<EOF>"))
                 template.append(allTokens.get(curr));
             curr += 1;
         }
-        return template.toString().replace("<EOF>", "");
+        return template.toString();
     }
 
     public String getTemplate() {
         return Template;
     }
-
-
-    private TemplateNode renameTemplateNode(TemplateNode tn, TemplateVariable before, String after) {
-//        String newTemplate = tn.getTemplate().replace(before.getName(), after);
-//        var newTemplateVariableMapping = tn.getTemplateVarsMapping().stream()
-//                .map(x -> Tuple.of(x._1().equals(before) ? x._1().rename(after) : x._1(), renameTemplateNode(x._2(), before, after)))
-//                .collect(Collectors.toList());
-//        return new TemplateNode(tn.codeSnippet, newTemplate, newTemplateVariableMapping, sourceInterval);
-//    }
-        return null;
-    }
-//        public TemplateNode(String codeSnippet, String template,
-//                         List<Tuple2<TemplateVariable, TemplateNode>> templateVarsMapping, Interval sourceInterval) {
-//        this.codeSnippet = codeSnippet;
-//        this.Template = template;
-//        this.TemplateVarsMapping = templateVarsMapping;
-//        this.sourceInterval = sourceInterval;
-//    }
-
-
-
-//        public TemplateNode concretizeNode(Set<String> except) {
-//            Map<Interval, TemplateVariable> newChildReplacements = new HashMap<>();
-//            List<SimpleImmutableEntry<TemplateVariable, TemplateNode>> newTemplateVariableMapping = new ArrayList<>();
-//
-//            for (var entry : TemplateVarsMapping) {
-//                if(!except.contains(entry._1())){
-//
-//
-//                    for (var decomposedChildTmplVarEntry : entry._2().TemplateVarsMapping) {
-//
-//
-////                        newChildReplacements.put(decomposedChildTmplVarEntry._2().sourceInterval, decomposedChildTmplVarEntry._1());
-////                        newTemplateVariableMapping.add(asEntry(decomposedChildTmplVarEntry._1(), decomposedChildTmplVarEntry._2()));
-//                    }
-//                }
-//
-//
-//                if (entry._1().getName().equals(templateVariableName))
-//                    for (var decomposedChildTmplVarEntry : entry._2().TemplateVarsMapping) {
-//                        newChildReplacements.put(decomposedChildTmplVarEntry._2().sourceInterval, decomposedChildTmplVarEntry._1());
-//                        newTemplateVariableMapping.add(asEntry(decomposedChildTmplVarEntry._1(), decomposedChildTmplVarEntry._2()));
-//                    }
-//                else {
-//                    newChildReplacements.put(entry._2().sourceInterval, entry._1());
-//                    newTemplateVariableMapping.add(asEntry(entry._1(), entry._2()));
-//                }
-//            }
-//            String newTemplate = constructTemplate(newChildReplacements, sourceInterval);
-//            return new TemplateNode(newTemplate, newTemplateVariableMapping, codeSnippet, sourceInterval);
-//        }
-
 }

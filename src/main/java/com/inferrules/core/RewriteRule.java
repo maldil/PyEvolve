@@ -22,29 +22,5 @@ public class RewriteRule {
         this.Before = new Template(beforeSnippet, adapter, l);
         l.resetButKeepCache('r');
         this.After = new Template(afterSnippet, adapter, l);
-//        ImmutableSet<TemplateVariable> intrx = Sets.intersection(Before.getAllVariables(), After.getAllVariables()).immutableCopy();
     }
-
-    public static TemplateNode getMatchRule(ImmutableSet<TemplateVariable> intrx){
-            /*
-            if all children -> return n
-            for c in children:
-                if 
-             */
-        return null;
-
-    }
-
-
-
-
-
-
-
-
-//    public Map<String, ValueDifference<TemplateVariable>> intersection(){
-//        return Maps.difference(Before.getCodeToTemplateVars(), After.getCodeToTemplateVars())
-//                .entriesDiffering();
-//    }
-
 }

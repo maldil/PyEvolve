@@ -7,6 +7,7 @@ public class VariableNameGenerator {
 
     private char VarNameSeed;
     private int CurrentIndex = 0;
+
     private final Map<String, TemplateVariable> CodeToTemplateVars; // codeSnippet -> variableName
 
     public void resetButKeepCache(char seed) {
@@ -19,9 +20,12 @@ public class VariableNameGenerator {
         CodeToTemplateVars = new HashMap<>();
     }
 
-
     public TemplateVariable getNameOrElseNew(String childText){
-        return  CodeToTemplateVars.computeIfAbsent(childText,
+        return CodeToTemplateVars.computeIfAbsent(childText,
                 c -> new TemplateVariable("" + VarNameSeed + (CurrentIndex++), c));
+    }
+
+    public Map<String, TemplateVariable> getCodeToTemplateVars() {
+        return CodeToTemplateVars;
     }
 }

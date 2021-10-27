@@ -6,21 +6,21 @@ import java.util.regex.Pattern;
 
 public class TemplateVariable {
 
-    private final Kind kind;
+    private final Type type;
     private final String Name;
     private final String Text;
 
-    private TemplateVariable(Kind kind, String name) {
-        this.kind = kind;
+    private TemplateVariable(Type type, String name) {
+        this.type = type;
         Name = name;
-        Text =  MessageFormat.format(kind.getTemplate(), Name);;
+        Text =  MessageFormat.format(type.getTemplate(), Name);;
     }
 
     public TemplateVariable(String name, String value) {
-        this.kind = Arrays.stream(Kind.values()).filter(x -> x.matches(value))
-                .findFirst().orElse(Kind.ANYTHING);
+        this.type = Arrays.stream(Type.values()).filter(x -> x.matches(value))
+                .findFirst().orElse(Type.ANYTHING);
         this.Name = name;
-        this.Text = MessageFormat.format(kind.getTemplate(), Name);
+        this.Text = MessageFormat.format(type.getTemplate(), Name);
     }
 
     public boolean hasName(String n){
@@ -28,7 +28,7 @@ public class TemplateVariable {
     }
 
     public TemplateVariable rename(String after){
-        return new TemplateVariable(this.kind, after);
+        return new TemplateVariable(this.type, after);
     }
 
     public String asText() { return this.Text; }
@@ -42,7 +42,7 @@ public class TemplateVariable {
         return this.Text;
     }
 
-    enum Kind{
+    enum Type {
         WORD(1){
             @Override
             public boolean matches(String value){ return Pattern.compile("\\w+").matcher(value).matches();  }
@@ -66,7 +66,7 @@ public class TemplateVariable {
         int getKindId(){
             return kindId;
         }
-        Kind(int id) {
+        Type(int id) {
             this.kindId = id;
         }
 

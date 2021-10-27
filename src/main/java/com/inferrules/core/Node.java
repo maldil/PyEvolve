@@ -8,13 +8,13 @@ import java.util.List;
 
 public class Node {
 
-    private final String value; // space and new line aware
+    private final String value; // space and new line are included
     private final LanguageSpecificInfo.Language language;
     private final boolean isKeyword;
     private final boolean isSymbol;
     private final List<Node> children;
     private final Interval sourceInterval;
-    private final String text; // no spaces and new lines
+    private final String text; // spaces and new lines are NOT included
 
     public Node(String value, LanguageSpecificInfo.Language language, Interval sourceInterval, String text) {
         this.text = text;
@@ -53,7 +53,7 @@ public class Node {
     }
 
     public boolean isNotKwdOrSymb() {
-        return !isKeyword() && !isSymbol() && !value.isBlank();
+        return !isKeyword() && !isSymbol() && !value.isBlank() && !value.equals("<EOF>");
     }
 
     public boolean isLeaf() {
