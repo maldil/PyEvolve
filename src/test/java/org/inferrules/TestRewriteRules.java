@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import static org.inferrules.Utils.readTemplateNodeFromResource;
-
 public class TestRewriteRules {
 
 
