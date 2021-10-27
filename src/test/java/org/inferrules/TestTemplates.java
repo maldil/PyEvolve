@@ -36,25 +36,29 @@ public class TestTemplates {
     @Test
     void testPythonTemplates() throws URISyntaxException, IOException {
         Map<String, String> scenarios = Map.of(
-                "count = 0\n" +
-                "for e in es:\n" +
-                "        z += y\n" +
-                "        count += e\n" +
-                "print(count)\n" , "python/snippet1.json",
+                """
+                        count = 0
+                        for e in es:
+                                z += y
+                                count += e
+                        print(count)
+                        """, "python/snippet1.json",
                 "count = sum([1 for y in es])\n", "python/snippet3.json",
-                "count = 0\n" +
-                        "for e in es:\n" +
-                        "        y = sq(count)\n" +
-                        "        if not y:\n" +
-                        "                count += e\n" +
-                        "print(count)","python/snippet2.json"
-                ,"mse = 0.0\n" +
-                    "for i in range(border_size, image1.shape[0] - border_size):\n" +
-                    " for j in range(border_size, image1.shape[1] - border_size):\n" +
-                    "   for k in range(image1.shape[2]):\n" +
-                    "\terror = image1[i, j, k] - image2[i, j, k]\n" +
-                    "\tmse += error * error\n" +
-                    "\treturn mse / ((image1.shape[0] - 2 * border_size) * (image1.shape[1] - 2 * border_size) * image1.shape[2])","python/snippet4.json"
+                """
+                        count = 0
+                        for e in es:
+                                y = sq(count)
+                                if not y:
+                                        count += e
+                        print(count)""","python/snippet2.json"
+                , """
+                        mse = 0.0
+                        for i in range(border_size, image1.shape[0] - border_size):
+                         for j in range(border_size, image1.shape[1] - border_size):
+                           for k in range(image1.shape[2]):
+                        \terror = image1[i, j, k] - image2[i, j, k]
+                        \tmse += error * error
+                        \treturn mse / ((image1.shape[0] - 2 * border_size) * (image1.shape[1] - 2 * border_size) * image1.shape[2])""","python/snippet4.json"
         );
         PythonAdapter languageAdapter = new PythonAdapter();
 
