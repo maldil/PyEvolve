@@ -1,11 +1,6 @@
 # InferRules
 
 For given input before-after code snippets across an edit, `InferRules` produces a rewrite rule for it.
-|                                                                  |            |
-|------------------------------------------------------------------|------------|
-|`count = 0`<br>`for e in es:`<br>`__count += e`<br>`print(count)` |`np.sum(es)`|
-
-
 
 To build :
 `./gradlew build`
