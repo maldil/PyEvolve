@@ -2,35 +2,36 @@ package org.inferrules;
 
 import com.inferrules.core.Template;
 import com.inferrules.core.VariableNameGenerator;
-import com.inferrules.core.languageAdapters.JavaAdapter;
-import com.inferrules.core.languageAdapters.PythonAdapter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static com.inferrules.core.languageAdapters.LanguageSpecificInfo.Language.Java;
+import static com.inferrules.core.languageAdapters.LanguageSpecificInfo.Language.Python;
+import static org.inferrules.Utils.areAlphaEquivalent;
 
 public class TestTemplates {
 
     @Test
     void testJavaTemplate1() {
         String scenario = "Utils.transform(x);";
-        TemplateAsString expectedTemplates = new TemplateAsString(":[l0];", ":[l0];", ":[[l1]].:[[l2]](:[[l3]]);");
-        JavaAdapter languageAdapter = new JavaAdapter();
-        Template t = new Template(scenario, languageAdapter, new VariableNameGenerator('l'));
+        TemplateAsString expectedTemplates = new TemplateAsString(":[l1];", ":[l0];", ":[[l1]].:[[l2]](:[[l3]]);");
+        Template t = new Template(scenario, Java, new VariableNameGenerator('l'));
         TemplateAsString actual = new TemplateAsString(t);
-        Assertions.assertEquals(expectedTemplates.getCoarsest(), actual.getCoarsest());
-        Assertions.assertEquals(expectedTemplates.getOptimal(), actual.getOptimal());
-        Assertions.assertEquals(expectedTemplates.getFinest(), actual.getFinest());
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getCoarsest(), actual.getCoarsest()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getCoarsest(),actual.getCoarsest()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getOptimal(),actual.getOptimal()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getFinest(),actual.getFinest()));
     }
 
     @Test
     void testJavaTemplate2() {
         String scenario = "x.map(Utils::transform);";
         TemplateAsString expectedTemplates = new TemplateAsString(":[l0];", ":[l0];", ":[[l1]].:[[l2]](:[[l4]]:::[[l5]]);");
-        JavaAdapter languageAdapter = new JavaAdapter();
-        Template t = new Template(scenario, languageAdapter, new VariableNameGenerator('l'));
+        Template t = new Template(scenario, Java, new VariableNameGenerator('l'));
         TemplateAsString actual = new TemplateAsString(t);
-        Assertions.assertEquals(expectedTemplates.getCoarsest(), actual.getCoarsest());
-        Assertions.assertEquals(expectedTemplates.getOptimal(), actual.getOptimal());
-        Assertions.assertEquals(expectedTemplates.getFinest(), actual.getFinest());
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getCoarsest(),actual.getCoarsest()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getOptimal(),actual.getOptimal()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getFinest(),actual.getFinest()));
     }
 
     @Test
@@ -58,12 +59,11 @@ public class TestTemplates {
                         :[[l1]] += :[[l5]]
                 :[[l15]](:[[l1]])
                 """);
-        PythonAdapter languageAdapter = new PythonAdapter();
-        Template t = new Template(scenario, languageAdapter, new VariableNameGenerator('l'));
+        Template t = new Template(scenario, Python, new VariableNameGenerator('l'));
         TemplateAsString actual = new TemplateAsString(t);
-        Assertions.assertEquals(expectedTemplates.getCoarsest(), actual.getCoarsest());
-        Assertions.assertEquals(expectedTemplates.getOptimal(), actual.getOptimal());
-        Assertions.assertEquals(expectedTemplates.getFinest(), actual.getFinest());
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getCoarsest(),actual.getCoarsest()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getOptimal(),actual.getOptimal()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getFinest(),actual.getFinest()));
     }
 
     @Test
@@ -76,9 +76,9 @@ public class TestTemplates {
                                 count += e
                 print(count)""";
         TemplateAsString expectedTemplates = new TemplateAsString("""
-                :[l0]
-                :[l4]:[l18]""", """
-                :[[l1]] :[l2]
+                :[a]
+                :[b]:[c]""", """
+                :[[d]] :[e]
                 for :[[l5]] in :[[l6]]:
                         :[[l9]] = :[[l12]](:[[l1]])
                         if not :[[l9]]:
@@ -90,24 +90,22 @@ public class TestTemplates {
                         if not :[[l9]]:
                                 :[[l1]] += :[[l5]]
                 :[[l20]](:[[l1]])""");
-        PythonAdapter languageAdapter = new PythonAdapter();
-        Template t = new Template(scenario, languageAdapter, new VariableNameGenerator('l'));
+        Template t = new Template(scenario, Python, new VariableNameGenerator('l'));
         TemplateAsString actual = new TemplateAsString(t);
-        Assertions.assertEquals(expectedTemplates.getCoarsest(), actual.getCoarsest());
-        Assertions.assertEquals(expectedTemplates.getOptimal(), actual.getOptimal());
-        Assertions.assertEquals(expectedTemplates.getFinest(), actual.getFinest());
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getCoarsest(),actual.getCoarsest()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getOptimal(),actual.getOptimal()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getFinest(),actual.getFinest()));
     }
 
     @Test
     void testPythonTemplate3() {
         String scenario = "count = sum([1 for y in es])\n";
         TemplateAsString expectedTemplates = new TemplateAsString(":[[l0]] :[l1]", ":[[l0]] :[l1]", ":[[l0]] = :[[l3]]([:[[l7]] for :[[l9]] in :[[l10]]])");
-        PythonAdapter languageAdapter = new PythonAdapter();
-        Template t = new Template(scenario, languageAdapter, new VariableNameGenerator('l'));
+        Template t = new Template(scenario, Python, new VariableNameGenerator('l'));
         TemplateAsString actual = new TemplateAsString(t);
-        Assertions.assertEquals(expectedTemplates.getCoarsest(), actual.getCoarsest());
-        Assertions.assertEquals(expectedTemplates.getOptimal(), actual.getOptimal());
-        Assertions.assertEquals(expectedTemplates.getFinest(), actual.getFinest());
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getCoarsest(),actual.getCoarsest()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getOptimal(),actual.getOptimal()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getFinest(),actual.getFinest()));
     }
 
     @Test
@@ -139,11 +137,10 @@ public class TestTemplates {
                         \t:[[l38]] = :[[l13]][:[[l5]], :[[l19]], :[[l29]]] - :[[l45]][:[[l5]], :[[l19]], :[[l29]]]
                         \t:[[l1]] += :[[l38]] * :[[l38]]
                         \treturn :[[l1]] / ((:[[l13]].:[[l15]][:[[l17]]] - :[[l35]] * :[[l10]]) * (:[[l13]].:[[l15]][:[[l27]]] - :[[l35]] * :[[l10]]) * :[[l13]].:[[l15]][:[[l35]]])""");
-        PythonAdapter languageAdapter = new PythonAdapter();
-        Template t = new Template(scenario, languageAdapter, new VariableNameGenerator('l'));
+        Template t = new Template(scenario, Python, new VariableNameGenerator('l'));
         TemplateAsString actual = new TemplateAsString(t);
-        Assertions.assertEquals(expectedTemplates.getCoarsest(), actual.getCoarsest());
-        Assertions.assertEquals(expectedTemplates.getOptimal(), actual.getOptimal());
-        Assertions.assertEquals(expectedTemplates.getFinest(), actual.getFinest());
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getCoarsest(),actual.getCoarsest()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getOptimal(),actual.getOptimal()));
+        Assertions.assertTrue(areAlphaEquivalent(expectedTemplates.getFinest(),actual.getFinest()));
     }
 }

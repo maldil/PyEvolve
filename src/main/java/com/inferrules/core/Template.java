@@ -3,6 +3,7 @@ package com.inferrules.core;
 import com.google.common.collect.Iterables;
 import com.google.gson.GsonBuilder;
 import com.inferrules.core.languageAdapters.ILanguageAdapter;
+import com.inferrules.core.languageAdapters.LanguageSpecificInfo;
 import io.vavr.collection.Traversable;
 import io.vavr.collection.Tree;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -19,7 +20,8 @@ public class Template {
 
     private final List<String> AllTokens;
 
-    public Template(String codeSnippet, ILanguageAdapter languageAdapter, VariableNameGenerator nameGenerator) {
+    public Template(String codeSnippet, LanguageSpecificInfo.Language language, VariableNameGenerator nameGenerator) {
+        ILanguageAdapter languageAdapter = LanguageSpecificInfo.getAdapter(language);
         var root = languageAdapter.parse(codeSnippet);
         AllTokens = languageAdapter.tokenize(codeSnippet);
         CoarsestTemplateNode = new TemplateNode(root, nameGenerator, AllTokens);

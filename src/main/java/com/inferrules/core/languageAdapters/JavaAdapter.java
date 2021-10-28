@@ -17,7 +17,7 @@ public class JavaAdapter implements ILanguageAdapter {
     public Node parse(String codeSnippet) {
         var tokens = new CommonTokenStream(new Java8Lexer(CharStreams.fromString(codeSnippet)));
         Java8Parser parser = new Java8Parser(tokens);
-        ParseTree parseTree = parser.blockStatement();
+        ParseTree parseTree = codeSnippet.contains("\n") ? parser.block() : parser.blockStatement();
         List<String> tokenList = tokens.getTokens().stream().map(Token::getText).collect(Collectors.toList());
         return parseTree2Node(parseTree, LanguageSpecificInfo.Language.Java, tokenList);
     }

@@ -26,8 +26,6 @@ public class Match {
     @Expose
     private String matched;
 
-    private String template;
-
     public Range getRange() {
         return range;
     }
@@ -66,35 +64,4 @@ public class Match {
         this.matched = matched;
     }
 
-    public void renameInstance(Map<String, String> renames){
-        Match res = new Match();
-        res.setMatched(this.getMatched());
-        res.setRange(this.getRange());
-        List<Environment> newEnv = getEnvironment().stream().map(e -> getNewEnvironment(renames, e)).collect(toList());
-        res.setEnvironment(newEnv);
-    }
-
-    private Environment getNewEnvironment(Map<String, String> renames,  Environment e) {
-        Environment e_new = new Environment();
-        e_new.setVariable(renames.containsKey(e.getVariable()) ? renames.get(e.getVariable()) : e.getVariable());
-        e_new.setValue(e.getValue());
-        return e_new;
-
-    }
-
-    public String getTemplate() {
-        return template;
-    }
-
-    public void setTemplate(String template) {
-        this.template = template;
-    }
-
-    public void setTemplateVarToNodeMapping(Node n){
-        for(var e : getEnvironment()){
-            n.getChildren().stream().filter(x->x.getValue().trim().equals(e.getValue().replace("\\n","\n").trim()))
-                    .findFirst()
-                    .ifPresent(e::setNode);
-        }
-    }
 }
