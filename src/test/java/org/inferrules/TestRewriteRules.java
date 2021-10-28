@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.inferrules.Utils.areAlphaEquivalent;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class TestRewriteRules {
@@ -18,8 +19,8 @@ public class TestRewriteRules {
         String expectedMatch = ":[[l1]].:[[l2]](:[[l3]]);";
         String expectedReplace = ":[[l3]].map(:[[l1]]:::[[l2]]);";
         RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Java);
-        Assertions.assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
-        Assertions.assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
     }
 
 
@@ -31,8 +32,8 @@ public class TestRewriteRules {
         String expectedMatch = ":[[l1]].apply(:[l3]);";
         String expectedReplace = ":[[l1]].applyAsInt(:[l3]);";
         RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Java);
-        Assertions.assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
-        Assertions.assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
     }
 
 
@@ -47,8 +48,8 @@ public class TestRewriteRules {
                 }""";
         String expectedReplace = ":[[l4]]<:[[l6]]> :[[l8]] = :[[l14]].stream().map(:[[l13]] -> :[[l13]].:[[l20]](:[[l21]])).:[[l8]](toList());";
         RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Java);
-        Assertions.assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
-        Assertions.assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
     }
 
     @Test
@@ -72,8 +73,8 @@ public class TestRewriteRules {
                 }""";
         String expectedReplace = ":[[l4]]<:[[l7]], :[[l8]]> collect = :[[l16]].stream().collect(groupingby(:[[l15]]->:[[l15]], counting()));";
         RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Java);
-        Assertions.assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
-        Assertions.assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
     }
 
     @Test
@@ -91,8 +92,102 @@ public class TestRewriteRules {
                 print(:[[l1]])""";
         String expectedReplace = ":[[l1]] = np.sum(:[[l6]])";
         RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Python);
-        Assertions.assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
-        Assertions.assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+    }
+
+
+    @Test
+    void testPythonRewriteRule_Listing1() {
+        String before = """
+                for elem in elements:
+                    result += elem""";
+        String after = "result = np.sum(elements)";
+        String expectedMatch = """
+                for :[[l0]] in :[[l1]]:
+                    :[[l3]] += :[[l0]]""";
+        String expectedReplace = ":[[l3]] = np.sum(:[[l1]])";
+        RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Python);
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+    }
+
+    @Test
+    void testPythonRewriteRule_Listing2() {
+        String before = """
+                with tf.device('/cpu:0'):
+                    B, H, T, _ = q.getshape().as_list()""";
+        String after = "B, H, T, _ = q.getshape().as_list()";
+        String expectedMatch = """
+                with tf.device('/cpu:0'):
+                    :[l7] = :[[l14]].:[[l16]]:[l17].:[[l19]]:[l17]""";
+        String expectedReplace = ":[l7] = :[[l14]].:[[l16]]:[l17].:[[l19]]:[l17]";
+        RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Python);
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+    }
+
+    @Test
+    void testPythonRewriteRule_Listing4() {
+        String before = """
+                input.grad.data.zero()""";
+        String after = """
+                with torch.no_grad():
+                    input.grad.zero()""";
+        String expectedMatch = ":[[l1]]:[l2].data.:[[l7]]:[l8]";
+        String expectedReplace = """
+                with torch.no_grad:[l8]:
+                    :[[l1]]:[l2].:[[l7]]:[l8]""";
+        RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Python);
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+    }
+
+    @Test
+    void testPythonRewriteRule_Listing5() {
+        String before = """
+                file = tf.gfile.GFile(label_path)
+                dataset = csv.DictReader(file, delimiter="")""";
+        String after = """
+                with tf.gfile.GFile(label_path) as file:
+                    dataset = csv.DictReader(file, delimiter="")""";
+        String expectedMatch = """
+                :[[l1]] = :[l3]
+                :[[l13]] = :[[l16]].:[[l18]](:[[l1]], :[l21])""";
+        String expectedReplace = """
+                with :[l3] as :[[l1]]:
+                    :[[l13]] = :[[l16]].:[[l18]](:[[l1]], :[l21])""";
+        RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Python);
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+    }
+
+    @Test
+    void testPythonRewriteRule_Listing6() {
+        String before = """
+                return sum(ls) / len(ls)""";
+        String after = """
+                return np.mean(ls)""";
+        String expectedMatch = "return sum(:[[l5]]) / len(:[[l5]])";
+        String expectedReplace = """
+                return np.mean(:[[l5]])""";
+        RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Python);
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+    }
+
+    @Test
+    void testPythonRewriteRule_Listing7() {
+        String before = """
+                denominator = np.dot(np.dot(W.T, W), H)""";
+        String after = """
+                denominator = np.linalg.multi_dot(W.T, W, H)""";
+        String expectedMatch = """
+                :[[l1]] = :[[l4]].:[[l6]](:[[l4]].:[[l6]](:[[l14]]:[l15], :[[l14]]), :[[l17]])""";
+        String expectedReplace = ":[[l1]] = :[[l4]].linalg.multi_dot(:[[l14]]:[l15], :[[l14]], :[[l17]])";
+        RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Python);
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
     }
 
 
