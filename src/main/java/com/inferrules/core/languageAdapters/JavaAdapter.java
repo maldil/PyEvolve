@@ -19,7 +19,7 @@ public class JavaAdapter implements ILanguageAdapter {
         Java8Parser parser = new Java8Parser(tokens);
         ParseTree parseTree = parser.blockStatement();
         List<String> tokenList = tokens.getTokens().stream().map(Token::getText).collect(Collectors.toList());
-        return parseTree2Node(parseTree, LanguageSpecificInfo.Language.JAVA, tokenList);
+        return parseTree2Node(parseTree, LanguageSpecificInfo.Language.Java, tokenList);
     }
     @Override
     public List<String> tokenize(String codeSnippet) {

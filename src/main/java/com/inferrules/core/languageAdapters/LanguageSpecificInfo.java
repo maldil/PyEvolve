@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class LanguageSpecificInfo {
 
-    public enum Language {JAVA, PYTHON3}
+    public enum Language {Java, Python}
 
     private static final Path JavaConfigFile = Paths.get("/Users/ameya/Research/InferRules/src/main/resources/LanguageConfigs/java.json");
     private static final Path PythonConfigFile = Paths.get("/Users/ameya/Research/InferRules/src/main/resources/LanguageConfigs/python.json");
@@ -20,7 +20,7 @@ public class LanguageSpecificInfo {
     private static final LanguageConfig PythonLangConfig = Try.of(() -> new Gson().fromJson(Files.readString(PythonConfigFile), LanguageConfig.class))
             .getOrElse(new LanguageConfig());
 
-    private static final Map<Language, LanguageConfig> configs = Map.of(Language.JAVA, JavaLangConfig, Language.PYTHON3, PythonLangConfig);
+    private static final Map<Language, LanguageConfig> configs = Map.of(Language.Java, JavaLangConfig, Language.Python, PythonLangConfig);
 
     public static List<String> getKeywords(Language language) {
         return configs.get(language).getKeywords();
@@ -32,8 +32,8 @@ public class LanguageSpecificInfo {
 
     public static ILanguageAdapter getAdapter(Language l){
         switch (l){
-            case JAVA:return new JavaAdapter();
-            case PYTHON3:return new PythonAdapter();
+            case Java:return new JavaAdapter();
+            case Python:return new PythonAdapter();
         }
         return new JavaAdapter();
     }
