@@ -25,7 +25,7 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Install comby dependencies
-      run: sudo apt-get install libpcre3-dev && bash <(curl -sL get.comby.dev)
+      run: sudo apt-get install libpcre3-dev
     - name: Install comby
       run : bash <(curl -sL get.comby.dev)
     - name: Validate Gradle wrapper
