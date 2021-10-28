@@ -1,7 +1,7 @@
 # InferRules
 
 To build : 
-`./gradlew build' 
+`./gradlew build`
 
 
 #### Running as a binary
