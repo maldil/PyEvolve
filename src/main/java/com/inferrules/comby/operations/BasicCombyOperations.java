@@ -33,10 +33,10 @@ public class BasicCombyOperations {
                     if(x==null || x.getMatches()==null){
                         System.out.println();
                     }
-                    x.getMatches().forEach(match -> {
-                        match.setTemplate(template);
-                        match.setTemplateVarToNodeMapping(source);
-                    });
+//                    x.getMatches().forEach(match -> {
+//                        match.setTemplate(template);
+//                        match.setTemplateVarToNodeMapping(source);
+//                    });
                 })
                 .filter(x -> !isPerfect || x.isPerfect(source.getValue()));
     }
