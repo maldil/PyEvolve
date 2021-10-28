@@ -3,7 +3,7 @@
 For given input before-after code snippets across an edit, `InferRules` produces a rewrite rule for it.
 |                                                                  |            |
 |------------------------------------------------------------------|------------|
-|`count = 0`<br>`for e in es:`<br>`  count += e`<br>`print(count)` |`np.sum(es)`|
+|`count = 0`<br>`for e in es:`<br>  `count += e`<br>`print(count)` |`np.sum(es)`|
 
 
 
