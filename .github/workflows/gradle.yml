@@ -19,7 +19,7 @@ jobs:
     - name: Install comby dependencies
       run: sudo apt-get install libpcre3-dev
     - name: Install comby
-      run: sudo bash <(curl -sL get.comby.dev)
+      run: bash <(sudo curl -sL get.comby.dev)
     - name: Set up JDK 15
       uses: actions/setup-java@v2
       with:
