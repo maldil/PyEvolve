@@ -2,16 +2,11 @@ package com.inferrules.core;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.inferrules.core.languageAdapters.ILanguageAdapter;
 import com.inferrules.core.languageAdapters.LanguageSpecificInfo;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toMap;
 
 public class RewriteRule {
 
@@ -44,9 +39,15 @@ public class RewriteRule {
         this.Replace = afterNode.concretizeTemplateVars(varOnlyInAfter, afterTemplate.getAllTokens());
     }
 
-    private ImmutableSet<TemplateVariable> getTemplateVariablesToConcretize(TemplateNode afterTemplateNode, TemplateNode beforeTemplateNode, Set<TemplateVariable> repeatedVars) {
-        return Sets.difference(Sets.difference(beforeTemplateNode.getTemplateVariableSet(),
-                afterTemplateNode.getTemplateVariableSet()).immutableCopy(), repeatedVars).immutableCopy();
+    /**
+     * @param t1
+     * @param t2
+     * @param repeatedVars
+     * @return vars(t1) - vars(t2) - repeatedVars
+     */
+    private ImmutableSet<TemplateVariable> getTemplateVariablesToConcretize(TemplateNode t1, TemplateNode t2, Set<TemplateVariable> repeatedVars) {
+        return Sets.difference(Sets.difference(t2.getTemplateVariableSet(), t1.getTemplateVariableSet())
+                .immutableCopy(), repeatedVars).immutableCopy();
     }
 
     public TemplateNode getMatch() {

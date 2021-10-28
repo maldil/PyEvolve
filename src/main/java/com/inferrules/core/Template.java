@@ -13,9 +13,25 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 public class Template {
-
+    /**
+     * This is the coarsest representation of the input code snippet as a TemplateTree.
+     * This tree is obtained by mapping the input code snippet -> parse tree ->  Node -> TemplateNode
+     * @see com.inferrules.core.Node
+     * Usually at the first level it has template variables capturing the entire statement.
+     */
     private final TemplateNode CoarsestTemplateNode;
+    /**
+     * This is a more optimal representation of the Coarsest Template Node.
+     * This is more optimal because surfaces all the template variables that are repeated within the template.
+     * @see com.inferrules.core.TemplateNode #surfaceTemplateVariables
+     */
     private final TemplateNode OptimumTemplateNode;
+
+    /**
+     * This is the most fine grained representation of the CoarsestTemplateNode.
+     * All the leaf template nodes in the CoarsestTemplateNode are surfaced.
+     * @see com.inferrules.core.TemplateNode #surfaceTemplateVariables
+     */
     private final TemplateNode FinestTemplateNode;
 
     private final List<String> AllTokens;

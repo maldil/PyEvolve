@@ -3,6 +3,9 @@ package com.inferrules.core;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This is a current hack that I use to generate new names for the holes.
+ */
 public class VariableNameGenerator {
 
     private char VarNameSeed;
@@ -20,12 +23,14 @@ public class VariableNameGenerator {
         CodeToTemplateVars = new HashMap<>();
     }
 
-    public TemplateVariable getNameOrElseNew(String childText){
-        return CodeToTemplateVars.computeIfAbsent(childText,
-                c -> new TemplateVariable("" + VarNameSeed + (CurrentIndex++), c));
-    }
 
-    public Map<String, TemplateVariable> getCodeToTemplateVars() {
-        return CodeToTemplateVars;
+    /**
+     * @param node The node for which a new template variable is required
+     * @return If the generator has previously created a template variable for the node, this template variable is returned;
+     * Else a new template variable is produced.
+     */
+    public TemplateVariable getNameOrElseNew(Node node){
+        return CodeToTemplateVars.computeIfAbsent(node.getText(),
+                c -> new TemplateVariable("" + VarNameSeed + (CurrentIndex++), c));
     }
 }

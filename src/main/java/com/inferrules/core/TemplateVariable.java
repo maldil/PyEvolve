@@ -4,6 +4,12 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+/**
+ * This class represents a hole or a template variable.
+ * Each template variable has a name, a type and the associated text of the @link com.inferrules.core.Node it represents.
+ * We can have various kinds like WORD, DIGIT, CLASSNAME or ANYTHING.
+ * The future idea is to make these types specific to the programming language in context, so that information from the naming conventions can be leveraged.
+ */
 public class TemplateVariable {
 
     private final Type type;
