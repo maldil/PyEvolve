@@ -1,7 +1,10 @@
 package com.inferrules.utils;
 
+import io.vavr.control.Try;
+import org.antlr.v4.runtime.misc.Interval;
+import org.apache.commons.cli.*;
+
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -15,12 +18,6 @@ import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
-
-import com.google.common.graph.Traverser;
-import io.vavr.control.Try;
-import org.antlr.v4.runtime.misc.Interval;
-import org.apache.commons.cli.*;
-import org.eclipse.jgit.api.Git;
 
 public class Utilities {
 
