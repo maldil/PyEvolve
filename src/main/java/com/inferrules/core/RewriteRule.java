@@ -3,14 +3,15 @@ package com.inferrules.core;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.inferrules.core.languageAdapters.LanguageSpecificInfo;
-import io.vavr.collection.Tree;
+//import io.vavr.collection.Tree;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.inferrules.core.Template.TreeTraverser;
+import static com.inferrules.utils.Utilities.stream;
 
 public class RewriteRule {
 
@@ -24,47 +25,38 @@ public class RewriteRule {
         l.resetButKeepCache('r');
         var afterTemplate = new Template(afterSnippet, language, l);
 
-        TemplateNode afterNode = afterTemplate.getUnflattendTemplateNode();
-        TemplateNode beforeNode = beforeTemplate.getUnflattendTemplateNode();
+        var afterNode = afterTemplate.getUnflattendTemplateNode();
+        var beforeNode = beforeTemplate.getUnflattendTemplateNode();
 
-        ImmutableSet<TemplateVariable> intersectingNodes = Sets.intersection(afterNode.getTemplateVariableSet(), beforeNode.getTemplateVariableSet()).immutableCopy();
-        Tree.Node<TemplateVariable> afterVarsTree = afterTemplate.getUnflattendTemplateNode().getTemplateVariableTree(TemplateVariable.getDummy());
-        Tree.Node<TemplateVariable> beforeVarsTree = beforeTemplate.getUnflattendTemplateNode().getTemplateVariableTree(TemplateVariable.getDummy());
+        ImmutableSet<TemplateVariable> intersectingNodes = Sets.intersection(afterNode._2().getTemplateVariableSet(),
+                beforeNode._2().getTemplateVariableSet()).immutableCopy();
+        Set<TemplateVariable> repeatedTemplateVariables_Before = beforeNode._2().getRepeatedTemplateVariables();
 
-        List<TemplateVariable> repeatedTemplateVariables_Before = beforeNode.getRepeatedTemplateVariables();
-        Set<TemplateVariable> removeIntersectingNodes = intersectingNodes.stream().flatMap(x -> {
-                var b = beforeVarsTree.traverse().find(n -> n.get().equals(x)).get();
-                var a = afterVarsTree.traverse().find(n -> n.get().equals(x)).get();
-                if (b.getChildren().isEmpty() || a.getChildren().isEmpty() || b.getChildren().size() != a.getChildren().size())
-                    return Stream.empty();
-                if (a.getChildren().toJavaStream().allMatch(y -> b.getChildren().toJavaStream().anyMatch(z -> y.get().equals(z.get()))))
-                    if(b.traverse().toJavaStream().noneMatch(z -> repeatedTemplateVariables_Before.contains(z.get())))
-                        return Stream.concat(a.getChildren().toJavaStream().map(z -> z.get()), b.getChildren().toJavaStream().map(z -> z.get()));
-                    else return Stream.of(x);
+        Set<TemplateVariable> removeIntersectingNodes =  intersectingNodes.stream().flatMap(x -> {
+            var before = stream(TreeTraverser.breadthFirst(beforeNode)).filter(z -> z._1().equals(x)).findFirst().get();
+            var after = stream(TreeTraverser.breadthFirst(afterNode)).filter(z -> z._1().equals(x)).findFirst().get();;
+            if(before._2().isLeaf() || after._2().isLeaf() || before._2().getTemplateVarsMapping().size() != after._2().getTemplateVarsMapping().size())
                 return Stream.empty();
-        }).collect(Collectors.toSet());
+            if(stream(TreeTraverser.breadthFirst(after)).allMatch(y -> stream(TreeTraverser.breadthFirst(before)).anyMatch(z -> y._1().equals(z._1())))){
+                if(stream(TreeTraverser.breadthFirst(before)).noneMatch(z -> repeatedTemplateVariables_Before.contains(z._1())))
+                    return Stream.concat(stream(TreeTraverser.breadthFirst(after)),stream(TreeTraverser.breadthFirst(before))).filter(f -> !f._1().equals(x));
+                else return Stream.of(before);
+            }
+            return Stream.empty();
+        }).map(x->x._1()).collect(Collectors.toSet());
 
         Set<TemplateVariable> commonVars = Sets.difference(intersectingNodes,removeIntersectingNodes);
 
-        afterNode = afterNode.surfaceTemplateVariables(commonVars, afterTemplate.getAllTokens());
-        beforeNode = beforeNode.surfaceTemplateVariables(Sets.union(commonVars,new HashSet<>(repeatedTemplateVariables_Before)), beforeTemplate.getAllTokens());
+        TemplateNode match = beforeNode._2().surfaceTemplateVariables(Sets.union(commonVars, repeatedTemplateVariables_Before), beforeTemplate.getAllTokens());
+        TemplateNode replace = afterNode._2().surfaceTemplateVariables(commonVars, afterTemplate.getAllTokens());
 
-        Collection<TemplateVariable> varsOnlyInBefore = getTemplateVariablesToConcretize(afterNode, beforeNode, Sets.union(commonVars,new HashSet<>(repeatedTemplateVariables_Before)));
-        Collection<TemplateVariable> varOnlyInAfter = getTemplateVariablesToConcretize(beforeNode, afterNode, commonVars);
+        Collection<TemplateVariable> varsOnlyInBefore = Sets.difference(Sets.difference(match.getTemplateVariableSet(), replace.getTemplateVariableSet())
+                .immutableCopy(), Sets.union(commonVars, repeatedTemplateVariables_Before)).immutableCopy();
+        Collection<TemplateVariable> varOnlyInAfter = Sets.difference(Sets.difference(replace.getTemplateVariableSet(), match.getTemplateVariableSet())
+                .immutableCopy(), commonVars).immutableCopy();
 
-        this.Match = beforeNode.concretizeTemplateVariables(varsOnlyInBefore, beforeTemplate.getAllTokens());
-        this.Replace = afterNode.concretizeTemplateVariables(varOnlyInAfter, afterTemplate.getAllTokens());
-    }
-
-    /**
-     * @param t1
-     * @param t2
-     * @param repeatedVars
-     * @return vars(t1) - vars(t2) - repeatedVars
-     */
-    private ImmutableSet<TemplateVariable> getTemplateVariablesToConcretize(TemplateNode t1, TemplateNode t2, Set<TemplateVariable> repeatedVars) {
-        return Sets.difference(Sets.difference(t2.getTemplateVariableSet(), t1.getTemplateVariableSet())
-                .immutableCopy(), repeatedVars).immutableCopy();
+        this.Match = match.concretizeTemplateVariables(varsOnlyInBefore, beforeTemplate.getAllTokens());
+        this.Replace = replace.concretizeTemplateVariables(varOnlyInAfter, afterTemplate.getAllTokens());
     }
 
     public TemplateNode getMatch() {
