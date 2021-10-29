@@ -8,8 +8,8 @@ class TemplateAsString {
     private final String Finest;
 
     public TemplateAsString(Template template) {
-        this(template.getCoarsestTemplateNode().getTemplate(), template.getOptimumTemplateNode().getTemplate(),
-                template.getFinestTemplateNode().getTemplate());
+        this(template.getUnflattendTemplateNode().getTemplate(), "",
+                template.getCompletelyFlattenedTemplateNode().getTemplate());
     }
 
     public TemplateAsString(String coarsest, String optimal, String finest) {

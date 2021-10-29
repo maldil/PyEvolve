@@ -3,11 +3,18 @@ package org.inferrules;
 import com.google.common.collect.Streams;
 import com.google.gson.Gson;
 import com.inferrules.comby.jsonResponse.CombyMatch;
+import com.inferrules.core.Template;
 import com.inferrules.utils.Utilities;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +49,15 @@ public class Utils {
             return false;
         return Streams.zip(tokenizedTemplate1.stream(), tokenizedTemplate2.stream(), Tuple::of)
                 .collect(groupingBy(x->x._1(), collectingAndThen(toList(), xs -> xs.stream().map(x -> x._2()).distinct().count())))
-                .entrySet().stream().allMatch(x->x.getValue() == 1);
+                .entrySet().stream().allMatch(x->x.getValue() == 1)
+                && Streams.zip(tokenizedTemplate2.stream(), tokenizedTemplate1.stream(), Tuple::of)
+                .collect(groupingBy(x->x._1(), collectingAndThen(toList(), xs -> xs.stream().map(x -> x._2()).distinct().count())))
+                .entrySet().stream().allMatch(x->x.getValue() == 1)
+                ;
     }
+
+
+
+
 
 }

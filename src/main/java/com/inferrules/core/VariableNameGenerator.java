@@ -23,7 +23,6 @@ public class VariableNameGenerator {
         CodeToTemplateVars = new HashMap<>();
     }
 
-
     /**
      * @param node The node for which a new template variable is required
      * @return If the generator has previously created a template variable for the node, this template variable is returned;

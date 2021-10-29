@@ -64,18 +64,46 @@ public class TestRewriteRules {
                 }""";
         String after = "Map<String, Long> collect = elements.stream().collect(groupingby(e->e, counting()));";
         String expectedMatch = """
-                :[[l4]]<:[[l7]], :[[l8]]> :[[l10]] = new HashMap<>();
-                for(:[[l7]] :[[l15]] : :[[l16]]){
+                :[[l4]]<:[[l6]], :[[b]]> :[[l10]] = new HashMap<>();
+                for(:[[l6]] :[[l15]] : :[[l16]]){
                  if(!:[[l10]].containsKey(:[[l15]])){
                     :[[l10]].:[[l26]](:[[l15]], :[[l28]]);
                  }
                  :[[l10]].:[[l26]](:[[l15]], :[[l10]].get(:[[l15]])+:[[l28]]);
                 }""";
-        String expectedReplace = ":[[l4]]<:[[l7]], :[[l8]]> collect = :[[l16]].stream().collect(groupingby(:[[l15]]->:[[l15]], counting()));";
+        String expectedReplace = ":[[l4]]<:[[l6]],:[[b]]> collect = :[[l16]].stream().collect(groupingby(:[[l15]]->:[[l15]], counting()));";
         RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Java);
         assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
         assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
     }
+
+
+//    @Test //https://twitter.com/NikosTsantalis/status/1453298762558889986/photo/1
+//    public void javaForToStream_nikosTweet(){
+//        String before  = """
+//                for (ExceptionInfo exceptionInfo : throwsList) {
+//                     if (!exceptionInfo.isFound()) {
+//                         final Token token = exceptionInfo.getName();
+//                         log(token.getLineNo(), token.getColumnNo(),
+//                                 MSG_EXPECTED_TAG,
+//                                 JavadocTagInfo.THROWS.getText(), token.getText());
+//                     }
+//                 }""";
+//        String after = """
+//                throwsList.stream().filter(exceptionInfo -> !exceptionInfo.isFound())
+//                                 .forEach(exceptionInfo -> {
+//                                     final Token token = exceptionInfo.getName();
+//                                     log(token.getLineNo(), token.getColumnNo(),
+//                                         MSG_EXPECTED_TAG,
+//                                         JavadocTagInfo.THROWS.getText(), token.getText());
+//                                 });""";
+//        String expectedMatch = "";
+//        String expectedReplace = ":[[l1]] = np.sum(:[[l6]])";
+//        RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Java);
+//        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+//        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+//
+//    }
 
     @Test
     void testPythonRewriteRule1() {
@@ -134,10 +162,10 @@ public class TestRewriteRules {
         String after = """
                 with torch.no_grad():
                     input.grad.zero()""";
-        String expectedMatch = ":[[l1]]:[l2].data.:[[l7]]:[l8]";
+        String expectedMatch = ":[[l1]]:[l2].data.:[l6]";
         String expectedReplace = """
-                with torch.no_grad:[l8]:
-                    :[[l1]]:[l2].:[[l7]]:[l8]""";
+                with torch.no_grad():
+                    :[[l1]]:[l2]:[l6]""";
         RewriteRule rw = new RewriteRule(before, after, LanguageSpecificInfo.Language.Python);
         assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
         assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));

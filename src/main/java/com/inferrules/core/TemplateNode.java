@@ -82,11 +82,11 @@ public class TemplateNode {
 
     private List<Tuple2<TemplateVariable, TemplateNode>> surfaceTemplateVariablesHelper(Collection<TemplateVariable> tmpltVars, TemplateNode root){
         return root.getTemplateVarsMapping().stream()
-                .flatMap(varMapping -> {
-                    if (tmpltVars.contains(varMapping._1()) || tmpltVars.stream().noneMatch(x -> varMapping._2().isDescendant(x)))
-                        return Stream.of(varMapping);
-                    return varMapping._2().getTemplateVarsMapping().isEmpty() ? Stream.empty() : surfaceTemplateVariablesHelper(tmpltVars, varMapping._2()).stream();
-                })
+                .flatMap(varMapping -> tmpltVars.contains(varMapping._1()) || tmpltVars.stream().noneMatch(x -> varMapping._2().isDescendant(x))
+                        ? Stream.of(varMapping)
+                        : varMapping._2().getTemplateVarsMapping().isEmpty()
+                            ? Stream.empty()
+                            : surfaceTemplateVariablesHelper(tmpltVars, varMapping._2()).stream())
                 .collect(toList());
     }
 
@@ -97,23 +97,11 @@ public class TemplateNode {
      * @return returns a new template where the given template variables are substituted with the associated values,
      * if `t \in templateVariables` and `t \in this.Children`
      */
-    public TemplateNode concretizeTemplateVars(Collection<TemplateVariable> templateVariables, List<String> allTokens){
+    public TemplateNode concretizeTemplateVariables(Collection<TemplateVariable> templateVariables, List<String> allTokens){
         var ls = this.TemplateVarsMapping.stream().filter(x-> !templateVariables.contains(x._1())).collect(toList());
         String newTemplate = constructTemplate(ls, SourceInterval, allTokens);
         return new TemplateNode(newTemplate, ls, CodeSnippet, SourceInterval);
     }
-
-
-
-
-    public String getCodeSnippet() {
-        return CodeSnippet;
-    }
-
-    public String toJson() {
-        return new GsonBuilder().disableHtmlEscaping().create().toJson(this, TemplateNode.class);
-    }
-
 
     public List<TemplateVariable> getAllVariables() {
         return TemplateVarsMapping.stream()
