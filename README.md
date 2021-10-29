@@ -8,9 +8,9 @@ To build :
 
 #### Running as a binary
 
-Download the latest release or run `./gradlew distZip`.
+Download the latest release, or run `./gradlew distZip` and go to  `/distributions/`.
 
-Unzip `../distributions/InferRules-1.0-SNAPSHOT.zip`
+Unzip `InferRules-1.0-SNAPSHOT.zip`
 Got to `/bin`
 Run `./Infer -b "<Before Code Snippet>" -a "<After Code Snippet>" -l "<Languag>"`
   
