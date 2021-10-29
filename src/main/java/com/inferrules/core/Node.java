@@ -1,6 +1,6 @@
 package com.inferrules.core;
 
-import com.inferrules.core.languageAdapters.LanguageSpecificInfo;
+import com.inferrules.core.languageAdapters.Language;
 import org.antlr.v4.runtime.misc.Interval;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class Node {
      * It includes spaces, newlines or tabs.
      */
     private final String value;
-    private final LanguageSpecificInfo.Language language;
+    private final  Language language;
     private final boolean isKeyword;
     private final boolean isSymbol;
     private final List<Node> children;
@@ -31,23 +31,23 @@ public class Node {
 
 
 
-    public Node(String value, LanguageSpecificInfo.Language language, Interval sourceInterval, String text) {
+    public Node(String value,  Language language, Interval sourceInterval, String text) {
         this.text = text;
         this.value = value;
         this.language = language;
         this.sourceInterval = sourceInterval;
-        this.isKeyword = LanguageSpecificInfo.getKeywords(language).contains(value);
-        this.isSymbol = !isKeyword && LanguageSpecificInfo.getSymbols(language).contains(value);
+        this.isKeyword = language.getKwds().contains(value);
+        this.isSymbol = !isKeyword && language.getKwdSymbols().contains(value);
         this.children = new ArrayList<>();
     }
 
-    public Node(String value, List<Node> children, LanguageSpecificInfo.Language language, Interval sourceInterval, String text) {
+    public Node(String value, List<Node> children,  Language language, Interval sourceInterval, String text) {
         this.text = text;
         this.value = value;
         this.language = language;
         this.sourceInterval = sourceInterval;
-        this.isKeyword = LanguageSpecificInfo.getKeywords(language).contains(value);
-        this.isSymbol = !isKeyword && LanguageSpecificInfo.getSymbols(language).contains(value);
+        this.isKeyword = language.getKwds().contains(value);
+        this.isSymbol = !isKeyword && language.getKwdSymbols().contains(value);
         this.children = children;
     }
 
@@ -75,7 +75,7 @@ public class Node {
         return children.isEmpty();
     }
 
-    public LanguageSpecificInfo.Language getLanguage() {
+    public  Language getLanguage() {
         return language;
     }
 

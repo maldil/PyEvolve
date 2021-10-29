@@ -2,12 +2,11 @@ package com.inferrules.core;
 
 import com.google.common.graph.Traverser;
 import com.inferrules.core.languageAdapters.ILanguageAdapter;
-import com.inferrules.core.languageAdapters.LanguageSpecificInfo;
+import com.inferrules.core.languageAdapters.Language;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 
 import java.util.List;
-import java.util.stream.StreamSupport;
 
 import static com.inferrules.utils.Utilities.stream;
 import static java.util.stream.Collectors.toList;
@@ -30,8 +29,8 @@ public class Template {
     private final List<String> AllTokens;
     public static final Traverser<Tuple2<TemplateVariable, TemplateNode>> TreeTraverser = Traverser.forTree(t -> t._2().getTemplateVarsMapping());
 
-    public Template(String codeSnippet, LanguageSpecificInfo.Language language, VariableNameGenerator nameGenerator) {
-        ILanguageAdapter languageAdapter = LanguageSpecificInfo.getAdapter(language);
+    public Template(String codeSnippet,  Language language, VariableNameGenerator nameGenerator) {
+        ILanguageAdapter languageAdapter = language.getAdapter();
         var root = languageAdapter.parse(codeSnippet);
         AllTokens = languageAdapter.tokenize(codeSnippet);
         UnflattendTemplateNode = Tuple.of(TemplateVariable.getDummy(), new TemplateNode(root, nameGenerator, AllTokens));

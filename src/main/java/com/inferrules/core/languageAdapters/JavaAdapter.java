@@ -11,6 +11,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.inferrules.core.languageAdapters.Language.Java;
+
 public class JavaAdapter implements ILanguageAdapter {
 
     @Override
@@ -19,7 +21,7 @@ public class JavaAdapter implements ILanguageAdapter {
         Java8Parser parser = new Java8Parser(tokens);
         ParseTree parseTree = codeSnippet.contains("\n") ? parser.block() : parser.blockStatement();
         List<String> tokenList = tokens.getTokens().stream().map(Token::getText).collect(Collectors.toList());
-        return parseTree2Node(parseTree, LanguageSpecificInfo.Language.Java, tokenList);
+        return parseTree2Node(parseTree, Java, tokenList);
     }
     @Override
     public List<String> tokenize(String codeSnippet) {

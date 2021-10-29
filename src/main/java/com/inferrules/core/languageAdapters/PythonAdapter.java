@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.Token;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.inferrules.core.languageAdapters.LanguageSpecificInfo.Language.Python;
+import static com.inferrules.core.languageAdapters. Language.Python;
 
 public class PythonAdapter implements ILanguageAdapter {
     @Override

@@ -1,17 +1,31 @@
 package com.inferrules;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.inferrules.core.RewriteRule;
+import com.inferrules.core.languageAdapters.Language;
 import com.inferrules.utils.Utilities;
-
-import static com.inferrules.core.languageAdapters.LanguageSpecificInfo.*;
 
 public class Infer {
 
     public static void main(String[] args) {
         var input = Utilities.parseCommandLineArgs(args);
         RewriteRule rw = new RewriteRule(input.get("Before"), input.get("After"), Language.valueOf(input.get("Language")));
-        System.out.println(rw.getMatch().getTemplate());
-        System.out.println("---------------");
-        System.out.println(rw.getReplace().getTemplate());
+        Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+        String json = gson.toJson(new InferredRewriteRule(rw), InferredRewriteRule.class);
+        System.out.println(json);
+    }
+
+
+
+    public static class InferredRewriteRule{
+        public String Match;
+        public String Replace;
+
+        public InferredRewriteRule(RewriteRule r){
+            this.Match = r.getMatch().getTemplate();
+            this.Replace = r.getReplace().getTemplate();
+        }
+
     }
 }

@@ -6,11 +6,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.inferrules.utils.Utilities.joinTokens;
-import static java.util.Collections.singletonList;
 
 public interface ILanguageAdapter {
 
@@ -18,7 +15,7 @@ public interface ILanguageAdapter {
 
     List<String> tokenize(String codeSnippet);
 
-    default Node parseTree2Node(ParseTree parseTree, LanguageSpecificInfo.Language language, List<String> tokens) {
+    default Node parseTree2Node(ParseTree parseTree,  Language language, List<String> tokens) {
         Interval sourceInterval = parseTree.getSourceInterval();
         switch (parseTree.getChildCount()) {
             case 0: {

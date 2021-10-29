@@ -2,7 +2,7 @@ package com.inferrules.core;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.inferrules.core.languageAdapters.LanguageSpecificInfo;
+import com.inferrules.core.languageAdapters.Language;
 //import io.vavr.collection.Tree;
 
 import java.util.Collection;
@@ -18,7 +18,7 @@ public class RewriteRule {
     private final TemplateNode Match;
     private final TemplateNode Replace;
 
-    public RewriteRule(String beforeSnippet, String afterSnippet, LanguageSpecificInfo.Language language) {
+    public RewriteRule(String beforeSnippet, String afterSnippet,  Language language) {
 
         VariableNameGenerator l = new VariableNameGenerator('l');
         var beforeTemplate = new Template(beforeSnippet, language, l);
