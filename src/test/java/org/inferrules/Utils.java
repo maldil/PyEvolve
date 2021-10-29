@@ -43,21 +43,20 @@ public class Utils {
     }
 
     public static boolean areAlphaEquivalent(String template1, String template2){
-        List<String> tokenizedTemplate1 = tokenizeTemplate(template1);
-        List<String> tokenizedTemplate2 = tokenizeTemplate(template2);
-        if(tokenizedTemplate1.size()!=tokenizedTemplate2.size())
+        return areAlphaEquivalent(tokenizeTemplate(template1), tokenizeTemplate(template2));
+    }
+
+    public static <T> boolean areAlphaEquivalent(List<T> ls1, List<T> ls2) {
+        if(ls1.size()!= ls2.size())
             return false;
-        return Streams.zip(tokenizedTemplate1.stream(), tokenizedTemplate2.stream(), Tuple::of)
+        return Streams.zip(ls1.stream(), ls2.stream(), Tuple::of)
                 .collect(groupingBy(x->x._1(), collectingAndThen(toList(), xs -> xs.stream().map(x -> x._2()).distinct().count())))
                 .entrySet().stream().allMatch(x->x.getValue() == 1)
-                && Streams.zip(tokenizedTemplate2.stream(), tokenizedTemplate1.stream(), Tuple::of)
+                && Streams.zip(ls2.stream(), ls1.stream(), Tuple::of)
                 .collect(groupingBy(x->x._1(), collectingAndThen(toList(), xs -> xs.stream().map(x -> x._2()).distinct().count())))
                 .entrySet().stream().allMatch(x->x.getValue() == 1)
                 ;
     }
-
-
-
 
 
 }

@@ -1,6 +1,7 @@
 package com.inferrules.utils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -9,13 +10,17 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 
+import com.google.common.graph.Traverser;
 import io.vavr.control.Try;
 import org.antlr.v4.runtime.misc.Interval;
 import org.apache.commons.cli.*;
+import org.eclipse.jgit.api.Git;
 
 public class Utilities {
 
@@ -83,4 +88,11 @@ public class Utilities {
         return Map.of("Before", cmd.getOptionValue("before").replace("\\n","\n"), "After",cmd.getOptionValue("after").replace("\\n","\n"),
                 "Language",cmd.getOptionValue("language"));
     }
+
+
+    public static <T> Stream<T> stream(Iterable<T> it){
+        return StreamSupport.stream(it.spliterator(), false);
+    }
+
+
 }

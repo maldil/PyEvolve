@@ -1,13 +1,11 @@
 package com.inferrules.core;
 
-import com.google.gson.GsonBuilder;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Tree;
 import org.antlr.v4.runtime.misc.Interval;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
@@ -23,6 +21,8 @@ public class TemplateNode {
     private final String Template;
     private final List<Tuple2<TemplateVariable, TemplateNode>> TemplateVarsMapping;
     private final Interval SourceInterval;
+    private final boolean isLeaf;
+
 
     public TemplateNode(Node r, VariableNameGenerator nameGenerator, List<String> allTokens) {
         var n = compress(r, r);
@@ -32,9 +32,10 @@ public class TemplateNode {
                 .filter(Node::isNotKwdOrSymb)
                 .map(x -> Tuple.of(nameGenerator.getNameOrElseNew(x),
                                                 new TemplateNode(x, nameGenerator, allTokens)))
-                .collect(Collectors.toList());
+                .collect(toList());
 
         Template = constructTemplate(TemplateVarsMapping, n.getSourceInterval(), allTokens);
+        isLeaf = TemplateVarsMapping.isEmpty();
     }
 
     TemplateNode(String template, List<Tuple2<TemplateVariable, TemplateNode>> templateVariableMapping,
@@ -43,6 +44,7 @@ public class TemplateNode {
         this.TemplateVarsMapping = templateVariableMapping;
         this.CodeSnippet = codeSnippet;
         this.SourceInterval = sourceInterval;
+        isLeaf = TemplateVarsMapping.isEmpty();
     }
 
     public Tree.Node<TemplateVariable> getTemplateVariableTree(TemplateVariable tv) {
@@ -106,23 +108,23 @@ public class TemplateNode {
     public List<TemplateVariable> getAllVariables() {
         return TemplateVarsMapping.stream()
                 .flatMap(x -> Stream.concat(Stream.of(x._1()), x._2.getAllVariables().stream()))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
 
     public Set<TemplateVariable> getTemplateVariableSet() {
         return TemplateVarsMapping.stream()
                 .flatMap(x -> Stream.concat(Stream.of(x._1()), x._2.getAllVariables().stream()))
-                .collect(Collectors.toSet());
+                .collect(toSet());
     }
 
 
-    public List<TemplateVariable> getRepeatedTemplateVariables() {
+    public Set<TemplateVariable> getRepeatedTemplateVariables() {
         return TemplateVarsMapping.stream()
                 .flatMap(x -> Stream.concat(Stream.of(x._1()), x._2.getAllVariables().stream()))
                 .collect(groupingBy(x->x, counting()))
                 .entrySet().stream()
-                .filter(x -> x.getValue() > 1).map(Map.Entry::getKey).collect(Collectors.toList());
+                .filter(x -> x.getValue() > 1).map(Map.Entry::getKey).collect(toSet());
     }
 
     public List<Tuple2<TemplateVariable, TemplateNode>> getTemplateVarsMapping() {
@@ -174,5 +176,9 @@ public class TemplateNode {
 
     public String getTemplate() {
         return Template;
+    }
+
+    public boolean isLeaf() {
+        return isLeaf;
     }
 }

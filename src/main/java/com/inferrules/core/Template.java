@@ -1,12 +1,15 @@
 package com.inferrules.core;
 
+import com.google.common.graph.Traverser;
 import com.inferrules.core.languageAdapters.ILanguageAdapter;
 import com.inferrules.core.languageAdapters.LanguageSpecificInfo;
-import io.vavr.collection.Traversable;
-import io.vavr.collection.Tree;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 
+import static com.inferrules.utils.Utilities.stream;
 import static java.util.stream.Collectors.toList;
 
 public class Template {
@@ -16,46 +19,33 @@ public class Template {
      * @see com.inferrules.core.Node
      * Usually at the first level it has template variables capturing the entire statement.
      */
-    private final TemplateNode UnflattendTemplateNode;
-//    /**
-//     * This is a more optimal representation of the Coarsest Template Node.
-//     * This is more optimal because surfaces all the template variables that are repeated within the template.
-//     * @see com.inferrules.core.TemplateNode #surfaceTemplateVariables
-//     */
-//    private final TemplateNode OptimumTemplateNode;
+    private final Tuple2<TemplateVariable, TemplateNode> UnflattendTemplateNode;
 
     /**
      * This is the most fine grained representation of the CoarsestTemplateNode.
      * All the leaf template nodes in the CoarsestTemplateNode are surfaced.
      * @see com.inferrules.core.TemplateNode #surfaceTemplateVariables
      */
-    private final TemplateNode CompletelyFlattenedTemplateNode;
+    private final Tuple2<TemplateVariable, TemplateNode> CompletelyFlattenedTemplateNode;
     private final List<String> AllTokens;
+    public static final Traverser<Tuple2<TemplateVariable, TemplateNode>> TreeTraverser = Traverser.forTree(t -> t._2().getTemplateVarsMapping());
 
     public Template(String codeSnippet, LanguageSpecificInfo.Language language, VariableNameGenerator nameGenerator) {
         ILanguageAdapter languageAdapter = LanguageSpecificInfo.getAdapter(language);
         var root = languageAdapter.parse(codeSnippet);
         AllTokens = languageAdapter.tokenize(codeSnippet);
-        UnflattendTemplateNode = new TemplateNode(root, nameGenerator, AllTokens);
-        var templateVariableTree = UnflattendTemplateNode.getTemplateVariableTree(TemplateVariable.getDummy());
-        List<TemplateVariable> leafTvs = templateVariableTree.traverse()
-                .filter(Tree.Node::isLeaf)
-                .map(Traversable::get).collect(toList());
-        List<TemplateVariable> repeatedLeafTvs = UnflattendTemplateNode.getRepeatedTemplateVariables().stream()
-                .filter(leafTvs::contains).collect(toList());
-//        OptimumTemplateNode = UnflattendTemplateNode.surfaceTemplateVariables(repeatedLeafTvs, AllTokens);
-        CompletelyFlattenedTemplateNode = UnflattendTemplateNode.surfaceTemplateVariables(leafTvs,AllTokens);
+        UnflattendTemplateNode = Tuple.of(TemplateVariable.getDummy(), new TemplateNode(root, nameGenerator, AllTokens));
+        List<TemplateVariable> leafTvs = stream(TreeTraverser.depthFirstPostOrder(UnflattendTemplateNode))
+                .filter(x -> x._2().isLeaf()).map(Tuple2::_1).collect(toList());
+        CompletelyFlattenedTemplateNode = Tuple.of(TemplateVariable.getDummy(),UnflattendTemplateNode._2().surfaceTemplateVariables(leafTvs,AllTokens));
     }
     public List<String> getAllTokens() {
         return AllTokens;
     }
-//    public TemplateNode getOptimumTemplateNode() {
-//        return OptimumTemplateNode;
-//    }
-    public TemplateNode getUnflattendTemplateNode() {
+    public Tuple2<TemplateVariable, TemplateNode> getUnflattendTemplateNode() {
         return UnflattendTemplateNode;
     }
-    public TemplateNode getCompletelyFlattenedTemplateNode() {
+    public Tuple2<TemplateVariable, TemplateNode> getCompletelyFlattenedTemplateNode() {
         return CompletelyFlattenedTemplateNode;
     }
 }
