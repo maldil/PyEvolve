@@ -8,7 +8,7 @@ To build :
 
 #### Running as a binary
 
-Download the latest release, or run `./gradlew distZip` and go to  `/distributions/`.
+Download the latest release, or run `./gradlew distZip` and go to  `/build/distributions/`.
 
 Unzip `InferRules-1.0-SNAPSHOT.zip`
 Got to `/bin`
