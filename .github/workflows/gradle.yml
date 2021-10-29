@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install comby dependencies
-      run: sudo apt-get install libpcre3-dev
+      run: udo apt-get install -y libev4 libpcre3-dev
     - name: Install comby
       run: bash <(sudo curl -sL get.comby.dev)
     - name: Set up JDK 15
