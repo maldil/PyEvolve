@@ -248,10 +248,31 @@ public class TestRewriteRules {
                 """;
         assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
         assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
-
-
     }
 
+    @Test
+    void testPythonRewriteRule_Listing9() {
+        String before = """
+                first_occ = [self._get_first_term_occurrence(term) for term in terms]
+                # TODO maybe a better function would do here
+                sum(first_occ) / len(first_occ)""";
+        String after = """
+                np.mean([self._get_first_term_occurrence(term)
+                                         for term in keyphrase])
+                """;
+        RewriteRule rw = new RewriteRule(before, after,  Language.Python);
+
+        String expectedMatch = """
+                :[[l1]] = [:[[l6]].:[[l8]](:[[l10]]) for :[[l10]] in terms]
+                sum:[l17] / len:[l17]
+                """;
+        String expectedReplace = """
+                np.mean([:[[l6]].:[[l8]](:[[l10]])
+                                         for :[[l10]] in keyphrase])
+                """;
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+    }
 
 
 }
