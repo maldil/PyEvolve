@@ -17,15 +17,4 @@ public class Infer {
     }
 
 
-
-    public static class InferredRewriteRule{
-        public String Match;
-        public String Replace;
-
-        public InferredRewriteRule(RewriteRule r){
-            this.Match = r.getMatch().getTemplate();
-            this.Replace = r.getReplace().getTemplate();
-        }
-
-    }
 }

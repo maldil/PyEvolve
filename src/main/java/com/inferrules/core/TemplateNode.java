@@ -18,11 +18,11 @@ import static java.util.stream.Collectors.*;
  */
 public class TemplateNode {
     private final String CodeSnippet;
+
     private final String Template;
     private final List<Tuple2<TemplateVariable, TemplateNode>> TemplateVarsMapping;
     private final Interval SourceInterval;
     private final boolean isLeaf;
-
 
     public TemplateNode(Node r, VariableNameGenerator nameGenerator, List<String> allTokens) {
         var n = compress(r, r);
@@ -90,6 +90,10 @@ public class TemplateNode {
                             ? Stream.empty()
                             : surfaceTemplateVariablesHelper(tmpltVars, varMapping._2()).stream())
                 .collect(toList());
+    }
+
+    public String getCodeSnippet() {
+        return CodeSnippet;
     }
 
     /**
