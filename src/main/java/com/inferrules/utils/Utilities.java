@@ -1,5 +1,8 @@
 package com.inferrules.utils;
 
+import com.inferrules.core.TemplateNode;
+import com.inferrules.core.TemplateVariable;
+import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import org.antlr.v4.runtime.misc.Interval;
 import org.apache.commons.cli.*;
@@ -16,6 +19,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static com.inferrules.core.Template.TreeTraverser;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 
@@ -92,4 +96,17 @@ public class Utilities {
     }
 
 
+    /**
+     * Assumes that the node always exists!
+     * @param beforeNode
+     * @param x
+     * @return
+     */
+    public static Tuple2<TemplateVariable, TemplateNode> findInTree(Tuple2<TemplateVariable, TemplateNode> beforeNode, TemplateVariable x) {
+        return traverseTree(beforeNode).filter(z -> z._1().equals(x)).findFirst().orElse(null);
+    }
+
+    public static Stream<Tuple2<TemplateVariable, TemplateNode>> traverseTree(Tuple2<TemplateVariable, TemplateNode> beforeNode) {
+        return stream(TreeTraverser.breadthFirst(beforeNode));
+    }
 }

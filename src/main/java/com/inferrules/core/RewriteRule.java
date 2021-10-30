@@ -3,15 +3,13 @@ package com.inferrules.core;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.inferrules.core.languageAdapters.Language;
+import com.inferrules.utils.Utilities;
 //import io.vavr.collection.Tree;
 
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.inferrules.core.Template.TreeTraverser;
-import static com.inferrules.utils.Utilities.stream;
 
 public class RewriteRule {
 
@@ -33,13 +31,14 @@ public class RewriteRule {
         Set<TemplateVariable> repeatedTemplateVariables_Before = beforeNode._2().getRepeatedTemplateVariables();
 
         Set<TemplateVariable> removeIntersectingNodes =  intersectingNodes.stream().flatMap(x -> {
-            var before = stream(TreeTraverser.breadthFirst(beforeNode)).filter(z -> z._1().equals(x)).findFirst().get();
-            var after = stream(TreeTraverser.breadthFirst(afterNode)).filter(z -> z._1().equals(x)).findFirst().get();;
+            var before = Utilities.findInTree(beforeNode, x);
+            var after = Utilities.findInTree(afterNode, x);;
             if(before._2().isLeaf() || after._2().isLeaf() || before._2().getTemplateVarsMapping().size() != after._2().getTemplateVarsMapping().size())
                 return Stream.empty();
-            if(stream(TreeTraverser.breadthFirst(after)).allMatch(y -> stream(TreeTraverser.breadthFirst(before)).anyMatch(z -> y._1().equals(z._1())))){
-                if(stream(TreeTraverser.breadthFirst(before)).noneMatch(z -> repeatedTemplateVariables_Before.contains(z._1())))
-                    return Stream.concat(stream(TreeTraverser.breadthFirst(after)),stream(TreeTraverser.breadthFirst(before))).filter(f -> !f._1().equals(x));
+            if(Utilities.traverseTree(after).allMatch(y -> Utilities.traverseTree(before).anyMatch(z -> y._1().equals(z._1())))){
+                if(Utilities.traverseTree(before).noneMatch(z -> repeatedTemplateVariables_Before.contains(z._1())))
+                    return Stream.concat(Utilities.traverseTree(after), Utilities.traverseTree(before))
+                            .filter(f -> !f._1().equals(x));
                 else return Stream.of(before);
             }
             return Stream.empty();

@@ -8,7 +8,7 @@ import io.vavr.Tuple2;
 
 import java.util.List;
 
-import static com.inferrules.utils.Utilities.stream;
+import static com.inferrules.utils.Utilities.traverseTree;
 import static java.util.stream.Collectors.toList;
 
 public class Template {
@@ -35,7 +35,7 @@ public class Template {
         var root = languageAdapter.parse(codeSnippet);
         AllTokens = languageAdapter.tokenize(codeSnippet);
         UnflattendTemplateNode = Tuple.of(TemplateVariable.getDummy(), new TemplateNode(root, nameGenerator, AllTokens));
-        List<TemplateVariable> leafTvs = stream(TreeTraverser.depthFirstPostOrder(UnflattendTemplateNode))
+        List<TemplateVariable> leafTvs = traverseTree(UnflattendTemplateNode)
                 .filter(x -> x._2().isLeaf()).map(Tuple2::_1).collect(toList());
         CompletelyFlattenedTemplateNode = Tuple.of(TemplateVariable.getDummy(),UnflattendTemplateNode._2().surfaceTemplateVariables(leafTvs,AllTokens));
     }
