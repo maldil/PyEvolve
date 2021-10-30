@@ -1,3 +1,4 @@
+![example workflow](https://github.com/ameyaKetkar/InferRules/actions/workflows/gradle.yml/badge.svg)
 # InferRules
 
 For given input before-after code snippets across an edit, `InferRules` produces a rewrite rule for it.
