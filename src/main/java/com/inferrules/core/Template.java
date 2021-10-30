@@ -31,6 +31,7 @@ public class Template {
 
     public Template(String codeSnippet,  Language language, VariableNameGenerator nameGenerator) {
         ILanguageAdapter languageAdapter = language.getAdapter();
+        codeSnippet = languageAdapter.removeComments(codeSnippet);
         var root = languageAdapter.parse(codeSnippet);
         AllTokens = languageAdapter.tokenize(codeSnippet);
         UnflattendTemplateNode = Tuple.of(TemplateVariable.getDummy(), new TemplateNode(root, nameGenerator, AllTokens));

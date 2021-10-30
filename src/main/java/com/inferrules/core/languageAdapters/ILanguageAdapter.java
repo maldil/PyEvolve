@@ -15,6 +15,8 @@ public interface ILanguageAdapter {
 
     List<String> tokenize(String codeSnippet);
 
+    String removeComments(String removeComments);
+
     default Node parseTree2Node(ParseTree parseTree,  Language language, List<String> tokens) {
         Interval sourceInterval = parseTree.getSourceInterval();
         switch (parseTree.getChildCount()) {

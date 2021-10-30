@@ -28,6 +28,11 @@ public enum Language {
         public ILanguageAdapter getAdapter() {
             return new PythonAdapter();
         }
+
+        @Override
+        public String getExtension(){
+            return ".py";
+        }
     },
     Java {
         @Override
@@ -44,6 +49,11 @@ public enum Language {
         public ILanguageAdapter getAdapter() {
             return new JavaAdapter();
         }
+
+        @Override
+        public String getExtension(){
+            return ".java";
+        }
     };
 
     public List<String> getKwdSymbols() {
@@ -56,6 +66,10 @@ public enum Language {
 
     public ILanguageAdapter getAdapter() {
         return null;
+    }
+
+    public String getExtension(){
+        return ".txt";
     }
 }
 

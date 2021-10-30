@@ -76,6 +76,64 @@ public class TestRewriteRules {
     }
 
 
+    @Test
+    void testJavaRewriteRule4_WithSingleLineComment() {
+        String before = """
+                Map<String, Long> m = new HashMap<>();
+                // This is an example of a counter
+                for(String e : elements){
+                 if(!m.containsKey(e)){
+                    m.put(e, 1);
+                 }
+                 m.put(e, m.get(e)+1);
+                }""";
+        String after = "Map<String, Long> collect = elements.stream().collect(groupingby(e->e, counting()));";
+        String expectedMatch = """
+                :[[l4]]<:[[l6]], :[[b]]> :[[l10]] = new HashMap<>();
+                for(:[[l6]] :[[l15]] : :[[l16]]){
+                 if(!:[[l10]].containsKey(:[[l15]])){
+                    :[[l10]].:[[l26]](:[[l15]], :[[l28]]);
+                 }
+                 :[[l10]].:[[l26]](:[[l15]], :[[l10]].get(:[[l15]])+:[[l28]]);
+                }""";
+        String expectedReplace = ":[[l4]]<:[[l6]],:[[b]]> collect = :[[l16]].stream().collect(groupingby(:[[l15]]->:[[l15]], counting()));";
+        RewriteRule rw = new RewriteRule(before, after,  Language.Java);
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+    }
+
+
+    @Test
+    void testJavaRewriteRule4_WithMultiLineComment() {
+        String before = """
+                Map<String, Long> m = new HashMap<>();
+                /* This is an example of a counter
+                This is a block
+                comment
+                */
+                for(String e : elements){
+                 if(!m.containsKey(e)){
+                    m.put(e, 1);
+                 }
+                 m.put(e, m.get(e)+1);
+                }""";
+        String after = "Map<String, Long> collect = elements.stream().collect(groupingby(e->e, counting()));";
+        String expectedMatch = """
+                :[[l4]]<:[[l6]], :[[b]]> :[[l10]] = new HashMap<>();
+                for(:[[l6]] :[[l15]] : :[[l16]]){
+                 if(!:[[l10]].containsKey(:[[l15]])){
+                    :[[l10]].:[[l26]](:[[l15]], :[[l28]]);
+                 }
+                 :[[l10]].:[[l26]](:[[l15]], :[[l10]].get(:[[l15]])+:[[l28]]);
+                }""";
+        String expectedReplace = ":[[l4]]<:[[l6]],:[[b]]> collect = :[[l16]].stream().collect(groupingby(:[[l15]]->:[[l15]], counting()));";
+        RewriteRule rw = new RewriteRule(before, after,  Language.Java);
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+
+    }
+
+
 //    @Test //https://twitter.com/NikosTsantalis/status/1453298762558889986/photo/1
 //    public void javaForToStream_nikosTweet(){
 //        String before  = """
@@ -251,11 +309,41 @@ public class TestRewriteRules {
     }
 
     @Test
-    void testPythonRewriteRule_Listing9() {
+    void testPythonRewriteRule_Listing9_comments_singleline() {
         String before = """
                 first_occ = [self._get_first_term_occurrence(term) for term in terms]
                 # TODO maybe a better function would do here
                 sum(first_occ) / len(first_occ)""";
+        String after = """
+                np.mean([self._get_first_term_occurrence(term)
+                                         for term in keyphrase])
+                """;
+        RewriteRule rw = new RewriteRule(before, after,  Language.Python);
+
+        String expectedMatch = """
+                :[[l1]] = [:[[l6]].:[[l8]](:[[l10]]) for :[[l10]] in terms]
+                sum:[l17] / len:[l17]
+                """;
+        String expectedReplace = """
+                np.mean([:[[l6]].:[[l8]](:[[l10]])
+                                         for :[[l10]] in keyphrase])
+                """;
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+    }
+
+    @Test
+    void testPythonRewriteRule_Listing9_comments_multiline() {
+        String before = """
+                first_occ = [self._get_first_term_occurrence(term) for term in terms]
+                ""\"
+                TODO maybe a better function would do here
+                Block
+                of
+                comment
+                ""\"
+                sum(first_occ) / len(first_occ)""";
+
         String after = """
                 np.mean([self._get_first_term_occurrence(term)
                                          for term in keyphrase])

@@ -5,6 +5,7 @@ import com.inferrules.comby.jsonResponse.CombyMatch;
 import com.inferrules.comby.jsonResponse.CombyRewrite;
 import com.inferrules.comby.jsonResponse.Match;
 import com.inferrules.core.Node;
+import com.inferrules.core.languageAdapters.Language;
 import com.inferrules.utils.Utilities;
 import io.vavr.control.Try;
 
@@ -24,20 +25,11 @@ public class BasicCombyOperations {
 //    }
 
 
-    public static Try<CombyMatch> getMatch(String template, Node source, String language, boolean isPerfect) {
-        Object[] arguments = {source.getValue(), template, language == null ? defaultLanguage : language};
+    public static Try<CombyMatch> getMatch(String template, Node source, Language language, boolean isPerfect) {
+        Object[] arguments = {source.getValue(), template, language.getExtension()};
         return Utilities.runBashCommand(MessageFormat.format(matchCommand, arguments))
                 .map(x -> new Gson().fromJson(x, CombyMatch.class))
                 .onFailure(x -> System.out.println(x.toString()))
-                .peek(x -> {
-                    if(x==null || x.getMatches()==null){
-                        System.out.println();
-                    }
-//                    x.getMatches().forEach(match -> {
-//                        match.setTemplate(template);
-//                        match.setTemplateVarToNodeMapping(source);
-//                    });
-                })
                 .filter(x -> !isPerfect || x.isPerfect(source.getValue()));
     }
 
@@ -53,13 +45,4 @@ public class BasicCombyOperations {
                 .collect(joining(","));
         return Utilities.runBashCommand(MessageFormat.format(substituteCommand, template, subs));
     }
-
-//    public static Try<String> substitute(String template, Map<String, String> substitutions) {
-//        String subs = substitutions.entrySet().stream()
-//                .map(x -> MessageFormat.format("{\"variable\":\"{0}\",\"value\":\"{1}\"}", x.getKey(), x.getValue()))
-//                .collect(joining(","));
-//        return Utilities.runBashCommand(MessageFormat.format(substituteCommand, template, subs));
-//    }
-
-
 }
