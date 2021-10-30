@@ -216,5 +216,42 @@ public class TestRewriteRules {
         assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
     }
 
+    @Test
+    void testPythonRewriteRule_Listing8() {
+        String before = """
+                noise = self._diag_tensor[0, 0]
+                sub_eigs = []
+                for lazy_tensor in self._lazy_tensor.lazy_tensors:
+                    sub_eigs.append(lazy_tensor.evaluate().symeig(eigenvectors=True)[0][:, 0].unsqueeze(-1))     
+                    eigs = sub_eigs[0].matmul(sub_eigs[1].t())
+                torch.log(eigs + noise).sum()""";
+        String after = """
+                noise = self._diag_tensor[0, 0]
+                sub_eigs = [DiagLazyTensor(svd_decomp.S) for svd_decomp in self._kron_svd]
+                sub_eigs_kronecker = KroneckerProductLazyTensor(*sub_eigs).diag()
+                torch.log(sub_eigs_kronecker + noise).sum()
+                """;
+        RewriteRule rw = new RewriteRule(before, after,  Language.Python);
+
+        String expectedMatch = """
+                :[[l1]] = :[[l4]].:[[l6]][:[[l9]], :[[l9]]]
+                :[[l11]] = []
+                for :[[l15]] in :[[l4]]._lazy_tensor.lazy_tensors:
+                    :[[l11]].append(:[[l15]].evaluate:[l29].symeig(eigenvectors=True):[l35][:, :[[l9]]].unsqueeze(-:[[l42]]))
+                    :[[l44]] = :[[l11]]:[l35].matmul(:[[l11]][:[[l42]]].t:[l29])
+                :[[l56]].:[[l58]](:[[l44]] + :[[l1]]).:[[l62]]:[l29]""";
+        String expectedReplace = """
+                :[[l1]] = :[[l4]].:[[l6]][:[[l9]], :[[l9]]]
+                :[[l11]] = [DiagLazyTensor(svd_decomp.S) for svd_decomp in :[[l4]]._kron_svd]
+                sub_eigs_kronecker = KroneckerProductLazyTensor(*:[[l11]]).diag:[l29]
+                :[[l56]].:[[l58]](sub_eigs_kronecker + :[[l1]]).:[[l62]]:[l29]
+                """;
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
+
+
+    }
+
+
 
 }
