@@ -9,8 +9,10 @@ group 'com.inferrules'
 version '1.0-SNAPSHOT'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
+
 mainClassName = 'com.inferrules.Infer'
 jar{
     manifest{
@@ -24,6 +26,7 @@ dependencies {
     implementation group: 'com.google.guava', name: 'guava', version: '31.0.1-jre'
     implementation group: 'io.vavr', name: 'vavr', version: '0.10.4'
     implementation group: 'org.eclipse.jdt', name:'org.eclipse.jdt.core', version:'3.24.0'
+    implementation group: 'org.python', name:'jython3', version:'0.0.1-SNAPSHOT'
     compile 'commons-cli:commons-cli:1.5.0'
     testImplementation group: 'org.junit.jupiter', name:'junit-jupiter-api', version:'5.7.0'
     testRuntimeOnly group: 'org.junit.jupiter', name:'junit-jupiter-engine', version:'5.7.0'
@@ -51,4 +54,16 @@ idea {
 
 test {
     useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(Test) {
+    jvmArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec) {
+    jvmArgs += '--enable-preview'
 }
