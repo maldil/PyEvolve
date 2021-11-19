@@ -16,12 +16,14 @@ class ConcreatePythonParserTest {
     void parse() {
         ConcreatePythonParser parser = new ConcreatePythonParser();
         Module parse = parser.parse("test1.py");
+        System.out.println(parse.toStringTree());
+
         assertEquals(2,parse.getChildCount());
     }
 
     @Test
     void parseCode() {
-        String code = "import numpy as np \nx=x+1";
+        String code = "import numpy as np \nx=True";
         InputStream codeStream = new ByteArrayInputStream(code.getBytes());
         ConcreatePythonParser parser = new ConcreatePythonParser();
         Module parse = parser.parse(codeStream);
