@@ -1,5 +1,6 @@
 import numpy as np
-def function1(sentence):
+# wefuiwefhwef
+def function1(sentence,boo):
     cc=0
     for count in sentence:
         cc = np.sum(count)

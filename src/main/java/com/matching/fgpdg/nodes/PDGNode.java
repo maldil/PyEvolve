@@ -1,12 +1,12 @@
 package com.matching.fgpdg.nodes;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import com.utils.Assertions;
-
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.python.antlr.base.expr;
 import org.python.core.PyObject;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 
 
 public abstract class PDGNode {
@@ -32,6 +32,7 @@ public abstract class PDGNode {
         this.key = key;
     }
 
+
     public String getDataType() {
         return dataType;
     }
@@ -42,9 +43,17 @@ public abstract class PDGNode {
         return null;
     }
 
+    public PDGNode getControl() {
+        return control;
+    }
+
     abstract public String getLabel();
 
     abstract public String getExasLabel();
+
+    public String getKey() {
+        return key;
+    }
 
     public int getAstNodeType() {
         return astNodeType;
@@ -72,7 +81,19 @@ public abstract class PDGNode {
 
     public boolean isLiteral(expr node) {
         Assertions.UNREACHABLE();
+        isLiteral(node.getNodeType());
         return true;
+    }
+
+    public boolean isLiteral(int nodeType) {
+        if (nodeType == PyObject.NUM ||
+                nodeType == PyObject.STR)
+            return true;
+        return false;
+    }
+
+    public boolean isLiteral() {
+        return isLiteral(astNodeType);
     }
 
     public void delete() {
@@ -261,7 +282,7 @@ public abstract class PDGNode {
     public boolean isValid() {
         HashSet<PDGNode> s = new HashSet<>();
         for (PDGEdge e : outEdges) {
-            if(e instanceof PDGDataEdge && ((PDGDataEdge) e).type == PDGDataEdge.Type.DEPENDENCE)
+            if (e instanceof PDGDataEdge && ((PDGDataEdge) e).type == PDGDataEdge.Type.DEPENDENCE)
                 continue;
             if (s.contains(e.target))
                 return false;
@@ -269,6 +290,4 @@ public abstract class PDGNode {
         }
         return true;
     }
-
-
 }
