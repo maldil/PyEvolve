@@ -471,7 +471,7 @@ public class PDGGraph implements Serializable {
                               For astNode) {
         context.addScope();
         PDGGraph pdg = buildArgumentPDG(control, branch, astNode.getInternalIter());
-        ;
+
         if (astNode.getInternalTarget() instanceof Name) {
             String varName = ((Name) astNode.getInternalTarget()).getInternalId();
             String varType = TypeWrapper.getTypeInfo(((Name) astNode.getInternalTarget()).getLineno(),
@@ -480,6 +480,9 @@ public class PDGGraph implements Serializable {
             PDGDataNode varp = new PDGDataNode(astNode.getInternalTarget(), astNode.getInternalTarget().getNodeType(),
                     "" + astNode.getInternalTarget().getCharStartIndex(), varType,
                     varName, false, true);
+            pdg.mergeSequentialData(varp, PDGDataEdge.Type.DEFINITION);
+            pdg.mergeSequentialData(new PDGDataNode(null, varp.getAstNodeType(),
+                    varp.getKey(), varp.getDataType(), varp.getDataName()), PDGDataEdge.Type.REFERENCE);
         } else if (astNode.getInternalTarget() instanceof Tuple) {
             for (expr var : ((Tuple) astNode.getInternalTarget()).getInternalElts()) {
                 String name = ((Name) var).getInternalId();
