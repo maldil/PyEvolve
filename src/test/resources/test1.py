@@ -1,7 +1,8 @@
-import numpy as np
+import numpy.boo, koo.zoo as s
 # wefuiwefhwef
 def function1(sentence,boo):
-    cc=0
+    x= 0
     for count in sentence:
+        exit()
         cc = np.sum(count)
     return cc

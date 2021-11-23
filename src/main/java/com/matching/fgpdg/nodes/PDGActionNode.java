@@ -11,6 +11,9 @@ public class PDGActionNode extends PDGNode {
     protected String name;
     protected String[] parameterTypes;
 
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public PDGActionNode(PDGNode control, String branch, PyObject astNode, int nodeType, String key, String type, String name) {
         super(astNode, nodeType, key);
@@ -21,7 +24,6 @@ public class PDGActionNode extends PDGNode {
         this.dataType = type;
         this.name = name;
     }
-
 
     @Override
     public String getLabel() {

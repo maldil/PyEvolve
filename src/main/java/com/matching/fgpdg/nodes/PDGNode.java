@@ -10,7 +10,7 @@ import java.util.HashSet;
 
 
 public abstract class PDGNode {
-    protected static final String PREFIX_DUMMY = "dummy_";
+    public static final String PREFIX_DUMMY = "dummy_";
 
     protected PyObject astNode;
     protected int astNodeType;
@@ -32,9 +32,16 @@ public abstract class PDGNode {
         this.key = key;
     }
 
-
     public String getDataType() {
         return dataType;
+    }
+
+    public static String getPrefixDummy() {
+        return PREFIX_DUMMY;
+    }
+
+    public void setAstNodeType(int astNodeType) {
+        this.astNodeType = astNodeType;
     }
 
     public String getDataName() {

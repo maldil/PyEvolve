@@ -10,6 +10,10 @@ public class Assertions {
         throw new UnimplementedError();
     }
 
+    public static void UNREACHABLE(String message) {
+        throw new UnimplementedError(message);
+    }
+
 }
 
 class UnimplementedError extends Error {

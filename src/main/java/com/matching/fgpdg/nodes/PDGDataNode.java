@@ -102,4 +102,8 @@ public class PDGDataNode extends PDGNode {
     public String toString() {
         return getLabel();
     }
+
+    public boolean isField() {
+        return isField;
+    }
 }

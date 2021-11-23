@@ -1,9 +1,10 @@
 package com.matching.fgpdg;
 
-
 import com.matching.fgpdg.nodes.*;
-import org.python.antlr.ast.FunctionDef;
-import org.python.antlr.ast.arg;
+import com.utils.Assertions;
+import org.python.antlr.ast.*;
+import org.python.antlr.base.expr;
+import org.python.antlr.base.stmt;
 import org.python.core.AstList;
 import org.python.core.PyObject;
 
@@ -24,15 +25,13 @@ public class PDGGraph implements Serializable {
     protected HashSet<PDGNode> sinks = new HashSet<PDGNode>();
     protected HashSet<PDGNode> breaks = new HashSet<>();
     protected HashSet<PDGNode> returns = new HashSet<>();
+
     private PDGBuildingContext context;
     private HashMap<String, HashSet<PDGDataNode>> defStore = new HashMap<>();
 
-    public HashSet<PDGNode> getNodes() {
-        return nodes;
-    }
-
     public PDGGraph(FunctionDef md, PDGBuildingContext context) {
         this.context = context;
+        context.addScope();
         this.context.setMethod(md);
         int numOfParameters = md.getInternalArgs().getInternalArgs().size();
         parameters = new PDGDataNode[numOfParameters];
@@ -45,9 +44,9 @@ public class PDGGraph implements Serializable {
             //context.addLocalVariable(id, "" + d.getStartPosition());
             mergeSequential(buildPDG(entryNode, "", arg));
             String[] info = context.getLocalVariableInfo(id);  //TODO handel the Type information
-            this.parameters[numOfParameters++] = new PDGDataNode(
-                    arg, PyObject.NAME, info[0], info[1],
-                    "PARAM_" + arg.getInternalArg(), false, true);
+//            this.parameters[numOfParameters++] = new PDGDataNode(
+//                    arg, PyObject.NAME, info[0], info[1],
+//                    "PARAM_" + arg.getInternalArg(), false, true);
         }
         context.pushTry();
         if (((AstList) md.getBody()).size() != 0) {
@@ -62,6 +61,44 @@ public class PDGGraph implements Serializable {
     public PDGGraph(PDGBuildingContext context, PDGNode node) {
         this(context);
         init(node);
+    }
+
+    public PDGGraph(PDGBuildingContext context) {
+        this.context = context;
+    }
+
+    private static <E> void update(HashMap<String, HashSet<E>> target,
+                                   HashMap<String, HashSet<E>> source) {
+        for (String key : source.keySet()) {
+            HashSet<E> s = source.get(key);
+            if (s.contains(null)) {
+                if (target.containsKey(key)) {
+                    s.remove(null);
+                    target.get(key).addAll(new HashSet<E>(s));
+                } else
+                    target.put(key, new HashSet<E>(s));
+            } else
+                target.put(key, new HashSet<E>(s));
+        }
+    }
+
+    private static <E> void clear(HashMap<String, HashSet<E>> map) {
+        for (String key : map.keySet())
+            map.get(key).clear();
+        map.clear();
+    }
+
+    private static <E> void add(HashMap<String, HashSet<E>> target,
+                                HashMap<String, HashSet<E>> source) {
+        for (String key : source.keySet())
+            if (target.containsKey(key))
+                target.get(key).addAll(new HashSet<E>(source.get(key)));
+            else
+                target.put(key, new HashSet<E>(source.get(key)));
+    }
+
+    public HashSet<PDGNode> getNodes() {
+        return nodes;
     }
 
     private void init(PDGNode node) {
@@ -79,7 +116,7 @@ public class PDGGraph implements Serializable {
     private PDGGraph buildPDG(PDGNode control, String branch,
                               arg astNode) {
         String name = astNode.getInternalArg();
-        String type = TypeWrapper.getTypeInfo(astNode.getLine(),astNode.getCharPositionInLine(),name);
+        String type = TypeWrapper.getTypeInfo(astNode.getLine(), astNode.getCharPositionInLine(), name);
         context.addLocalVariable(name, "" + astNode.getCharStartIndex(), type);
         PDGDataNode node = new PDGDataNode(astNode, astNode.getNodeType(),
                 "" + astNode.getCharPositionInLine(), type,
@@ -111,7 +148,7 @@ public class PDGGraph implements Serializable {
                     pdgs.get(s).mergeSequential(pdgs.get(i));
             if (s == pdgs.size())
                 return new PDGGraph(context);
-            pdg1= pdgs.get(s);
+            pdg1 = pdgs.get(s);
 
             context.removeScope();
             return pdg1;
@@ -123,27 +160,8 @@ public class PDGGraph implements Serializable {
         return nodes.isEmpty();
     }
 
-    private PDGGraph buildPDG(PDGNode control, String branch, PyObject node) {
-
-        return new PDGGraph(context);
-    }
     private void updateDefStore(HashMap<String, HashSet<PDGDataNode>> store) {
         update(defStore, store);
-    }
-
-    private static <E> void update(HashMap<String, HashSet<E>> target,
-                                   HashMap<String, HashSet<E>> source) {
-        for (String key : source.keySet()) {
-            HashSet<E> s = source.get(key);
-            if (s.contains(null)) {
-                if (target.containsKey(key)) {
-                    s.remove(null);
-                    target.get(key).addAll(new HashSet<E>(s));
-                } else
-                    target.put(key, new HashSet<E>(s));
-            } else
-                target.put(key, new HashSet<E>(s));
-        }
     }
 
     private void mergeSequential(PDGGraph pdg) {
@@ -246,17 +264,445 @@ public class PDGGraph implements Serializable {
         }
     }
 
+    private ArrayList<PDGDataNode> getDefinitions() {
+        ArrayList<PDGDataNode> defs = new ArrayList<>();
+        for (PDGNode node : sinks)
+            if (node.isDefinition())
+                defs.add((PDGDataNode) node);
+        return defs;
+    }
+
+    private ArrayList<PDGActionNode> getReturns() {
+        ArrayList<PDGActionNode> nodes = new ArrayList<>();
+        for (PDGNode node : statementSinks)
+            if (node.getAstNodeType() == PyObject.RETURN)
+                nodes.add((PDGActionNode) node);
+        return nodes;
+    }
+
+    private PDGGraph buildArgumentPDG(PDGNode control, String branch,
+                                      PyObject exp) {
+        PDGGraph pdg = buildPDG(control, branch, exp);
+        if (pdg.isEmpty())
+            return pdg;
+        if (pdg.nodes.size() == 1)
+            for (PDGNode node : pdg.nodes)
+                if (node instanceof PDGDataNode)
+                    return pdg;
+        ArrayList<PDGDataNode> defs = pdg.getDefinitions();
+        if (!defs.isEmpty()) {
+            PDGDataNode def = defs.get(0);
+            pdg.mergeSequentialData(new PDGDataNode(null, def.getAstNodeType(), def.getKey(),
+                    ((PDGDataNode) def).getDataType(), ((PDGDataNode) def).getDataName(),
+                    def.isField(), false), PDGDataEdge.Type.REFERENCE);
+            return pdg;
+        }
+        ArrayList<PDGActionNode> rets = pdg.getReturns();
+        if (rets.size() > 0) {
+            int startChar = 0;
+            int length = 0;
+            if (exp instanceof expr) {
+                startChar = ((expr) exp).getCharStartIndex();
+                length = ((expr) exp).getCharStopIndex() - ((expr) exp).getCharStartIndex();
+            } else if (exp instanceof stmt) {
+                startChar = ((stmt) exp).getCharStartIndex();
+                length = ((stmt) exp).getCharStopIndex() - ((stmt) exp).getCharStartIndex();
+            } else {
+                Assertions.UNREACHABLE();
+            }
+            PDGDataNode dummy = new PDGDataNode(null, PyObject.NAME,
+                    PDGNode.PREFIX_DUMMY + startChar + "_"
+                            + length, rets.get(0).getDataType(), PDGNode.PREFIX_DUMMY, false, true);
+            for (PDGActionNode ret : rets) {
+                ret.setAstNodeType(PyObject.ASSIGN);
+                ret.setName("=");
+                pdg.extend(ret, new PDGDataNode(dummy), PDGDataEdge.Type.DEFINITION);
+            }
+            pdg.mergeSequentialData(new PDGDataNode(null, dummy.getAstNodeType(),
+                    dummy.getKey(), dummy.getDataType(), dummy.getDataName()), PDGDataEdge.Type.REFERENCE);
+            return pdg;
+        }
+        PDGNode node = pdg.getOnlyOut();
+        if (node instanceof PDGDataNode)
+            return pdg;
+        int startChar = 0;
+        int length = 0;
+        if (exp instanceof expr) {
+            startChar = ((expr) exp).getCharStartIndex();
+            length = ((expr) exp).getCharStopIndex() - ((expr) exp).getCharStartIndex();
+        } else if (exp instanceof stmt) {
+            startChar = ((stmt) exp).getCharStartIndex();
+            length = ((stmt) exp).getCharStopIndex() - ((stmt) exp).getCharStartIndex();
+        } else {
+            Assertions.UNREACHABLE();
+        }
+        PDGDataNode dummy = new PDGDataNode(null, PyObject.NAME,
+                PDGNode.PREFIX_DUMMY + startChar + "_"
+                        + length, node.getDataType(), PDGNode.PREFIX_DUMMY, false, true);
+        pdg.mergeSequentialData(new PDGActionNode(control, branch,
+                null, PyObject.ASSIGN, null, null, "="), PDGDataEdge.Type.PARAMETER);
+        pdg.mergeSequentialData(dummy, PDGDataEdge.Type.DEFINITION);
+        pdg.mergeSequentialData(new PDGDataNode(null, dummy.getAstNodeType(), dummy.getKey(),
+                dummy.getDataType(), dummy.getDataName()), PDGDataEdge.Type.REFERENCE);
+        return pdg;
+    }
+
     private void clearDefStore() {
         clear(defStore);
     }
 
-    private static <E> void clear(HashMap<String, HashSet<E>> map) {
-        for (String key : map.keySet())
-            map.get(key).clear();
-        map.clear();
+    private PDGGraph buildPDG(PDGNode control, String branch, PyObject node) {
+        if (node instanceof For)
+            return buildPDG(control, branch, (For) node);
+        if (node instanceof Assign)
+            return buildPDG(control, branch, (Assign) node);
+        if (node instanceof AugAssign)
+            return buildPDG(control, branch, (AugAssign) node);
+        if (node instanceof Tuple)
+            return buildPDG(control, branch, (Tuple) node);
+        if (node instanceof Name)
+            return buildPDG(control, branch, (Name) node);
+        if (node instanceof Num)
+            return buildPDG(control, branch, (Num) node);
+        if (node instanceof AstList)
+            return buildPDG(control, branch, (AstList) node);
+        if (node instanceof Call)
+            return buildPDG(control, branch, (Call) node);
+        if (node instanceof Return)
+            return buildPDG(control, branch, (Return) node);
+        Assertions.UNREACHABLE(node.getClass().toString());
+        return null;
     }
 
-    public PDGGraph(PDGBuildingContext context) {
-        this.context = context;
+    private void mergeSequentialControl(PDGNode next, String label) {
+        sinks.clear();
+        sinks.add(next);
+        statementSinks.clear();
+        statementSinks.add(next);
+        if (statementNodes.isEmpty())
+            statementSources.add(next);
+        nodes.add(next);
+        statementNodes.add(next);
+    }
+
+    private PDGNode getOnlyOut() {
+        if (sinks.size() == 1)
+            for (PDGNode n : sinks)
+                return n;
+        throw new RuntimeException("ERROR in getting the only output node!!!");
+//		System.err.println("ERROR in getting the only output node!!!");
+//		System.exit(-1);
+//		return null;
+    }
+
+    private void extend(PDGNode ret, PDGDataNode node, PDGDataEdge.Type type) {
+        HashSet<PDGDataNode> ns = new HashSet<>();
+        ns.add((PDGDataNode) node);
+        defStore.put(node.getKey(), ns);
+        nodes.add(node);
+        sinks.remove(ret);
+        sinks.add(node);
+        new PDGDataEdge(ret, node, type);
+    }
+
+    private void adjustBreakNodes(String id) {
+        for (PDGNode node : new HashSet<PDGNode>(breaks)) {
+            if ((node.getKey() == null && id == null) || node.getKey().equals(id)) {
+                sinks.add(node);
+                statementSinks.add(node);
+                breaks.remove(node);
+            }
+        }
+    }
+
+    private HashMap<String, HashSet<PDGDataNode>> copyDefStore() {
+        HashMap<String, HashSet<PDGDataNode>> store = new HashMap<>();
+        for (String key : defStore.keySet())
+            store.put(key, new HashSet<>(defStore.get(key)));
+        return store;
+    }
+
+    private void mergeParallel(PDGGraph... pdgs) {
+        HashMap<String, HashSet<PDGDataNode>> defStore = new HashMap<>();
+        HashMap<String, Integer> defCounts = new HashMap<>();
+        for (PDGGraph pdg : pdgs) {
+            HashMap<String, HashSet<PDGDataNode>> localStore = copyDefStore();
+            nodes.addAll(pdg.nodes);
+            statementNodes.addAll(pdg.statementNodes);
+            sinks.addAll(pdg.sinks);
+            statementSinks.addAll(pdg.statementSinks);
+            dataSources.addAll(pdg.dataSources);
+            statementSources.addAll(pdg.statementSources);
+            breaks.addAll(pdg.breaks);
+            returns.addAll(pdg.returns);
+            updateDefStore(localStore, defCounts, pdg.defStore);
+            add(defStore, localStore);
+            pdg.clear();
+        }
+        clearDefStore();
+        this.defStore = defStore;
+    }
+
+    private void updateDefStore(HashMap<String, HashSet<PDGDataNode>> target,
+                                HashMap<String, Integer> defCounts,
+                                HashMap<String, HashSet<PDGDataNode>> source) {
+        for (String key : source.keySet())
+            target.put(key, new HashSet<>(source.get(key)));
+        for (String key : target.keySet()) {
+            int c = 1;
+            if (defCounts.containsKey(key))
+                c += defCounts.get(key);
+            defCounts.put(key, c);
+        }
+    }
+
+    private PDGDataNode getOnlyDataOut() {
+        if (sinks.size() == 1)
+            for (PDGNode n : sinks)
+                if (n instanceof PDGDataNode)
+                    return (PDGDataNode) n;
+        System.err.println("ERROR in getting the only data output node!!!" + this.context.getFilePath());
+
+        return null;
+    }
+
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              For astNode) {
+        context.addScope();
+        PDGGraph pdg = buildArgumentPDG(control, branch, astNode.getInternalIter());
+        ;
+        if (astNode.getInternalTarget() instanceof Name) {
+            String varName = ((Name) astNode.getInternalTarget()).getInternalId();
+            String varType = TypeWrapper.getTypeInfo(((Name) astNode.getInternalTarget()).getLineno(),
+                    ((Name) astNode.getInternalTarget()).getCol_offset(), varName);
+            context.addLocalVariable(varName, "" + astNode.getInternalTarget().getCharStartIndex(), varType);
+            PDGDataNode varp = new PDGDataNode(astNode.getInternalTarget(), astNode.getInternalTarget().getNodeType(),
+                    "" + astNode.getInternalTarget().getCharStartIndex(), varType,
+                    varName, false, true);
+        } else if (astNode.getInternalTarget() instanceof Tuple) {
+            for (expr var : ((Tuple) astNode.getInternalTarget()).getInternalElts()) {
+                String name = ((Name) var).getInternalId();
+                String type = TypeWrapper.getTypeInfo(((Name) var).getLineno(), ((Name) var).getCol_offset(), name);
+                context.addLocalVariable(name, "" + var.getCharStartIndex(), type);
+                PDGDataNode varNode = new PDGDataNode(var, var.getNodeType(),
+                        "" + var.getCharStartIndex(), type,
+                        name, false, true);
+                pdg.mergeSequentialData(varNode, PDGDataEdge.Type.DEFINITION);
+                pdg.mergeSequentialData(new PDGDataNode(null, varNode.getAstNodeType(),
+                        varNode.getKey(), varNode.getDataType(), varNode.getDataName()), PDGDataEdge.Type.REFERENCE);
+            }
+        } else {
+            Assertions.UNREACHABLE();
+        }
+        PDGControlNode node = new PDGControlNode(control, branch, astNode, astNode.getNodeType());
+        pdg.mergeSequentialData(node, PDGDataEdge.Type.CONDITION);
+        pdg.mergeSequentialControl(new PDGActionNode(node, "",
+                null, PyObject.EMPTY_STATEMENT, null, null, "empty"), "");
+        PDGGraph bg = buildPDG(node, "", astNode.getBody());
+        if (!bg.isEmpty())
+            pdg.mergeSequential(bg);
+        pdg.adjustBreakNodes("");
+        context.removeScope();
+        return pdg;
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              Assign astNode) {
+        PDGGraph lg;
+        ArrayList<PDGDataNode> ldatanodes = new ArrayList<>();
+        if (astNode.getInternalTargets().size() > 1) {
+            PDGGraph[] pgs = new PDGGraph[astNode.getInternalTargets().size()];
+            for (int i = 0; i < astNode.getInternalTargets().size(); i++) {
+                pgs[i] = buildArgumentPDG(control, branch, astNode.getInternalTargets().get(i));
+                ldatanodes.add(pgs[i].getOnlyDataOut());
+            }
+            lg = new PDGGraph(context);
+            lg.mergeParallel(pgs);
+        } else {
+            lg = buildPDG(control, branch, astNode.getInternalTargets().get(0));
+            ldatanodes.add(lg.getOnlyDataOut());
+        }
+
+        PDGGraph rg = buildPDG(control, branch, astNode.getInternalValue());
+        ArrayList<PDGActionNode> rets = rg.getReturns();
+        if (rets.size() > 0) {
+            Assertions.UNREACHABLE();
+        }
+        ArrayList<PDGDataNode> defs = rg.getDefinitions();
+        if (defs.isEmpty()) {
+            rg.mergeSequentialData(new PDGActionNode(control, branch,
+                    astNode, PyObject.ASSIGN, null, null, "="), PDGDataEdge.Type.PARAMETER);
+            for (PDGDataNode ldatanode : ldatanodes) {
+                rg.mergeSequentialData(ldatanode, PDGDataEdge.Type.DEFINITION);
+            }
+        } else {
+            if (defs.get(0).isDummy()) {
+                for (PDGDataNode def : defs) {
+                    rg.defStore.remove(def.getKey());
+                    for (PDGDataNode ldatanode : ldatanodes) {
+                        def.copyData(ldatanode);
+                    }
+                    HashSet<PDGDataNode> ns = rg.defStore.get(def.getKey());
+                    if (ns == null) {
+                        ns = new HashSet<>();
+                        rg.defStore.put(def.getKey(), ns);
+                    }
+                    ns.add(def);
+                }
+            } else {
+                PDGDataNode def = defs.get(0);
+                rg.mergeSequentialData(new PDGDataNode(null, def.getAstNodeType(),
+                                def.getKey(), def.getDataType(), def.getDataName()),
+                        PDGDataEdge.Type.REFERENCE);
+                rg.mergeSequentialData(new PDGActionNode(control, branch,
+                        astNode, PyObject.ASSIGN, null, null, "="), PDGDataEdge.Type.PARAMETER);
+                for (PDGDataNode ldatanode : ldatanodes) {
+                    rg.mergeSequentialData(ldatanode, PDGDataEdge.Type.DEFINITION);
+                }
+            }
+        }
+        rg.nodes.addAll(lg.nodes);
+        rg.statementNodes.addAll(lg.statementNodes);
+        for (PDGDataNode ldatanode : ldatanodes) {
+            lg.dataSources.remove(ldatanode);
+        }
+        rg.dataSources.addAll(lg.dataSources);
+        rg.statementSources.addAll(lg.statementSources);
+        lg.clear();
+        return rg;
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              AugAssign astNode) {
+        Assertions.UNREACHABLE();
+
+        return null;
+
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              Tuple astNode) {
+        Assertions.UNREACHABLE();
+
+        return null;
+
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              Num astNode) {
+
+        return new PDGGraph(context, new PDGDataNode(
+                astNode, astNode.getNodeType(), astNode.getInternalN().toString(), "number",
+                astNode.getInternalN().toString()));
+
+    }
+
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              Name astNode) {
+        String name = astNode.getInternalId();
+        String[] info = context.getLocalVariableInfo(name);
+        if (info != null) {
+            PDGGraph pdg = new PDGGraph(context, new PDGDataNode(
+                    astNode, astNode.getNodeType(), info[0], info[1],
+                    name, false, false));
+            return pdg;
+        }
+        String type = context.getFieldType(name); //TODO update get filed types
+        if (type != null) {
+            PDGGraph pdg = new PDGGraph(context, new PDGDataNode(
+                    null, PyObject.SELF_EXPRESSION, "self",
+                    "self", "self"));
+            pdg.mergeSequentialData(new PDGDataNode(astNode, PyObject.FIELD_ACCESS,
+                    "self." + name, type, name, true,
+                    false), PDGDataEdge.Type.QUALIFIER);
+            return pdg;
+        }
+        if (Character.isUpperCase(name.charAt(0))) {
+            PDGGraph pdg = new PDGGraph(context, new PDGDataNode(
+                    astNode, astNode.getNodeType(), name, name,
+                    name, false, false));
+            return pdg;
+        } else if (context.getImportsMap().containsKey(name)) {
+            PDGGraph pdg = new PDGGraph(context, new PDGDataNode(
+                    astNode, astNode.getNodeType(), name, name,
+                    name, false, false));
+            return pdg;
+        }
+        PDGGraph pdg = new PDGGraph(context, new PDGDataNode(
+                null, PyObject.SELF_EXPRESSION, "self",
+                "self", "self"));
+        pdg.mergeSequentialData(new PDGDataNode(astNode, PyObject.FIELD_ACCESS,
+                "self." + name, "UNKNOWN", name, true,
+                false), PDGDataEdge.Type.QUALIFIER);
+        return pdg;
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              Call astNode) {
+
+        if (astNode.getInternalFunc() instanceof Name && ((Name) astNode.getInternalFunc()).getInternalId().equals("exit")) {
+            PDGActionNode node = new PDGActionNode(control, branch,
+                    astNode, astNode.getNodeType(), null, "exit()", "exit()");
+            PDGGraph pdg = new PDGGraph(context, node);
+            pdg.returns.add(node);
+            pdg.sinks.remove(node);
+            pdg.statementSinks.remove(node);
+            return pdg;
+        }
+
+        PDGGraph[] pgs = new PDGGraph[astNode.getInternalArgs().size() + 1];
+        if (astNode.getInternalArgs().size() > 100)
+            pgs = new PDGGraph[1];
+        PDGActionNode node = null;
+        if (astNode.getInternalFunc() instanceof Attribute) {
+            pgs[0] = buildArgumentPDG(control, branch,
+                    ((Attribute) astNode.getInternalFunc()).getInternalValue());
+            node = new PDGActionNode(control, branch,
+                    astNode, astNode.getNodeType(), null,
+                    pgs[0].getOnlyOut().getDataType() + "." + ((Attribute) astNode.getInternalFunc()).getInternalAttr() + "()",
+                    ((Attribute) astNode.getInternalFunc()).getInternalAttr());
+        } else if (astNode.getInternalFunc() instanceof Name) {
+            pgs[0] = new PDGGraph(context);
+            node = new PDGActionNode(control, branch,
+                    astNode, astNode.getNodeType(), null,
+                    pgs[0].getOnlyOut().getDataType() + "." + ((Name) astNode.getInternalFunc()).getInternalId() + "()",
+                    ((Name) astNode.getInternalFunc()).getInternalId());
+        }
+        if (astNode.getInternalArgs().size() <= 100)
+            for (int i = 0; i < astNode.getInternalArgs().size(); i++)
+                pgs[i + 1] = buildArgumentPDG(control, branch, astNode.getInternalArgs().get(i));
+
+        PDGGraph pdg = null;
+        pgs[0].mergeSequentialData(node, PDGDataEdge.Type.RECEIVER);
+        if (pgs.length > 0) {
+            for (int i = 1; i < pgs.length; i++)
+                pgs[i].mergeSequentialData(node, PDGDataEdge.Type.PARAMETER);
+            pdg = new PDGGraph(context);
+            pdg.mergeParallel(pgs);
+        } else
+            pdg = new PDGGraph(context, node);
+        return pdg;
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              Return astNode) {
+        PDGGraph pdg = null;
+        PDGActionNode node = null;
+        if (astNode.getInternalValue() != null) {
+            pdg = buildArgumentPDG(control, branch, astNode.getInternalValue());
+            node = new PDGActionNode(control, branch, astNode, astNode.getNodeType(),
+                    null, null, "return");
+            pdg.mergeSequentialData(node, PDGDataEdge.Type.PARAMETER);
+        } else {
+            node = new PDGActionNode(control, branch, astNode, astNode.getNodeType(),
+                    null, null, "return");
+            pdg = new PDGGraph(context, node);
+        }
+        pdg.returns.add(node);
+        pdg.sinks.clear();
+        pdg.statementSinks.clear();
+        return pdg;
     }
 }

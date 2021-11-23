@@ -1,9 +1,12 @@
 package com.matching.fgpdg;
 
 import com.matching.fgpdg.nodes.PDGActionNode;
+import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Import;
+import org.python.antlr.ast.ImportFrom;
+import org.python.antlr.ast.alias;
 import org.python.antlr.base.stmt;
 
 import java.util.HashMap;
@@ -13,14 +16,64 @@ import java.util.Stack;
 
 public class PDGBuildingContext {
     private String filePath;
-    private List<stmt> importStmt;
     private FunctionDef method;
+    private HashMap<String, String> fieldTypes = new HashMap<>();
     private Stack<HashMap<String, String>> localVariables = new Stack<>(), localVariableTypes = new Stack<>();
     private Stack<HashSet<PDGActionNode>> stkTrys = new Stack<>();
+    private HashMap<String, String> importsMap = new HashMap<>();
 
-    public PDGBuildingContext(List<stmt> importStmt,String sourceFilePath) {
+    public HashMap<String, String> getImportsMap() {
+        return importsMap;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public PDGBuildingContext(List<stmt> importStmt, String sourceFilePath) {
         this.filePath=sourceFilePath;
-        this.importStmt=importStmt;
+        updateImportMap(importStmt);
+    }
+
+    private void updateImportMap(List<stmt> importStmt) {
+        for (Object anImport : importStmt) {
+            if (anImport instanceof Import){
+                Import im = (Import) anImport;
+                List<alias> internalNames = im.getInternalNames();
+                for (alias internalName : internalNames) {
+                    if (internalName.getInternalAsname()!=null){
+                        importsMap.put(internalName.getInternalAsname(),internalName.getInternalName());
+                    }
+                    else{
+                        String[] split = internalName.getInternalName().split("\\.");
+                        importsMap.put(split[split.length-1],internalName.getInternalName());
+                    }
+                }
+            }
+            else if (anImport instanceof ImportFrom){
+                ImportFrom im = (ImportFrom) anImport;
+                String from = im.getInternalModule();
+                List<alias> internalNames = im.getInternalNames();
+                for (alias internalName : internalNames) {
+                    if (internalName.getInternalAsname()!=null){
+                        importsMap.put(internalName.getInternalAsname(),from+"."+internalName.getInternalName());
+                    }
+                    else{
+                        String[] split = internalName.getInternalName().split("\\.");
+                        importsMap.put(split[split.length-1],from+"."+internalName.getInternalName());
+                    }
+                }
+            }
+        }
+    }
+
+    public String getFieldType(String name) {
+        String type = this.fieldTypes.get(name);
+        if (type == null) {
+//			buildSuperFieldTypes();
+            type = this.fieldTypes.get(name);
+        }
+        return type;
     }
 
     public void addScope() {
