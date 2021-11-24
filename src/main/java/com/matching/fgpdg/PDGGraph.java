@@ -25,7 +25,7 @@ public class PDGGraph implements Serializable {
     protected HashSet<PDGNode> sinks = new HashSet<PDGNode>();
     protected HashSet<PDGNode> breaks = new HashSet<>();
     protected HashSet<PDGNode> returns = new HashSet<>();
-
+    protected HashSet<PDGNode> changedNodes = new HashSet<>();
     private PDGBuildingContext context;
     private HashMap<String, HashSet<PDGDataNode>> defStore = new HashMap<>();
 
@@ -370,6 +370,8 @@ public class PDGGraph implements Serializable {
             return buildPDG(control, branch, (Call) node);
         if (node instanceof Return)
             return buildPDG(control, branch, (Return) node);
+        if (node instanceof Expr)
+            return buildPDG(control, branch, (Expr) node);
         Assertions.UNREACHABLE(node.getClass().toString());
         return null;
     }
@@ -464,6 +466,35 @@ public class PDGGraph implements Serializable {
         System.err.println("ERROR in getting the only data output node!!!" + this.context.getFilePath());
 
         return null;
+    }
+
+    private void delete(PDGNode node) {
+        if (statementSinks.contains(node))
+            for (PDGEdge e : node.getInEdges())
+                if (e instanceof PDGDataEdge) {
+                    if (((PDGDataEdge) e).getType() == PDGDataEdge.Type.DEPENDENCE)
+                        statementSinks.add(e.getSource());
+                    else if (((PDGDataEdge) e).getType() == PDGDataEdge.Type.PARAMETER)
+                        sinks.add(e.getSource());
+                }
+        if (sinks.contains(node) && node instanceof PDGDataNode) {
+            for (PDGEdge e : node.getInEdges())
+                if (e.getSource() instanceof PDGDataNode)
+                    sinks.add(e.getSource());
+        }
+        if (statementSources.contains(node))
+            for (PDGEdge e : node.getOutEdges())
+                if (e instanceof PDGDataEdge
+                        && ((PDGDataEdge) e).getType() == PDGDataEdge.Type.DEPENDENCE)
+                    statementSources.add(e.getTarget());
+        nodes.remove(node);
+        changedNodes.remove(node);
+        statementNodes.remove(node);
+        dataSources.remove(node);
+        statementSources.remove(node);
+        sinks.remove(node);
+        statementSinks.remove(node);
+        node.delete();
     }
 
 
@@ -689,6 +720,7 @@ public class PDGGraph implements Serializable {
         return pdg;
     }
 
+
     private PDGGraph buildPDG(PDGNode control, String branch,
                               Return astNode) {
         PDGGraph pdg = null;
@@ -707,5 +739,20 @@ public class PDGGraph implements Serializable {
         pdg.sinks.clear();
         pdg.statementSinks.clear();
         return pdg;
+    }
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              Expr astNode) {
+        PDGGraph pdg = buildPDG(control, branch, astNode.getInternalValue());
+        ArrayList<PDGActionNode> rets = pdg.getReturns();
+        if (rets.size() > 0) {
+            for (PDGNode ret : new HashSet<PDGNode>(rets)) {
+                for (PDGEdge e : new HashSet<PDGEdge>(ret.getInEdges()))
+                    if (e.getSource() instanceof PDGDataNode)
+                        pdg.delete(e.getSource());
+                pdg.delete(ret);
+            }
+        }
+        return pdg;
+
     }
 }
