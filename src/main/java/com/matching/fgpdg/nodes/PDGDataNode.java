@@ -2,6 +2,7 @@ package com.matching.fgpdg.nodes;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.python.antlr.ast.Name;
+import org.python.antlr.ast.arg;
 import org.python.core.PyObject;
 
 
@@ -105,5 +106,18 @@ public class PDGDataNode extends PDGNode {
 
     public boolean isField() {
         return isField;
+    }
+
+    @Override
+    public  boolean isEqualNodes(PDGNode node){
+        if (node instanceof PDGDataNode){
+            if (this.astNode instanceof Name || this.astNode instanceof arg){
+                return true;
+            }
+        }
+        else{
+            return false;
+        }
+        return getLabel().equals(node.getLabel());
     }
 }

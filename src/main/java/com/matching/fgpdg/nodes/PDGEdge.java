@@ -20,4 +20,6 @@ public abstract class PDGEdge {
     }
 
     public abstract String getExasLabel();
+
+    public abstract boolean isEqualEdge(PDGEdge edge);
 }

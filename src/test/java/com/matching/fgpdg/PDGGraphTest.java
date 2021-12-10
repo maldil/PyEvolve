@@ -25,4 +25,14 @@ class PDGGraphTest {
         dg.toDotFile(new File(dirPath  +"file___"+".dot"));
     }
 
+    @Test
+    void testPDG2() {
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        Module parse = parser.parse("pattern.py");
+        PDGBuildingContext context = new PDGBuildingContext(new ArrayList<>(),"");
+        PDGGraph pdg = new PDGGraph(parse,context);
+        DotGraph dg = new DotGraph(pdg);
+        String dirPath = "./OUTPUT/";
+        dg.toDotFile(new File(dirPath  +"__pattern__file___"+".dot"));
+    }
 }

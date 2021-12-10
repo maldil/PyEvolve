@@ -30,4 +30,9 @@ public class PDGEntryNode extends PDGNode {
     public String toString() {
         return getLabel();
     }
+
+    @Override
+    public  boolean isEqualNodes(PDGNode node){
+        return getLabel().equals(node.getLabel());
+    }
 }

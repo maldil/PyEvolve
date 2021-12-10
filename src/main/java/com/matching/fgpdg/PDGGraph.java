@@ -3,6 +3,7 @@ package com.matching.fgpdg;
 import com.matching.fgpdg.nodes.*;
 import com.utils.Assertions;
 import org.python.antlr.ast.*;
+import org.python.antlr.ast.Module;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.stmt;
 import org.python.core.AstList;
@@ -12,6 +13,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 
 public class PDGGraph implements Serializable {
     private static final long serialVersionUID = -5128703931982211886L;
@@ -56,6 +58,38 @@ public class PDGGraph implements Serializable {
         adjustReturnNodes();
         adjustControlEdges();
         context.removeScope();
+    }
+
+    public PDGGraph(Module md, PDGBuildingContext context) {
+        this.context = context;
+        context.addScope();
+        entryNode = new PDGEntryNode(md, PyObject.MODULE, "START");
+        nodes.add(entryNode);
+        statementNodes.add(entryNode);
+        for (stmt stmt : md.getInternalBody()) {
+            mergeSequential(Objects.requireNonNull(buildPDG(entryNode, "", stmt)));
+        }
+        adjustReturnNodes();
+        adjustControlEdges();
+        HashSet<PDGNode> toRemove = new HashSet<PDGNode>();
+        for (PDGNode node : nodes) {
+            if (node instanceof PDGEntryNode && node.getLabel().equals("START")){
+                for (PDGEdge edge : node.getOutEdges()) {
+                    edge.getTarget().getInEdges().remove(edge);
+                }
+                toRemove.add(node);
+            }
+            else if (node instanceof PDGEntryNode && node.getLabel().equals("END")){
+                for (PDGEdge edge: node.getInEdges()){
+                    edge.getSource().getOutEdges().remove(edge);
+                }
+                toRemove.add(node);
+            }
+        }
+        toRemove.forEach(x-> nodes.remove(x));
+
+        context.removeScope();
+
     }
 
     public PDGGraph(PDGBuildingContext context, PDGNode node) {
@@ -149,7 +183,6 @@ public class PDGGraph implements Serializable {
             if (s == pdgs.size())
                 return new PDGGraph(context);
             pdg1 = pdgs.get(s);
-
             context.removeScope();
             return pdg1;
         }
@@ -372,6 +405,8 @@ public class PDGGraph implements Serializable {
             return buildPDG(control, branch, (Return) node);
         if (node instanceof Expr)
             return buildPDG(control, branch, (Expr) node);
+        if (node instanceof BinOp)
+            return buildPDG(control, branch, (BinOp) node);
         Assertions.UNREACHABLE(node.getClass().toString());
         return null;
     }
@@ -752,6 +787,22 @@ public class PDGGraph implements Serializable {
                 pdg.delete(ret);
             }
         }
+        return pdg;
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              BinOp astNode) {
+        PDGGraph pdg = new PDGGraph(context);
+        PDGGraph lg = buildArgumentPDG(control, branch,
+                astNode.getInternalLeft());
+        PDGGraph rg = buildArgumentPDG(control, branch,
+                astNode.getInternalRight());
+        PDGActionNode node = new PDGActionNode(control, branch,
+                astNode, astNode.getNodeType(), null, null, astNode.getInternalOp().toString());
+        lg.mergeSequentialData(node, PDGDataEdge.Type.PARAMETER);
+        rg.mergeSequentialData(node, PDGDataEdge.Type.PARAMETER);
+        pdg.mergeParallel(lg, rg);
+
         return pdg;
 
     }

@@ -25,4 +25,9 @@ public class PDGControlEdge extends PDGEdge {
     public String toString() {
         return getLabel();
     }
+
+    @Override
+    public  boolean isEqualEdge(PDGEdge node){
+        return node instanceof PDGControlEdge && getLabel().equals(node.getLabel());
+    }
 }

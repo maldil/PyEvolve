@@ -92,4 +92,9 @@ public class PDGActionNode extends PDGNode {
             }
         }
     }
+
+    @Override
+    public  boolean isEqualNodes(PDGNode node){
+        return node instanceof PDGActionNode && getLabel().equals(node.getLabel());
+    }
 }

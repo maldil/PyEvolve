@@ -55,4 +55,9 @@ public class PDGControlNode extends PDGNode {
             return astNodeType == node.astNodeType;
         return false;
     }
+
+    @Override
+    public  boolean isEqualNodes(PDGNode node){
+        return node instanceof PDGControlNode && getLabel().equals(node.getLabel());
+    }
 }

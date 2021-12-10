@@ -297,4 +297,7 @@ public abstract class PDGNode {
         }
         return true;
     }
+
+    public abstract boolean  isEqualNodes(PDGNode node);
+
 }
