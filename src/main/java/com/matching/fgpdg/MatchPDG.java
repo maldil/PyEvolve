@@ -1,17 +1,22 @@
 package com.matching.fgpdg;
 
 import com.ibm.wala.util.collections.Pair;
+import com.matching.fgpdg.nodes.PDGActionNode;
 import com.matching.fgpdg.nodes.PDGEdge;
 import com.matching.fgpdg.nodes.PDGNode;
+import com.utils.DotGraph;
 
+import java.io.File;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class MatchPDG {
     public HashSet<PDGNode> visitedASTNodes= new HashSet<>();
-    protected PDGGraph getSubGraphs(PDGGraph pattern, PDGGraph code)  {
-        HashSet<PDGNode> patternNodes = pattern.getNodes();
+    protected List<MatchedNode> getSubGraphs(PDGGraph pattern, PDGGraph code)  {
+        PDGGraph pruned_pattern=pruneAndCleanPatternPDG(pattern);
+        HashSet<PDGNode> patternNodes = pruned_pattern.getNodes();
+        DotGraph dg = new DotGraph(pruned_pattern);
+        dg.toDotFile(new File("./OUTPUT/"  +"___pruned_pattern__file___"+".dot"));
         HashSet<PDGNode> codeNodes = code.getNodes();
         ArrayList<Pair<PDGNode,PDGNode>> startNodes = new ArrayList<>();
         ArrayList<ArrayList<PDGNode>> matched = new ArrayList<>();
@@ -23,19 +28,27 @@ public class MatchPDG {
                     }
             }
             if (startNodes.size()!=0) {
-                for (Pair<PDGNode, PDGNode> startNode : startNodes) {
-                    HashMap<PDGNode, ArrayList<PDGNode>> matchedNodes = getNextMatchedNodePairs(startNode);
-                }
-
+                return startNodes.stream().map(x-> new MatchedNode(x.fst,x.snd,new HashSet<>())).collect(Collectors.toList());
             }
-            else{
-                return null;
-            }
-        }
-        else{
-            return null;
         }
         return null;
+    }
+
+    private PDGGraph pruneAndCleanPatternPDG(PDGGraph pattern) {
+        ArrayList<PDGNode> remove = new ArrayList<>();
+        for (PDGNode node : pattern.nodes) {
+            if (node instanceof PDGActionNode && node.getLabel().equals("empty")){
+                remove.add(node);
+                for (PDGEdge inEdge : node.getInEdges()) {
+                    inEdge.getSource().getOutEdges().remove(inEdge);
+                }
+                for (PDGEdge outEdge : node.getOutEdges()) {
+                    outEdge.getTarget().getInEdges().remove(outEdge);
+                }
+            }
+        }
+        remove.forEach(k-> pattern.nodes.remove(k));
+        return pattern;
     }
 
     private PDGNode getMaxDOF(HashSet<PDGNode> nodes){
@@ -73,7 +86,7 @@ public class MatchPDG {
                                 matchedNodesLists.put(patternEdge.getTarget(),nodeList);
                             }
                             else {
-                                matchedNodesLists.get(patternEdge.getTarget()).add(patternEdge.getTarget());
+                                matchedNodesLists.get(patternEdge.getTarget()).add(codeEdge.getTarget());
                             }
                             visitedNodes.add(codeEdge.getTarget());
                         }
@@ -147,18 +160,29 @@ public class MatchPDG {
     }
 
     private Map<String, List<PDGEdge>> getTheMappedEdges(ArrayList<PDGEdge> fullEdges, ArrayList<PDGEdge> subset){
+        Map<String, List<PDGEdge>> compared_nodes=new HashMap<>();
+        if (subset.size()==0){
+            compared_nodes.put("EMPTY",new ArrayList<>());
+            return compared_nodes;
+        }
+
         Map<String, List<PDGEdge>> fullEdgesGroup
                 = fullEdges.stream()
                 .collect(Collectors.groupingBy(PDGEdge::getLabel));
         Map<String, List<PDGEdge>> subsetGroup
                 = subset.stream()
                 .collect(Collectors.groupingBy(PDGEdge::getLabel));
-        Map<String, List<PDGEdge>> compared_nodes=new HashMap<>();
+
         subsetGroup.forEach((k,v)->{
             if (fullEdgesGroup.get(k)!=null&&fullEdgesGroup.get(k).size()>=v.size()){
                 compared_nodes.put(k,fullEdgesGroup.get(k));
             }
             });
         return compared_nodes;
+    }
+
+    public void drawMatchedGraphs(PDGGraph fpdg, List<MatchedNode> graphs,String fileName) {
+        DotGraph dg = new DotGraph(fpdg,graphs);
+        dg.toDotFile(new File("./OUTPUT/"  +fileName));
     }
 }

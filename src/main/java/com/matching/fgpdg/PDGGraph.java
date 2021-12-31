@@ -1,6 +1,7 @@
 package com.matching.fgpdg;
 
 import com.matching.fgpdg.nodes.*;
+import com.matching.fgpdg.nodes.TypeInfo.TypeWrapper;
 import com.utils.Assertions;
 import org.python.antlr.ast.*;
 import org.python.antlr.ast.Module;

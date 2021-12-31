@@ -8,8 +8,9 @@ import org.python.antlr.ast.Module;
 import java.util.ArrayList;
 import java.util.List;
 
-class MatchPDGTest {
+import static org.junit.jupiter.api.Assertions.*;
 
+class MatchedNodeTest {
     @Test
     void getSubGraphs() {
         Module codeModule = getPythonModule("test1.py");
@@ -24,16 +25,10 @@ class MatchPDGTest {
         MatchPDG match = new MatchPDG();
         List<MatchedNode> graphs = match.getSubGraphs(mpdg,fpdg );
         match.drawMatchedGraphs(fpdg,graphs,"matched_graph.dot");
-
     }
 
     private Module getPythonModule(String fileName){
         ConcreatePythonParser parser = new ConcreatePythonParser();
         return parser.parse(fileName);
-//        FunctionDef func = (FunctionDef) parse.getInternalBody().get(1);
-//        PDGBuildingContext context = new PDGBuildingContext(new ArrayList<>(),"");
-//        PDGGraph pdg = new PDGGraph(func,context);
-
     }
-
 }

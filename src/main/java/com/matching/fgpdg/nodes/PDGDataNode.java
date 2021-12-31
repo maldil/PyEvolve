@@ -111,7 +111,7 @@ public class PDGDataNode extends PDGNode {
     @Override
     public  boolean isEqualNodes(PDGNode node){
         if (node instanceof PDGDataNode){
-            if (this.astNode instanceof Name || this.astNode instanceof arg){
+            if (this.astNodeType == PyObject.NAME|| this.astNodeType == PyObject.ARG){
                 return true;
             }
         }

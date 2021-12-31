@@ -4,9 +4,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.*;
 
 
+import com.matching.fgpdg.MatchedNode;
 import com.matching.fgpdg.PDGGraph;
 import com.matching.fgpdg.nodes.*;
 
@@ -16,6 +17,7 @@ public class DotGraph {
     public static final String SHAPE_DIAMOND = "diamond";
     public static final String SHAPE_ELLIPSE = "ellipse";
     public static final String COLOR_BLACK = "black";
+    public static final String COLOR_BLUE= "blue";
     public static final String COLOR_RED = "red";
     public static final String STYLE_ROUNDED = "rounded";
     public static final String STYLE_DOTTED = "dotted";
@@ -37,25 +39,16 @@ public class DotGraph {
         for (PDGNode node : pd.getNodes()) {
             ids.put(node, ++id);
             String color = null;
-            String shape = null;
-            if (node instanceof PDGDataNode){
-                shape = SHAPE_ELLIPSE;
-            }
-            else if (node instanceof PDGActionNode){
-                shape = SHAPE_BOX;
-            }
-            else if (node instanceof PDGControlNode){
-                shape = SHAPE_DIAMOND;
-            }
-
-            String style=null;
-            if (node.version ==0)
-                style=STYLE_DASHED;
-            else if (node.version==1)
-                style=STYLE_SOLID;
-            graph.append(addNode(id, node.getLabel(), shape, style, color, color));
+            addNode(id, node, color);
         }
 
+        addEdges(pd, ids);
+
+        graph.append(addEnd());
+
+    }
+
+    private void addEdges(PDGGraph pd, HashMap<PDGNode, Integer> ids) {
         for (PDGNode node : pd.getNodes()) {
             int tId = ids.get(node);
             for (PDGEdge e : node.getInEdges()) {
@@ -67,12 +60,62 @@ public class DotGraph {
                     graph.append(addEdge(sId, tId, STYLE_DOTTED, null, label));
             }
         }
+    }
+
+    private void addNode(int id, PDGNode node, String color) {
+        String shape = null;
+        if (node instanceof PDGDataNode){
+            shape = SHAPE_ELLIPSE;
+        }
+        else if (node instanceof PDGActionNode){
+            shape = SHAPE_BOX;
+        }
+        else if (node instanceof PDGControlNode){
+            shape = SHAPE_DIAMOND;
+        }
+
+        String style=null;
+        if (node.version ==0)
+            style=STYLE_DASHED;
+        else if (node.version==1)
+            style=STYLE_SOLID;
+        graph.append(addNode(id, node.getLabel(), shape, style, color, color));
+    }
+
+    public DotGraph(PDGGraph fpdg, List<MatchedNode> graphs) {
+        ArrayList<String> colors = new ArrayList<>();
+        colors.add(COLOR_BLUE);
+        colors.add(COLOR_RED);
+        graph = new StringBuilder();
+        graph.append(addStart());
+        HashMap<PDGNode, Integer> ids = new HashMap<>();
+        int id = 0;
+        for (PDGNode node : fpdg.getNodes()) {
+            ids.put(node, ++id);
+            String color = null;
+            for (int i =0;i<graphs.size();i++){
+                if (Collections.frequency(graphs.get(i).getPDGNodes(),node)==1){
+                    color=colors.get(i%colors.size());
+
+                    break;
+                }
+                else if (Collections.frequency(graphs.get(i).getPDGNodes(),node)>1){
+                    color="green";
+                    break;
+                }
+            }
+
+            addNode(id, node, color);
+        }
+
+        addEdges(fpdg, ids);
 
         graph.append(addEnd());
 
+
+
+
     }
-
-
 
 
     public String addStart() {
@@ -142,4 +185,6 @@ public class DotGraph {
             e.printStackTrace();
         }
     }
+
+
 }
