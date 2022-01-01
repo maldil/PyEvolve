@@ -29,6 +29,7 @@ dependencies {
     implementation group: 'org.python', name:'jython3', version:'0.0.1-SNAPSHOT'
     implementation group: 'com.ibm.wala', name:'com.ibm.wala.cast.python.ml', version:'0.0.1-SNAPSHOT'
     compile 'commons-cli:commons-cli:1.5.0'
+    compile 'com.google.guava:guava:29.0-jre'
     testImplementation group: 'org.junit.jupiter', name:'junit-jupiter-api', version:'5.7.0'
     testRuntimeOnly group: 'org.junit.jupiter', name:'junit-jupiter-engine', version:'5.7.0'
 }

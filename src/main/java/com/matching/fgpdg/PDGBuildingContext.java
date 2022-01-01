@@ -1,6 +1,7 @@
 package com.matching.fgpdg;
 
 import com.matching.fgpdg.nodes.PDGActionNode;
+import com.matching.fgpdg.nodes.TypeInfo.TypeWrapper;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.python.antlr.ast.FunctionDef;
@@ -9,13 +10,13 @@ import org.python.antlr.ast.ImportFrom;
 import org.python.antlr.ast.alias;
 import org.python.antlr.base.stmt;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Stack;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PDGBuildingContext {
     private String filePath;
+    private TypeWrapper typeWrapper;
     private FunctionDef method;
     private HashMap<String, String> fieldTypes = new HashMap<>();
     private Stack<HashMap<String, String>> localVariables = new Stack<>(), localVariableTypes = new Stack<>();
@@ -30,9 +31,15 @@ public class PDGBuildingContext {
         return filePath;
     }
 
-    public PDGBuildingContext(List<stmt> importStmt, String sourceFilePath) {
+    public PDGBuildingContext(List<stmt> importStmt, String sourceFilePath) throws IOException {
+        typeWrapper = new TypeWrapper(Configurations.TYPE_REPOSITORY+
+                sourceFilePath.split("/")[0]+"/"+ Arrays.stream(sourceFilePath.split("/")).skip(1).collect(Collectors.joining("_"))+".json" );
         this.filePath=sourceFilePath;
         updateImportMap(importStmt);
+    }
+
+    public TypeWrapper getTypeWrapper() {
+        return typeWrapper;
     }
 
     private void updateImportMap(List<stmt> importStmt) {

@@ -151,7 +151,7 @@ public class PDGGraph implements Serializable {
     private PDGGraph buildPDG(PDGNode control, String branch,
                               arg astNode) {
         String name = astNode.getInternalArg();
-        String type = TypeWrapper.getTypeInfo(astNode.getLine(), astNode.getCharPositionInLine(), name);
+        String type = context.getTypeWrapper().getTypeInfo(astNode.getLine(), astNode.getCharPositionInLine());
         context.addLocalVariable(name, "" + astNode.getCharStartIndex(), type);
         PDGDataNode node = new PDGDataNode(astNode, astNode.getNodeType(),
                 "" + astNode.getCharPositionInLine(), type,
@@ -541,8 +541,11 @@ public class PDGGraph implements Serializable {
 
         if (astNode.getInternalTarget() instanceof Name) {
             String varName = ((Name) astNode.getInternalTarget()).getInternalId();
-            String varType = TypeWrapper.getTypeInfo(((Name) astNode.getInternalTarget()).getLineno(),
-                    ((Name) astNode.getInternalTarget()).getCol_offset(), varName);
+            String varType = context.getTypeWrapper().getTypeInfo(((Name) astNode.getInternalTarget()).getLineno(),
+                    ((Name) astNode.getInternalTarget()).getCol_offset());
+
+
+
             context.addLocalVariable(varName, "" + astNode.getInternalTarget().getCharStartIndex(), varType);
             PDGDataNode varp = new PDGDataNode(astNode.getInternalTarget(), astNode.getInternalTarget().getNodeType(),
                     "" + astNode.getInternalTarget().getCharStartIndex(), varType,
@@ -553,7 +556,7 @@ public class PDGGraph implements Serializable {
         } else if (astNode.getInternalTarget() instanceof Tuple) {
             for (expr var : ((Tuple) astNode.getInternalTarget()).getInternalElts()) {
                 String name = ((Name) var).getInternalId();
-                String type = TypeWrapper.getTypeInfo(((Name) var).getLineno(), ((Name) var).getCol_offset(), name);
+                String type = context.getTypeWrapper().getTypeInfo(((Name) var).getLineno(), ((Name) var).getCol_offset());
                 context.addLocalVariable(name, "" + var.getCharStartIndex(), type);
                 PDGDataNode varNode = new PDGDataNode(var, var.getNodeType(),
                         "" + var.getCharStartIndex(), type,

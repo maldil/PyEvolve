@@ -65,8 +65,6 @@ public class MatchPDG {
     }
 
 
-
-
     private HashMap<PDGNode, ArrayList<PDGNode>> getNextMatchedNodePairs(Pair<PDGNode, PDGNode> startNodes) {
         HashMap<PDGNode,ArrayList<PDGNode>> matchedNodesLists = new HashMap<>();
         HashSet<PDGNode> visitedNodes = new HashSet<>();
@@ -100,14 +98,6 @@ public class MatchPDG {
         }
         return matchedNodesLists;
     }
-
-
-
-
-
-
-
-
 
     private HashMap<PDGNode, ArrayList<PDGNode>> getNextMatchedNodePairs(ArrayList<Pair<PDGNode, PDGNode>> startNodes) {
         ArrayList<Pair<PDGNode,PDGNode>> matchedNodes = new ArrayList<>();
