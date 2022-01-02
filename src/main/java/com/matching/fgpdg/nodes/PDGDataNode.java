@@ -111,8 +111,23 @@ public class PDGDataNode extends PDGNode {
     @Override
     public  boolean isEqualNodes(PDGNode node){
         if (node instanceof PDGDataNode){
-            if (this.astNodeType == PyObject.NAME|| this.astNodeType == PyObject.ARG){
-                return true;
+            if ((this.astNodeType == node.astNodeType) &&  (( this.astNodeType== PyObject.NAME)
+                    || (this.astNodeType == PyObject.ARG))){
+                if (node.getDataType().equals(getDataType()))
+                    return true;
+                else if ((getDataType()!=null && node.getDataType()!=null) && (node.getDataType().equals("Any")||getDataType().equals("Any")))
+                    return true;
+                else
+                    return false;
+            }
+            else if (this.astNodeType==PyObject.NUM &&(this.astNodeType == node.astNodeType)){
+                if (((PDGDataNode) node).dataName.equals(getDataName())){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+
             }
         }
         else{

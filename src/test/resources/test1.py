@@ -1,10 +1,11 @@
 import numpy.boo, koo.zoo as s
+import numpy as np
 # wefuiwefhwef
 def function1(sentence,boo):
     x= 0
-    number=0
+    hhh=0
     for count in sentence:
         exit(0)
         cc = np.sum(count)
-        number=number+count
-    return cc
+        hhh=hhh+count
+    return bb
