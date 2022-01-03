@@ -37,7 +37,6 @@ class MatchedNodeTest {
             System.err.println("Type information can not be performed");
             e.printStackTrace();
         }
-
     }
 
     private Module getPythonModule(String fileName){

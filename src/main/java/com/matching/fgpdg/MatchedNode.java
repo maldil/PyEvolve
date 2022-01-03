@@ -1,5 +1,6 @@
 package com.matching.fgpdg;
 
+import com.google.common.base.Function;
 import com.ibm.wala.util.collections.Pair;
 import com.matching.fgpdg.nodes.PDGEdge;
 import com.matching.fgpdg.nodes.PDGNode;
@@ -119,24 +120,77 @@ public class MatchedNode {
     private boolean isEqualNodes(PDGNode codeNode, PDGNode patternNode){
         boolean equalNodes = codeNode.isEqualNodes(patternNode);
         if (equalNodes){
-            Map<String, List<PDGEdge>> inEdges = getTheMappedEdges(codeNode.getInEdges(), patternNode.getInEdges());
-            if (inEdges.size()>0){
-                Map<String, List<PDGEdge>> outEdges = getTheMappedEdges(codeNode.getOutEdges(), patternNode.getOutEdges());
-                if(outEdges.size()>0){
+            Map<String, Pair<List<PDGEdge>,List<PDGEdge>>> inEdges = getTheMappedEdges(codeNode.getInEdges(), patternNode.getInEdges());
+
+            if (inEdges!=null){
+                if (!isChildNodeEquivalant(inEdges,PDGEdge::getSource)){
+                    return false;
+                }
+                Map<String, Pair<List<PDGEdge>,List<PDGEdge>>> outEdges = getTheMappedEdges(codeNode.getOutEdges(), patternNode.getOutEdges());
+                if(outEdges!=null){
+                    if (!isChildNodeEquivalant(outEdges,PDGEdge::getTarget)){
+                        return false;
+                    }
                     return true;
                 }
+
             }
         }
         return false;
     }
 
-    private Map<String, List<PDGEdge>> getTheMappedEdges(ArrayList<PDGEdge> fullEdges, ArrayList<PDGEdge> subset){
-        Map<String, List<PDGEdge>> compared_nodes=new HashMap<>();
+    private boolean isChildNodeEquivalant(Map<String, Pair<List<PDGEdge>,List<PDGEdge>>> edgeGroups,Function<PDGEdge, PDGNode> func){
+        for (Map.Entry<String, Pair<List<PDGEdge>, List<PDGEdge>>> pairEntry : edgeGroups.entrySet()) {
+            List<PDGNode> codeNodes = pairEntry.getValue().fst.stream().map(func).collect(Collectors.toList());
+            List<PDGNode> patternNodes = pairEntry.getValue().snd.stream().map(func).collect(Collectors.toList());
+            Map<PDGNode,HashSet<PDGNode>> matchedNodes = new HashMap<>();
+            for (PDGNode pNode : patternNodes) {
+                for (PDGNode cNode : codeNodes) {
+                    if (pNode.isEqualNodes(cNode)){
+                        if (matchedNodes.get(pNode)==null){
+                            HashSet<PDGNode> set=new HashSet<>();
+                            set.add(cNode);
+                            matchedNodes.put(pNode,set);
+                        }
+                        else{
+                            matchedNodes.get(pNode).add(cNode);
+                        }
+                    }
+                }
+            }
+            if (matchedNodes.size()<patternNodes.size()){
+                return false;
+            }
+            for (int i =0;i<matchedNodes.size();i++){
+
+                    //TODO extend this to get all the unique matched child nodes in the code and check whether each pattern child node match to code child nodes
+
+            }
+        }
+        return true;
+    }
+
+    private List<List<PDGNode>> getAllNodePermutations(List<HashSet<PDGNode>> nodeList, int i){
+        List<List<PDGNode>> perMutations= new ArrayList<>();
+        if (i>1){
+            for (PDGNode node : nodeList.get(i)) {
+                List<PDGNode> list = new ArrayList<>();
+                list.add(node);
+                for (PDGNode cNode : nodeList.get(i-1)) {
+                    list.add(cNode);
+                    perMutations.add(list);
+                }
+            }
+        }
+        return perMutations;
+    }
+
+    private Map<String, Pair<List<PDGEdge>,List<PDGEdge>>> getTheMappedEdges(ArrayList<PDGEdge> fullEdges, ArrayList<PDGEdge> subset){
+        Map<String, Pair<List<PDGEdge>,List<PDGEdge>>> compared_nodes=new HashMap<>();
         if (subset.size()==0){
-            compared_nodes.put("EMPTY",new ArrayList<>());
+            compared_nodes.put("EMPTY", Pair.make(new ArrayList<>(),new ArrayList<>()));
             return compared_nodes;
         }
-
         Map<String, List<PDGEdge>> fullEdgesGroup
                 = fullEdges.stream()
                 .collect(Collectors.groupingBy(PDGEdge::getLabel));
@@ -146,9 +200,15 @@ public class MatchedNode {
 
         subsetGroup.forEach((k,v)->{
             if (fullEdgesGroup.get(k)!=null&&fullEdgesGroup.get(k).size()>=v.size()){
-                compared_nodes.put(k,fullEdgesGroup.get(k));
+                compared_nodes.put(k,Pair.make(fullEdgesGroup.get(k),subsetGroup.get(k)));
             }
         });
+
+        for (String pathLabel : subsetGroup.keySet()) {
+            if (!compared_nodes.containsKey(pathLabel)){
+                return null;
+            }
+        }
         return compared_nodes;
     }
 
