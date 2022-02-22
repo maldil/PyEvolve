@@ -113,7 +113,7 @@ public class PDGDataNode extends PDGNode {
         if (node instanceof PDGDataNode){
             if ((this.astNodeType == node.astNodeType) &&  (( this.astNodeType== PyObject.NAME)
                     || (this.astNodeType == PyObject.ARG))){
-                if (node.getDataType().equals(getDataType()))
+                if ((getDataType()!=null && node.getDataType()!=null) && node.getDataType().equals(getDataType()))
                     return true;
                 else if ((getDataType()!=null && node.getDataType()!=null) && (node.getDataType().equals("Any")||getDataType().equals("Any")))
                     return true;

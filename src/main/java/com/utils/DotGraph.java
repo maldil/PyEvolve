@@ -19,6 +19,7 @@ public class DotGraph {
     public static final String COLOR_BLACK = "black";
     public static final String COLOR_BLUE= "blue";
     public static final String COLOR_RED = "red";
+    public static final String COLOR_GREEN= "red";
     public static final String STYLE_ROUNDED = "rounded";
     public static final String STYLE_DOTTED = "dotted";
     public static final String STYLE_SOLID = "solid";
@@ -56,6 +57,8 @@ public class DotGraph {
                 String label = e.getLabel();
                 if (label.equals("T") || label.equals("F"))
                     graph.append(addEdge(sId, tId, null, null, label));
+                else if (e instanceof PDGControlEdge)
+                    graph.append(addEdge(sId, tId, STYLE_SOLID, null, label));
                 else
                     graph.append(addEdge(sId, tId, STYLE_DOTTED, null, label));
             }
@@ -86,23 +89,34 @@ public class DotGraph {
         ArrayList<String> colors = new ArrayList<>();
         colors.add(COLOR_BLUE);
         colors.add(COLOR_RED);
+        colors.add(COLOR_GREEN);
         graph = new StringBuilder();
         graph.append(addStart());
         HashMap<PDGNode, Integer> ids = new HashMap<>();
         int id = 0;
         for (PDGNode node : fpdg.getNodes()) {
+            String color=null;
             ids.put(node, ++id);
-            String color = null;
-            for (int i =0;i<graphs.size();i++){
-                if (Collections.frequency(graphs.get(i).getPDGNodes(),node)==1){
-                    color=colors.get(i%colors.size());
 
-                    break;
+            for (int i =0;i<graphs.size();i++){
+                for (PDGNode pdgNode : graphs.get(i).getPDGNodes()) {
+                    if (pdgNode.equals(node)) {
+                        color = colors.get(i);
+                        break;
+                    }
                 }
-                else if (Collections.frequency(graphs.get(i).getPDGNodes(),node)>1){
-                    color="green";
-                    break;
-                }
+
+
+//                if ()
+//                if (Collections.frequency(graphs.get(i).getPDGNodes(),node)==1){
+//                    color=colors.get(i%colors.size());
+//
+//                    break;
+//                }
+//                else if (Collections.frequency(graphs.get(i).getPDGNodes(),node)>1){
+//                    color="green";
+//                    break;
+//                }
             }
 
             addNode(id, node, color);

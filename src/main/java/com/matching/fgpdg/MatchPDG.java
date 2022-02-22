@@ -13,10 +13,14 @@ import java.util.stream.Collectors;
 public class MatchPDG {
     public HashSet<PDGNode> visitedASTNodes= new HashSet<>();
     protected List<MatchedNode> getSubGraphs(PDGGraph pattern, PDGGraph code)  {
-        PDGGraph pruned_pattern=pruneAndCleanPatternPDG(pattern);
-        HashSet<PDGNode> patternNodes = pruned_pattern.getNodes();
-        DotGraph dg = new DotGraph(pruned_pattern);
-        dg.toDotFile(new File("./OUTPUT/"  +"___pruned_pattern__file___"+".dot"));
+        PDGGraph _pattern=pruneAndCleanPatternPDG(pattern);
+        HashSet<PDGNode> patternNodes = _pattern.getNodes();
+        DotGraph dg = new DotGraph(_pattern);
+        dg.toDotFile(new File("./OUTPUT/"  +"____pruned_pattern__file___"+".dot"));
+        DotGraph dgc = new DotGraph(code);
+        dgc.toDotFile(new File("./OUTPUT/"  +"____code__file___"+".dot"));
+
+
         HashSet<PDGNode> codeNodes = code.getNodes();
         ArrayList<Pair<PDGNode,PDGNode>> startNodes = new ArrayList<>();
         ArrayList<ArrayList<PDGNode>> matched = new ArrayList<>();
@@ -168,11 +172,16 @@ public class MatchPDG {
                 compared_nodes.put(k,fullEdgesGroup.get(k));
             }
             });
+        for (String edgeLabel : subsetGroup.keySet()) {
+            if (!compared_nodes.containsKey(edgeLabel) ){
+                return new HashMap<>();
+            }
+        }
         return compared_nodes;
     }
 
     public void drawMatchedGraphs(PDGGraph fpdg, List<MatchedNode> graphs,String fileName) {
         DotGraph dg = new DotGraph(fpdg,graphs);
-        dg.toDotFile(new File("./OUTPUT/"  +fileName));
+        dg.toDotFile(new File( fileName));
     }
 }

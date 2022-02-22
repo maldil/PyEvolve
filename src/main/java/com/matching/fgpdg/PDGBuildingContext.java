@@ -2,16 +2,19 @@ package com.matching.fgpdg;
 
 import com.matching.fgpdg.nodes.PDGActionNode;
 import com.matching.fgpdg.nodes.TypeInfo.TypeWrapper;
+import com.utils.Assertions;
+import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.python.antlr.ast.FunctionDef;
-import org.python.antlr.ast.Import;
-import org.python.antlr.ast.ImportFrom;
-import org.python.antlr.ast.alias;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.python.antlr.PythonTree;
+import org.python.antlr.ast.*;
+import org.python.antlr.base.expr;
 import org.python.antlr.base.stmt;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class PDGBuildingContext {
@@ -33,7 +36,10 @@ public class PDGBuildingContext {
 
     public PDGBuildingContext(List<stmt> importStmt, String sourceFilePath) throws IOException {
         typeWrapper = new TypeWrapper(Configurations.TYPE_REPOSITORY+
-                sourceFilePath.split("/")[0]+"/"+ Arrays.stream(sourceFilePath.split("/")).skip(1).collect(Collectors.joining("_"))+".json" );
+                sourceFilePath.split("/")[0]
+                +"/"+
+                sourceFilePath.split("/")[1]+"/"+
+                Arrays.stream(sourceFilePath.split("/")).skip(2).collect(Collectors.joining("_")).split("\\.")[0]+".json" );
         this.filePath=sourceFilePath;
         updateImportMap(importStmt);
     }
@@ -115,4 +121,51 @@ public class PDGBuildingContext {
         stkTrys.push(new HashSet<PDGActionNode>());
     }
 
+    public HashSet<PDGActionNode> popTry() {
+        return stkTrys.pop();
+    }
+
+    public String getKey(Subscript astNode) {
+        String name=null;
+        expr value = astNode.getInternalValue();
+        if (value instanceof Subscript){
+            name = getKey((Subscript) value);
+        }
+        else if (value instanceof Attribute){
+            name = getFQName((Attribute)value);
+        }
+        else if (value instanceof Name){
+            name = ((Name) value).getInternalId();
+            String[] info = getLocalVariableInfo(name);
+            if (info != null)
+                name = info[0];
+            else
+                name=getTypeWrapper().getTypeInfo(((Name) value).getLineno() ,((Name) value).getCol_offset());
+        }
+        if (astNode.getInternalSlice() instanceof Index && ((Index)astNode.getInternalSlice()).getInternalValue() instanceof Tuple){
+            Tuple internalValue = (Tuple)((Index) astNode.getInternalSlice()).getInternalValue();
+            if (internalValue.getInternalElts().stream().allMatch(x->x instanceof Num)){
+                name = "["+internalValue.getInternalElts().stream().map(x-> ((Num)x).getInternalN().toString()).collect(Collectors.joining(","))+"]";
+            }
+        }
+        else if (astNode.getInternalSlice() instanceof Index && ((Index)astNode.getInternalSlice()).getInternalValue() instanceof Num){
+            name= "[Num]";
+        }
+
+        return  name;
+
+
+    }
+
+    private String getFQName(Attribute node){
+        if (node.getInternalValue() instanceof Name)
+            return  ((Name)node.getInternalValue()).getInternalId() + "." + node.getInternalAttr();
+        else if(node.getInternalValue() instanceof Attribute){
+            return  getFQName((Attribute) node.getInternalValue()) + "." + node.getInternalAttr();
+        }
+        else{
+            Assertions.UNREACHABLE();
+            return "";
+        }
+    }
 }

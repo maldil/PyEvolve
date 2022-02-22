@@ -3,10 +3,8 @@ package com.matching;
 
 import org.junit.jupiter.api.Test;
 import org.python.antlr.ast.Module;
-import org.python.antlr.ast.arg;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,10 +14,10 @@ class ConcreatePythonParserTest {
     @Test
     void parse() {
         ConcreatePythonParser parser = new ConcreatePythonParser();
-        Module parse = parser.parse("test1.py");
+        Module parse = parser.parse("author/project/test1.py");
         System.out.println(parse.toStringTree());
 
-        assertEquals(2,parse.getChildCount());
+        assertEquals(3,parse.getChildCount());
     }
 
     @Test
