@@ -13,6 +13,11 @@ public class PDGControlNode extends PDGNode {
         new PDGControlEdge(control, this, branch);
     }
 
+    public PDGControlNode(PyObject astNode,int nodeType,PDGNode control){
+        super(astNode, nodeType);
+        this.control = control;
+    }
+
     @Override
     public String getLabel() {
         return PyObject.nodeClassForASTName(astNodeType);

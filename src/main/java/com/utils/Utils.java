@@ -1,16 +1,10 @@
 package com.utils;
 
-import com.ibm.icu.impl.Pair;
-import com.inferrules.comby.jsonResponse.Match;
-import com.matching.fgpdg.MatchPDG;
 import com.matching.fgpdg.MatchedNode;
-import com.matching.fgpdg.nodes.PDGDataEdge;
+import com.matching.fgpdg.PDGGraph;
+import com.matching.fgpdg.nodes.PDGActionNode;
 import com.matching.fgpdg.nodes.PDGDataNode;
 import com.matching.fgpdg.nodes.PDGNode;
-import net.steppschuh.markdowngenerator.text.Text;
-import net.steppschuh.markdowngenerator.text.emphasis.BoldText;
-import net.steppschuh.markdowngenerator.text.emphasis.ItalicText;
-import net.steppschuh.markdowngenerator.text.emphasis.StrikeThroughText;
 import org.apache.commons.io.IOUtils;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.stmt;
@@ -20,6 +14,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Utils {
+
+
 
     static class Interval
     {
@@ -69,6 +65,17 @@ public class Utils {
         }
     };
 
+//    public static void isAllNodesMatched(List<MatchedNode> grphs, PDGGraph pattern){
+//        for (MatchedNode grph : grphs) {
+//            for (PDGNode node : pattern.getNodes()) {
+//
+//            }
+//
+//            grph.getCodePDGNodes()
+//        }
+//
+//    }
+
     public static void markNodesInCode(String code, List<MatchedNode> pdgs,String fileName) throws IOException {
         if(new File(code).exists())
         {
@@ -77,8 +84,8 @@ public class Utils {
 
         List<Interval> duration = new ArrayList<>();
         for (MatchedNode pdg : pdgs) {
-            for (PDGNode node : pdg.getPDGNodes()) {
-                if (node instanceof PDGDataNode && node.getAstNode()!=null){
+            for (PDGNode node : pdg.getCodePDGNodes()) {
+                if (node.getAstNode()!=null && (node instanceof PDGDataNode || node instanceof PDGActionNode)){
                     if (node.getAstNode() instanceof expr){
                         duration.add(new Interval(((expr)node.getAstNode()).getCharStartIndex(),((expr)node.getAstNode()).getCharStopIndex()));
                     }
@@ -228,4 +235,23 @@ public class Utils {
         }
         return String.valueOf(markedupString);
     }
+
+    public static PDGNode getMaxDOF(HashSet<PDGNode> nodes){
+        int maxDOF=0;
+        PDGNode maxPDGNode=null;
+        for (PDGNode node : nodes) {
+            int dof = node.getInEdges().size()+node.getOutEdges().size();
+            if (maxDOF<dof){
+                maxDOF=dof;
+                maxPDGNode=node;
+            }
+        }
+        return maxPDGNode;
+    }
+
+//    public MatchedNode pruneMatchedNode(MatchedNode node){
+//
+//
+//
+//    }
 }

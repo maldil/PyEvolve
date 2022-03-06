@@ -99,7 +99,7 @@ public class DotGraph {
             ids.put(node, ++id);
 
             for (int i =0;i<graphs.size();i++){
-                for (PDGNode pdgNode : graphs.get(i).getPDGNodes()) {
+                for (PDGNode pdgNode : graphs.get(i).getCodePDGNodes()) {
                     if (pdgNode.equals(node)) {
                         color = colors.get(i);
                         break;

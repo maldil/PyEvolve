@@ -2,9 +2,11 @@ package com.matching.fgpdg;
 
 import com.ibm.wala.util.collections.Pair;
 import com.matching.fgpdg.nodes.PDGActionNode;
+import com.matching.fgpdg.nodes.PDGDataEdge;
 import com.matching.fgpdg.nodes.PDGEdge;
 import com.matching.fgpdg.nodes.PDGNode;
 import com.utils.DotGraph;
+import com.utils.Utils;
 
 import java.io.File;
 import java.util.*;
@@ -24,7 +26,7 @@ public class MatchPDG {
         HashSet<PDGNode> codeNodes = code.getNodes();
         ArrayList<Pair<PDGNode,PDGNode>> startNodes = new ArrayList<>();
         ArrayList<ArrayList<PDGNode>> matched = new ArrayList<>();
-        PDGNode maxDOF = getMaxDOF(patternNodes);
+        PDGNode maxDOF = Utils.getMaxDOF(patternNodes);
         if (maxDOF!=null){
             for (PDGNode codeNode : codeNodes) {
                     if (isEqualNodes(codeNode,maxDOF)){
@@ -50,24 +52,20 @@ public class MatchPDG {
                     outEdge.getTarget().getInEdges().remove(outEdge);
                 }
             }
+            List<PDGEdge> depEdges = node.getInEdges().stream().
+                    filter(x -> x instanceof PDGDataEdge && ((PDGDataEdge) x).getType().equals(PDGDataEdge.Type.DEPENDENCE)).collect(Collectors.toList());
+            node.getInEdges().removeAll(depEdges);
+            for (PDGEdge edge : depEdges) {
+                edge.getSource().getOutEdges().remove(edge);
+            }
+
+
         }
+
+
         remove.forEach(k-> pattern.nodes.remove(k));
         return pattern;
     }
-
-    private PDGNode getMaxDOF(HashSet<PDGNode> nodes){
-        int maxDOF=0;
-        PDGNode maxPDGNode=null;
-        for (PDGNode node : nodes) {
-            int dof = node.getInEdges().size()+node.getOutEdges().size();
-            if (maxDOF<dof){
-                maxDOF=dof;
-                maxPDGNode=node;
-            }
-        }
-        return maxPDGNode;
-    }
-
 
     private HashMap<PDGNode, ArrayList<PDGNode>> getNextMatchedNodePairs(Pair<PDGNode, PDGNode> startNodes) {
         HashMap<PDGNode,ArrayList<PDGNode>> matchedNodesLists = new HashMap<>();

@@ -1,17 +1,14 @@
 package com.matching.fgpdg;
 
-import com.ibm.icu.impl.Assert;
 import com.matching.ConcreatePythonParser;
-import com.utils.DotGraph;
+import com.matching.fgpdg.nodes.PDGNode;
 import com.utils.Utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.python.antlr.Visitor;
 import org.python.antlr.ast.*;
 import org.python.antlr.ast.Module;
-import org.python.antlr.base.stmt;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +21,9 @@ class MatchedNodeTest {
         String patternname = "pattern1";
         List<MatchedNode> graphs =null;
         graphs = getMatchedNodes(filename, patternname, graphs);
-        Assertions.assertEquals(7,graphs.get(0).getPDGNodes().size());
+        graphs.get(0).isAllMatchedGraph();
+        Assertions.assertTrue(graphs.get(0).isAllMatchedGraph());
+        Assertions.assertEquals(7,graphs.get(0).getCodePDGNodes().size());
     }
 
     @Test
@@ -33,7 +32,8 @@ class MatchedNodeTest {
         String patternname = "pattern1";
         List<MatchedNode> graphs =null;
         graphs = getMatchedNodes(filename, patternname, graphs);
-        Assertions.assertEquals(7,graphs.get(0).getPDGNodes().size());
+        Assertions.assertFalse(graphs.get(0).isAllMatchedGraph());
+        Assertions.assertEquals(1,graphs.get(0).getCodePDGNodes().size());
     }
 
     @Test
@@ -42,7 +42,8 @@ class MatchedNodeTest {
         String patternname = "pattern";
         List<MatchedNode> graphs =null;
         graphs = getMatchedNodes(filename, patternname, graphs);
-        Assertions.assertEquals(7,graphs.get(0).getPDGNodes().size());
+        Assertions.assertTrue(graphs.get(0).isAllMatchedGraph());
+        Assertions.assertEquals(16,graphs.get(0).getCodePDGNodes().size());
     }
 
     @Test
@@ -51,7 +52,8 @@ class MatchedNodeTest {
         String patternname = "pattern";
         List<MatchedNode> graphs =null;
         graphs = getMatchedNodes(filename, patternname, graphs);
-        Assertions.assertEquals(12,graphs.get(0).getPDGNodes().size());
+        Assertions.assertTrue(graphs.get(0).isAllMatchedGraph());
+        Assertions.assertEquals(16,graphs.get(0).getCodePDGNodes().size());
     }
 
 
@@ -61,7 +63,130 @@ class MatchedNodeTest {
         String patternname = "pattern";
         List<MatchedNode> graphs =null;
         graphs = getMatchedNodes(filename, patternname, graphs);
-        Assertions.assertEquals(7,graphs.get(0).getPDGNodes().size());
+        Assertions.assertTrue(graphs.get(0).isAllMatchedGraph());
+        Assertions.assertEquals(16,graphs.get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs6() {
+        String filename="testm3";
+        String patternname = "pattern";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        for (MatchedNode graph : graphs) {
+            if (graph.getAllMatchedNodes().size()==1)
+                Assertions.assertFalse(graph.isAllMatchedGraph());
+            else
+                Assertions.assertTrue(graph.isAllMatchedGraph());
+
+        }
+        int nodes = Math.max(graphs.get(0).getCodePDGNodes().size(), graphs.get(1).getCodePDGNodes().size());
+        Assertions.assertEquals(16,nodes);
+    }
+
+    @Test
+    void testSubGraphs7() {
+        String filename="testm4";
+        String patternname = "pattern";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        for (MatchedNode graph : graphs) {
+            if (graph.getAllMatchedNodes().size()==1)
+                Assertions.assertFalse(graph.isAllMatchedGraph());
+            else
+                Assertions.assertTrue(graph.isAllMatchedGraph());
+        }
+        int nodes = Math.max(graphs.get(0).getCodePDGNodes().size(), graphs.get(1).getCodePDGNodes().size());
+        Assertions.assertEquals(16,nodes);
+    }
+
+    @Test
+    void testSubGraphs8() {
+        String filename="testm5";
+        String patternname = "pattern";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        for (MatchedNode graph : graphs) {
+            if (graph.getAllMatchedNodes().size()==1)
+                Assertions.assertFalse(graph.isAllMatchedGraph());
+            else
+                Assertions.assertTrue(graph.isAllMatchedGraph());
+        }
+        int nodes = Math.max(graphs.get(0).getCodePDGNodes().size(), graphs.get(1).getCodePDGNodes().size());
+        Assertions.assertEquals(16,nodes);
+    }
+
+    @Test
+    void testSubGraphs9() {
+        String filename="testm6";
+        String patternname = "pattern";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertTrue(graphs.get(0).isAllMatchedGraph());
+        for (MatchedNode graph : graphs) {
+            if (graph.getAllMatchedNodes().size()==1)
+                Assertions.assertFalse(graph.isAllMatchedGraph());
+            else
+                Assertions.assertTrue(graph.isAllMatchedGraph());
+        }
+        Assertions.assertEquals(16,graphs.get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs10() {
+        String filename="testm7";
+        String patternname = "pattern2";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        for (MatchedNode graph : graphs) {
+            if (graph.getAllMatchedNodes().size()==1)
+                Assertions.assertFalse(graph.isAllMatchedGraph());
+            else
+                Assertions.assertTrue(graph.isAllMatchedGraph());
+        }
+        int nodes = Math.max(graphs.get(0).getCodePDGNodes().size(), graphs.get(1).getCodePDGNodes().size());
+        Assertions.assertEquals(9,nodes);
+    }
+
+    @Test
+    void testSubGraphs11() {
+        String filename="testm8";
+        String patternname = "pattern3";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertTrue(graphs.get(0) .isAllMatchedGraph());
+        Assertions.assertEquals(5,graphs.get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs12() {
+        String filename="testm9";
+        String patternname = "pattern2";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        int nodes = Math.max(graphs.get(0).getCodePDGNodes().size(), graphs.get(1).getCodePDGNodes().size());
+        Assertions.assertEquals(9,nodes);
+    }
+
+    @Test
+    void testSubGraphs13() {
+        String filename="testm10";
+        String patternname = "pattern3";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        int nodes = Math.max(graphs.get(0).getCodePDGNodes().size(), graphs.get(1).getCodePDGNodes().size());
+        Assertions.assertEquals(9,nodes);
+    }
+
+    @Test
+    void testSubGraphs14() {
+        String filename="testm11";
+        String patternname = "pattern4";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+//        int nodes = Math.max(graphs.get(0).getCodePDGNodes().size(), graphs.get(1).getCodePDGNodes().size());
+        Assertions.assertTrue(graphs.get(0) .isAllMatchedGraph());
+        Assertions.assertEquals(7,graphs.get(0).getCodePDGNodes().size());
     }
 
     private List<MatchedNode> getMatchedNodes(String filename, String patternname, List<MatchedNode> graphs) {
@@ -78,15 +203,17 @@ class MatchedNodeTest {
             fcontext = new PDGBuildingContext(codeModule.getInternalBody().stream().filter(x-> x instanceof Import
                     || x instanceof ImportFrom).collect(Collectors.toList()), "author/project/"+filename+".py");
             PDGGraph fpdg = new PDGGraph(func,fcontext);
+            fpdg.getNodes().forEach(x-> System.out.println(x.getId()));
             PDGBuildingContext mcontext = new PDGBuildingContext(patternModule.getInternalBody().stream().filter(x-> x instanceof Import
                     || x instanceof ImportFrom).collect(Collectors.toList()),"author/project/"+patternname+".py");
             PDGGraph mpdg = new PDGGraph(patternModule,mcontext);
 
             MatchPDG match = new MatchPDG();
             graphs=match.getSubGraphs(mpdg,fpdg );
-
+            graphs.forEach(x->x.updateAllMatchedNodes(x));
             match.drawMatchedGraphs(fpdg,graphs,"OUTPUT/matches/"+filename+".dot");
-            Utils.markNodesInCode("src/test/resources/author/project/"+filename+".py",graphs,"OUTPUT/matches/"+filename+".html");;
+            Utils.markNodesInCode("src/test/resources/author/project/"+filename+".py",
+                    graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),"OUTPUT/matches/"+filename+".html");;
         } catch (IOException e) {
             System.err.println("Type information can not be performed");
             e.printStackTrace();

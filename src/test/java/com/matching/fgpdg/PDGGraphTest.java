@@ -550,10 +550,10 @@ class PDGGraphTest {
             DotGraph dg = new DotGraph(pdg);
             String dirPath = "./OUTPUT/";
             dg.toDotFile(new File(dirPath  +"file___"+".dot"));
-            Assertions.assertEquals (pdg.parameters.length,0);
-            Assertions.assertEquals (pdg.getNodes().size(),9);
-            Assertions.assertEquals (pdg.statementNodes.size() ,3);
-            Assertions.assertEquals (pdg.dataSources.size() ,0);
+            Assertions.assertEquals (pdg.parameters.length,2);
+            Assertions.assertEquals (pdg.getNodes().size(),28);
+            Assertions.assertEquals (pdg.statementNodes.size() ,10);
+            Assertions.assertEquals (pdg.dataSources.size() ,3);
         } catch (IOException e) {
             e.printStackTrace();
         }

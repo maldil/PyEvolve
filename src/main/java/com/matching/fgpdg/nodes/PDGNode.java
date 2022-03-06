@@ -7,6 +7,7 @@ import org.python.core.PyObject;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 
 public abstract class PDGNode {
@@ -19,12 +20,28 @@ public abstract class PDGNode {
     protected String dataType;
     protected ArrayList<PDGEdge> inEdges = new ArrayList<PDGEdge>();
     protected ArrayList<PDGEdge> outEdges = new ArrayList<PDGEdge>();
+    private static int nodeNumber = 0;
+    private int id;
+
+    public void setInEdges(ArrayList<PDGEdge> inEdges) {
+        this.inEdges = inEdges;
+    }
+
+    public void setOutEdges(ArrayList<PDGEdge> outEdges) {
+        this.outEdges = outEdges;
+    }
+
+    public int getId() {
+        return id;
+    }
 
     public int version;
 
     public PDGNode(PyObject astNode, int nodeType) {
         this.astNode = astNode;
         this.astNodeType = nodeType;
+        this.id=nodeNumber;
+        nodeNumber++;
     }
 
     public PDGNode(PyObject astNode, int nodeType, String key) {
@@ -296,6 +313,28 @@ public abstract class PDGNode {
             s.add(e.target);
         }
         return true;
+    }
+
+    public HashSet<PDGNode> getAllChildNodes(int depth,PDGNode avoidCodeNode){
+        if (depth==0){return  new HashSet<>();}
+        depth--;
+        HashSet<PDGNode> inNodeList= new HashSet<>();
+        inNodeList.add(this);
+        int finalDepth = depth;
+        inEdges.stream().filter(y-> !(avoidCodeNode.getOutEdges().contains(y))).forEach(x->inNodeList.addAll(x.getSource().getAllChildNodes(finalDepth)));
+        outEdges.stream().filter(y-> !(avoidCodeNode.getInEdges().contains(y))).forEach(x->inNodeList.addAll(x.getTarget().getAllChildNodes(finalDepth)));
+        return inNodeList;
+    }
+
+    public HashSet<PDGNode> getAllChildNodes(int depth){
+        if (depth==0){return  new HashSet<>();}
+        depth--;
+        HashSet<PDGNode> inNodeList= new HashSet<>();
+        inNodeList.add(this);
+        int finalDepth = depth;
+        inEdges.forEach(x->inNodeList.addAll(x.getSource().getAllChildNodes(finalDepth)));
+        outEdges.forEach(x->inNodeList.addAll(x.getTarget().getAllChildNodes(finalDepth)));
+        return inNodeList;
     }
 
     public abstract boolean  isEqualNodes(PDGNode node);

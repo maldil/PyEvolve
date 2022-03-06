@@ -3,6 +3,7 @@ package com.matching.fgpdg;
 import com.matching.fgpdg.nodes.*;
 import com.utils.Assertions;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.python.antlr.ast.*;
 import org.python.antlr.ast.List;
 import org.python.antlr.ast.Module;
@@ -70,6 +71,8 @@ public class PDGGraph implements Serializable {
         nodes.add(entryNode);
         statementNodes.add(entryNode);
         for (stmt stmt : md.getInternalBody()) {
+            if (stmt instanceof ImportFrom || stmt instanceof Import)
+                continue;
             mergeSequential(Objects.requireNonNull(buildPDG(entryNode, "", stmt)));
         }
         adjustReturnNodes();
@@ -522,6 +525,8 @@ public class PDGGraph implements Serializable {
             return buildPDG(control, branch, (Global) node);
         if (node instanceof Yield)
             return buildPDG(control, branch, (Yield) node);
+        if (node instanceof Attribute)
+            return buildPDG(control, branch, (Attribute) node);
         Assertions.UNREACHABLE(node.getClass().toString());
         return null;
     }
@@ -1466,6 +1471,34 @@ public class PDGGraph implements Serializable {
             pdg = new PDGGraph(context, node);
         }
         return pdg;
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              Attribute astNode) {
+
+        PDGGraph pdg = buildArgumentPDG(control, branch, astNode.getInternalValue());
+        PDGDataNode node = pdg.getOnlyDataOut();
+        if (node.getDataType().startsWith("UNKNOWN")) {
+            String name = astNode.getInternalAttr();
+            if (Character.isUpperCase(name.charAt(0))) {
+                return new PDGGraph(context, new PDGDataNode(astNode,  PyObject.FIELD_ACCESS, getFullNameOfAttribute(astNode) ,
+                        getFullNameOfAttribute(astNode) , astNode.getInternalAttr(), true, false));
+            }
+        } else
+            pdg.mergeSequentialData(
+                    new PDGDataNode(astNode, PyObject.FIELD_ACCESS,  getFullNameOfAttribute(astNode)  ,
+                            node.getDataType() + "." + astNode.getInternalAttr(),
+                            astNode.getInternalAttr(), true, false),  QUALIFIER);
+        return pdg;
+//        return null;
+    }
+
+    private String getFullNameOfAttribute(Attribute atr){
+
+        if (atr.getInternalValue() instanceof Name)
+            return ((Name) atr.getInternalValue()).getInternalId()+atr.getInternalAttr();
+        else
+            return getFullNameOfAttribute((Attribute) atr.getInternalValue())+atr.getInternalAttr();
     }
 
 }

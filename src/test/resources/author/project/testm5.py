@@ -12,7 +12,16 @@ def function1(sentence,intArray):
     for z in intArray:
        print("ff")
        add=add+z
-    return add
+
+    boo= function()
+
+    sum = 0
+    print("counting")
+    for r in intArray:
+        value = function2(r)
+        sum=sum+r
+        value = sum*2
+    return sum + value
 
 if __name__ == "__main__":
     function1([[1,2][3,4]],[1,2,3])
