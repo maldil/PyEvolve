@@ -35,6 +35,11 @@ public abstract class PDGNode {
         return id;
     }
 
+
+    public void setId(int nid) {
+         this.id =nid;
+    }
+
     public int version;
 
     public PDGNode(PyObject astNode, int nodeType) {
@@ -315,14 +320,24 @@ public abstract class PDGNode {
         return true;
     }
 
-    public HashSet<PDGNode> getAllChildNodes(int depth,PDGNode avoidCodeNode){
-        if (depth==0){return  new HashSet<>();}
+    public HashSet<PDGNode> getAllChildNodes(int depth,List<PDGNode> avoidCodeNode){
+        if (depth==0){
+            HashSet<PDGNode> inNodeList= new HashSet<>();
+            inNodeList.add(this);
+            return inNodeList;
+        }
         depth--;
         HashSet<PDGNode> inNodeList= new HashSet<>();
         inNodeList.add(this);
-        int finalDepth = depth;
-        inEdges.stream().filter(y-> !(avoidCodeNode.getOutEdges().contains(y))).forEach(x->inNodeList.addAll(x.getSource().getAllChildNodes(finalDepth)));
-        outEdges.stream().filter(y-> !(avoidCodeNode.getInEdges().contains(y))).forEach(x->inNodeList.addAll(x.getTarget().getAllChildNodes(finalDepth)));
+        int finalDepth1 = depth;
+        inEdges.stream().map(PDGEdge::getSource).filter(y->!avoidCodeNode.contains(y)).forEach(z->{
+            avoidCodeNode.add(this);
+            inNodeList.addAll(z.getAllChildNodes(finalDepth1,avoidCodeNode));
+        });
+        outEdges.stream().map(PDGEdge::getTarget).filter(y->!avoidCodeNode.contains(y)).forEach(z->{
+            avoidCodeNode.add(this);
+            inNodeList.addAll(z.getAllChildNodes(finalDepth1,avoidCodeNode));
+        });
         return inNodeList;
     }
 

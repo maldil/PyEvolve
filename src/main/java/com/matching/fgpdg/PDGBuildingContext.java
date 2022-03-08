@@ -44,6 +44,11 @@ public class PDGBuildingContext {
         updateImportMap(importStmt);
     }
 
+    public PDGBuildingContext(List<stmt> importStmt){
+        updateImportMap(importStmt);
+    }
+
+
     public TypeWrapper getTypeWrapper() {
         return typeWrapper;
     }

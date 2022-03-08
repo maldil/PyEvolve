@@ -4,8 +4,11 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.ibm.wala.util.collections.Pair;
 import com.matching.fgpdg.nodes.*;
+import com.utils.DotGraph;
 import com.utils.Utils;
+import org.checkerframework.checker.units.qual.A;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,6 +19,11 @@ public class MatchedNode {
     protected MatchedNode parentNode=null;
     protected HashSet<MatchedNode> matchedChildNodes = new HashSet<>();
     private boolean allChildsMatched=true;
+    public enum DIRECTION {FROM,TO};
+    public MatchedNode(){
+
+    }
+
     public MatchedNode(PDGNode codeNode, PDGNode patternNode,HashSet<PDGNode> visitedASTNodes) {
         this.codeNode = codeNode;
         this.patternNode = patternNode;
@@ -26,8 +34,6 @@ public class MatchedNode {
                 = getNextMatchedNodePairs(Pair.make(codeNode, patternNode));
         visitedASTNodes.add(codeNode);
         HashSet<PDGNode> parentVisits = new HashSet<>(visitedASTNodes);
-
-
 
 
         if (nextMatchedNodePairs!=null){
@@ -70,13 +76,45 @@ public class MatchedNode {
             List<PDGNode> patternParaGraphs = patternNode.getInEdges().stream().filter(x -> x.getLabel().equals("para")).map(PDGEdge::getSource).filter(u->!matchedPatternNodes.contains(u)).collect(Collectors.toList());
             patternParaGraphs.addAll(patternNode.getOutEdges().stream().filter(x -> x.getLabel().equals("para")).map(PDGEdge::getTarget).filter(u->!matchedPatternNodes.contains(u)).collect(Collectors.toList()));
 
+
+            ArrayList<PDGNode> visitedCodeASTNodes = new ArrayList<>(visitedASTNodes);
+            visitedCodeASTNodes.addAll(codeParaGraphs);
+
             if (codeParaGraphs.size()>0 && patternParaGraphs.size()>0){
                 for (PDGNode paraN : patternParaGraphs) {
                     if (matchedChildNodes.stream().noneMatch(x -> x.getPatternNode() == paraN)){
+                        ArrayList<PDGNode> visitedPatternNode = new ArrayList<>();
+                        visitedPatternNode.add(this.patternNode);
+                        PDGGraph patternPDG = getSubGraphForDifferentDataFlowMatching(paraN, visitedPatternNode);
+                        DotGraph dg = new DotGraph(patternPDG);
+                        String dirPath = "./OUTPUT/";
+                        dg.toDotFile(new File(dirPath  +"__patternPDG1__file___"+".dot"));
                         for (PDGNode codeN : codeParaGraphs) {
-                            List<MatchedNode> subGraphs = getMatchedSubGraphs(codeN, paraN,codeNode);
-                            if (subGraphs!=null)
-                                matchedChildNodes.addAll(subGraphs);
+                            PDGGraph codePDG = getSubGraphForDifferentDataFlowMatching(codeN, visitedCodeASTNodes);
+
+                            MatchPDG match = new MatchPDG();
+                            List<MatchedNode> subGraphs = match.getSubGraphs(patternPDG, codePDG);
+                            for (MatchedNode graph : subGraphs) {
+                                if (graph.isAllMatchedGraph()){
+                                    for (PDGNode matchedNode : graph.getCodePDGNodes()) {
+//                                        boolean can = canWalkFromNodeToNode(matchedNode, codeN );
+                                    }
+
+
+                                }
+                            }
+
+
+                            DotGraph dg1 = new DotGraph(codePDG);
+
+
+
+                            dg1.toDotFile(new File(dirPath  +"__codePDG1__file___"+".dot"));
+                            System.out.println();
+
+////                            List<MatchedNode> subGraphs = getMatchedSubGraphs(codeN, paraN,codeNode);
+//                            if (subGraphs!=null)
+//                                matchedChildNodes.addAll(subGraphs);
                         }
                     }
                 }
@@ -84,55 +122,128 @@ public class MatchedNode {
         }
     }
 
+    /*
+    * from: start node for the walk
+    * to: end node for the walk
+    * toDirection : the direction of the arrow for the to Node
+    * visitedNodes : nodes that need to be avoided
+    * */
+
+    public boolean canWalkFromNodeToNode(PDGNode from, PDGNode to ,DIRECTION toDirection,HashSet<PDGNode> visitedNodes) {
+        visitedNodes.add(from);
+        if (from==to)
+            return false;
+        else if (toDirection==DIRECTION.FROM && from.getInEdges().stream().filter
+                (x -> x.getLabel().equals("para")).
+                map(PDGEdge::getSource).anyMatch(c -> c == to)){
+            return true;
+        }
+        else if(toDirection==DIRECTION.TO && from.getOutEdges().stream().filter
+                (x -> x.getLabel().equals("para")).
+                map(PDGEdge::getTarget).anyMatch(c -> c == to)
+        ){
+            return true;
+        }
+        else{
+            List<PDGNode> outNodes = from.getOutEdges().stream().filter(x -> x.getLabel().equals("para") ||
+                    x.getLabel().equals("def") ||x.getLabel().equals("ref")).map(PDGEdge::getTarget).filter(c -> !visitedNodes.contains(c)).collect(Collectors.toList());
+            for (PDGNode outNode : outNodes) {
+                if (canWalkFromNodeToNode(outNode,to,toDirection,visitedNodes)){
+                    return true;
+                }
+            }
+            List<PDGNode> inNodes = from.getInEdges().stream().filter(x -> x.getLabel().equals("para") ||
+                    x.getLabel().equals("def") || x.getLabel().equals("ref")).map(PDGEdge::getSource).filter(c -> !visitedNodes.contains(c)).collect(Collectors.toList());
+            for (PDGNode node : inNodes) {
+                if (canWalkFromNodeToNode(node,to,toDirection,visitedNodes)){
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     public void setParentNode(MatchedNode parentNode) {
         this.parentNode = parentNode;
     }
 
-    public PDGGraph getPatternGraphForMatching(PDGNode node,List<PDGNode> avoidNodes){
-        try {
-            PDGBuildingContext context = new PDGBuildingContext(new ArrayList<>(),"");
-            PDGGraph grap = new PDGGraph(context);
-            List<PDGNode> nodes = node.getAllChildNodes(20).stream().filter(x -> !avoidNodes.contains(x)).collect(Collectors.toList());
-            for (PDGNode pdgNode : nodes) {
-                if (pdgNode instanceof PDGDataNode){
-                    PDGDataNode dataNode = new PDGDataNode((PDGDataNode) pdgNode);
-                    List<PDGEdge> inedges = pdgNode.getInEdges().stream().filter(x -> avoidNodes.contains(x.getSource())).collect(Collectors.toList());
-                    dataNode.setInEdges((ArrayList<PDGEdge>) inedges);
-                    List<PDGEdge> outedges = pdgNode.getOutEdges().stream().filter(x -> avoidNodes.contains(x.getTarget())).collect(Collectors.toList());
-                    dataNode.setOutEdges((ArrayList<PDGEdge>) outedges);
-                }
-                else {
-                    PDGControlNode cNode= new PDGControlNode(pdgNode.getAstNode(),pdgNode.getAstNodeType(),pdgNode.getControl());
-                    List<PDGEdge> inedges = pdgNode.getInEdges().stream().filter(x -> avoidNodes.contains(x.getSource())).collect(Collectors.toList());
-                    cNode.setInEdges((ArrayList<PDGEdge>) inedges);
-                    List<PDGEdge> outedges = pdgNode.getOutEdges().stream().filter(x -> avoidNodes.contains(x.getTarget())).collect(Collectors.toList());
-                    cNode.setOutEdges((ArrayList<PDGEdge>) outedges);
-                }
+
+    /*
+    node: the node that become the start of the sub-graph
+    voidNode: nodes that have already been visited
+    * */
+    public PDGGraph getSubGraphForDifferentDataFlowMatching(PDGNode node,List<PDGNode> avoidNodes){
+        PDGBuildingContext context = new PDGBuildingContext(new ArrayList<>());
+        PDGGraph grap = new PDGGraph(context);
+        List<PDGNode> copyAvoidNodes = new ArrayList<>(avoidNodes);
+        HashSet<PDGNode> nodes = node.getAllChildNodes(20,avoidNodes);
+        HashMap<Integer,PDGNode> nodeMap=new HashMap<>();
+        HashSet<PDGNode> newnodes = new HashSet<>();
+        for (PDGNode pdgNode : nodes) {
+            if (pdgNode instanceof PDGDataNode){
+                PDGDataNode dataNode = new PDGDataNode((PDGDataNode) pdgNode);
+                dataNode.setId(pdgNode.getId());
+                List<PDGEdge> inedges = pdgNode.getInEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getSource())).collect(Collectors.toList());
+                dataNode.setInEdges((ArrayList<PDGEdge>) inedges);
+                List<PDGEdge> outedges = pdgNode.getOutEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getTarget())).collect(Collectors.toList());
+                dataNode.setOutEdges((ArrayList<PDGEdge>) outedges);
+                newnodes.add(dataNode);
+                nodeMap.put(pdgNode.getId(),dataNode);
             }
-            return grap;
-        } catch (IOException e) {
-            e.printStackTrace();
+            else if (pdgNode instanceof PDGActionNode){
+                PDGActionNode dataNode = new PDGActionNode(  pdgNode.getAstNode(),pdgNode.getAstNodeType(),pdgNode.getKey(),pdgNode.getDataType(),((PDGActionNode) pdgNode).getName());
+                dataNode.setId(pdgNode.getId());
+                List<PDGEdge> inedges = pdgNode.getInEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getSource())).collect(Collectors.toList());
+                dataNode.setInEdges((ArrayList<PDGEdge>) inedges);
+                List<PDGEdge> outedges = pdgNode.getOutEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getTarget())).collect(Collectors.toList());
+                dataNode.setOutEdges((ArrayList<PDGEdge>) outedges);
+                newnodes.add(dataNode);
+                nodeMap.put(pdgNode.getId(),dataNode);
+            }
+            else {
+                PDGControlNode cNode= new PDGControlNode(pdgNode.getAstNode(),pdgNode.getAstNodeType(),pdgNode.getControl());
+                cNode.setId(pdgNode.getId());
+                List<PDGEdge> inedges = pdgNode.getInEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getSource())).collect(Collectors.toList());
+                cNode.setInEdges((ArrayList<PDGEdge>) inedges);
+                List<PDGEdge> outedges = pdgNode.getOutEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getTarget())).collect(Collectors.toList());
+                cNode.setOutEdges((ArrayList<PDGEdge>) outedges);
+                newnodes.add(cNode);
+                nodeMap.put(pdgNode.getId(),cNode);
+            }
 
         }
-        return null;
+        newnodes.forEach(y->{
+            y.getInEdges().forEach(z->{
+                z.setSource(nodeMap.get(z.getSource().getId()));
+                z.setTarget(nodeMap.get(z.getSource().getId()));
+            });
+            y.getOutEdges().forEach(z->{
+                z.setSource(nodeMap.get(z.getSource().getId()));
+                z.setTarget(nodeMap.get(z.getSource().getId()));
+            });
+        });
+
+        grap.nodes.addAll(newnodes);
+        return grap;
+
     }
 
-    public List<MatchedNode> getMatchedSubGraphs(PDGNode codeNode, PDGNode patternNode,PDGNode avoidCodeNode){
-        ArrayList<Pair<PDGNode,PDGNode>> startNodes = new ArrayList<>();
-        List<MatchedNode> subGraphs=null;
-        if (patternNode !=null){
-            for (PDGNode cnd : codeNode.getAllChildNodes(2,avoidCodeNode)) {
-                if (isEqualNodes(cnd, patternNode)){
-                    startNodes.add(Pair.make(cnd, patternNode));
-                }
-            }
-            if (startNodes.size()!=0) {
-                subGraphs = startNodes.stream().map(x -> new MatchedNode(x.fst, x.snd, new HashSet<>())).collect(Collectors.toList());
-                subGraphs.forEach(x->x.updateAllMatchedNodes(x));
-            }
-        }
-        return subGraphs;
-    }
+//    public List<MatchedNode> getMatchedSubGraphs(PDGNode codeNode, PDGNode patternNode,PDGNode avoidCodeNode){
+//        ArrayList<Pair<PDGNode,PDGNode>> startNodes = new ArrayList<>();
+//        List<MatchedNode> subGraphs=null;
+//        if (patternNode !=null){
+//            for (PDGNode cnd : codeNode.getAllChildNodes(2,avoidCodeNode)) {
+//                if (isEqualNodes(cnd, patternNode)){
+//                    startNodes.add(Pair.make(cnd, patternNode));
+//                }
+//            }
+//            if (startNodes.size()!=0) {
+//                subGraphs = startNodes.stream().map(x -> new MatchedNode(x.fst, x.snd, new HashSet<>())).collect(Collectors.toList());
+//                subGraphs.forEach(x->x.updateAllMatchedNodes(x));
+//            }
+//        }
+//        return subGraphs;
+//    }
 
     public void updateAllMatchedNodes(MatchedNode matchedGraph){
         List<PDGNode> childNodesogPatternNodes = patternNode.getInEdges().stream().map(PDGEdge::getSource).collect(Collectors.toList());

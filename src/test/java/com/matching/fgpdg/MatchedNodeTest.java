@@ -1,7 +1,11 @@
 package com.matching.fgpdg;
 
 import com.matching.ConcreatePythonParser;
+import com.matching.fgpdg.nodes.PDGActionNode;
+import com.matching.fgpdg.nodes.PDGDataNode;
+import com.matching.fgpdg.nodes.PDGEdge;
 import com.matching.fgpdg.nodes.PDGNode;
+import com.utils.DotGraph;
 import com.utils.Utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -9,7 +13,9 @@ import org.python.antlr.Visitor;
 import org.python.antlr.ast.*;
 import org.python.antlr.ast.Module;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -189,6 +195,65 @@ class MatchedNodeTest {
         Assertions.assertEquals(7,graphs.get(0).getCodePDGNodes().size());
     }
 
+    @Test
+    void testGetPatternGraphForMatching1() {
+        Module codeModule = getPythonModule("author/project/pattern2.py");
+        PDGBuildingContext mcontext = null;
+        try {
+            mcontext = new PDGBuildingContext(codeModule.getInternalBody().stream().filter(x-> x instanceof Import
+                    || x instanceof ImportFrom).collect(Collectors.toList()),"author/project/pattern2.py");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assert mcontext != null;
+        PDGGraph mpdg = new PDGGraph(codeModule,mcontext);
+        MatchPDG pdg = new MatchPDG();
+        mpdg=pdg.pruneAndCleanPatternPDG(mpdg);
+
+        PDGNode startNode= mpdg.getNodes().stream().filter(x->x instanceof PDGActionNode && x.getOutEdges().size()==1).collect(Collectors.toList()).get(0);
+        List<PDGNode> visitedNotes = startNode.getInEdges().stream().map(PDGEdge::getSource).filter(y->!(y instanceof PDGActionNode)).collect(Collectors.toList());
+        visitedNotes.addAll(startNode.getOutEdges().stream().map(PDGEdge::getTarget).filter(y->!(y instanceof PDGActionNode)).collect(Collectors.toList()));
+        visitedNotes.add(startNode);
+        MatchedNode mNode = new MatchedNode();
+        PDGGraph flowMatching = mNode.getSubGraphForDifferentDataFlowMatching(mpdg.getNodes().stream().filter(x->x instanceof PDGActionNode &&   x.getOutEdges().size()==0).collect(Collectors.toList()).get(0), visitedNotes);
+
+        Assertions.assertEquals(3,flowMatching.getNodes().size());
+        DotGraph dg = new DotGraph(flowMatching);
+        String dirPath = "./OUTPUT/";
+        dg.toDotFile(new File(dirPath  +"__removed__file___"+".dot"));
+    }
+
+
+    @Test
+    void testGetPatternGraphForMatching2() {
+        Module codeModule = getPythonModule("author/project/pattern5.py");
+        PDGBuildingContext mcontext = null;
+        try {
+            mcontext = new PDGBuildingContext(codeModule.getInternalBody().stream().filter(x-> x instanceof Import
+                    || x instanceof ImportFrom).collect(Collectors.toList()),"author/project/pattern5.py");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assert mcontext != null;
+        PDGGraph mpdg = new PDGGraph(codeModule,mcontext);
+        MatchPDG pdg = new MatchPDG();
+        mpdg=pdg.pruneAndCleanPatternPDG(mpdg);
+        DotGraph dg = new DotGraph(mpdg);
+        String dirPath = "./OUTPUT/";
+        dg.toDotFile(new File(dirPath  +"__before_removed__file___"+".dot"));
+
+        PDGNode startNode= mpdg.getNodes().stream().filter(x->x instanceof PDGActionNode && x.getOutEdges().size()==0).collect(Collectors.toList()).get(0);
+        List<PDGNode> visitedNotes = startNode.getInEdges().stream().map(PDGEdge::getSource).filter(y->!(y instanceof PDGActionNode)).collect(Collectors.toList());
+        visitedNotes.addAll(startNode.getOutEdges().stream().map(PDGEdge::getTarget).filter(y->!(y instanceof PDGActionNode)).collect(Collectors.toList()));
+        visitedNotes.add(startNode);
+        MatchedNode mNode = new MatchedNode();
+        PDGGraph flowMatching = mNode.getSubGraphForDifferentDataFlowMatching(mpdg.getNodes().stream().filter(x->x instanceof PDGActionNode &&   x.getInEdges().size()==3 && x.getOutEdges().size()==1).collect(Collectors.toList()).get(0), visitedNotes);
+
+        DotGraph dg1 = new DotGraph(flowMatching);
+        dg1.toDotFile(new File(dirPath  +"__removed__file___"+".dot"));
+        Assertions.assertEquals(9,flowMatching.getNodes().size());
+    }
+
     private List<MatchedNode> getMatchedNodes(String filename, String patternname, List<MatchedNode> graphs) {
         Module codeModule = getPythonModule("author/project/"+filename+".py");
         Module patternModule = getPythonModule("author/project/"+patternname+".py");
@@ -227,6 +292,53 @@ class MatchedNodeTest {
         return parser.parse(fileName);
     }
 
+    @Test
+    void canWalkFromNodeToNode() {
+        Module codeModule = getPythonModule("author/project/testm9.py");
+        FunctionDef func=null;
+        for (org.python.antlr.base.stmt stmt : codeModule.getInternalBody()) {
+            if (stmt instanceof FunctionDef){
+                func= (FunctionDef) stmt;
+            }
+        }
+        PDGBuildingContext mcontext = null;
+        try {
+            mcontext = new PDGBuildingContext(codeModule.getInternalBody().stream().filter(x-> x instanceof Import
+                    || x instanceof ImportFrom).collect(Collectors.toList()),"author/project/testm9.py");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assert mcontext != null;
+        PDGGraph mpdg = new PDGGraph(func,mcontext);
+//        MatchPDG pdg = new MatchPDG();
+//        mpdg=pdg.pruneAndCleanPatternPDG(mpdg);
+        DotGraph dg = new DotGraph(mpdg);
+        String dirPath = "./OUTPUT/";
+        dg.toDotFile(new File(dirPath  +"__walk__code___"+".dot"));
+        PDGNode startNode=null;
+        PDGNode endNode=null;
+        for (PDGNode node : mpdg.getNodes()) {
+            if (node instanceof PDGActionNode){
+                if(((PDGActionNode) node).getName().equals("dot")){
+                    PDGNode dep = node.getInEdges().stream().filter(x -> x.getLabel().equals("para")).map(PDGEdge::getSource).collect(Collectors.toList()).get(0);
+                    if(((PDGDataNode)dep).getDataName().equals("W")){
+                        startNode=node;
+                    }else{
+                        endNode=node;
+                    }
+                }
+            }
+        }
+        MatchedNode matchNode = new MatchedNode();
+        Assertions.assertTrue(matchNode.canWalkFromNodeToNode(startNode, endNode, MatchedNode.DIRECTION.TO, new HashSet<>()));
+        Assertions.assertFalse(matchNode.canWalkFromNodeToNode(startNode, endNode, MatchedNode.DIRECTION.FROM, new HashSet<>()));
+        Assertions.assertTrue(matchNode.canWalkFromNodeToNode(endNode,startNode,  MatchedNode.DIRECTION.FROM, new HashSet<>()));
+        Assertions.assertFalse(matchNode.canWalkFromNodeToNode(endNode, startNode, MatchedNode.DIRECTION.TO, new HashSet<>()));
+        System.out.println();
+
+
+    }
+
     class PyASTVisitor extends Visitor {
         private int classDef= 0;
         private int funcDef= 0;
@@ -241,4 +353,6 @@ class MatchedNodeTest {
             return super.visitFunctionDef(node);
         }
     }
+
+
 }

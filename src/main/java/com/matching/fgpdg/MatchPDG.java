@@ -40,7 +40,7 @@ public class MatchPDG {
         return null;
     }
 
-    private PDGGraph pruneAndCleanPatternPDG(PDGGraph pattern) {
+    public PDGGraph pruneAndCleanPatternPDG(PDGGraph pattern) {
         ArrayList<PDGNode> remove = new ArrayList<>();
         for (PDGNode node : pattern.nodes) {
             if (node instanceof PDGActionNode && node.getLabel().equals("empty")){
@@ -61,8 +61,6 @@ public class MatchPDG {
 
 
         }
-
-
         remove.forEach(k-> pattern.nodes.remove(k));
         return pattern;
     }

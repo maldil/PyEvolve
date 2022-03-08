@@ -1,0 +1,1 @@
+np.dot(np.dot(np.hoo.dot(A, B,F), C), D)

@@ -15,6 +15,14 @@ public abstract class PDGEdge {
         return source;
     }
 
+    public void setSource(PDGNode source) {
+        this.source = source;
+    }
+
+    public void setTarget(PDGNode target) {
+        this.target = target;
+    }
+
     public PDGNode getTarget() {
         return target;
     }

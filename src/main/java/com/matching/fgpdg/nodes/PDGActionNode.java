@@ -11,7 +11,17 @@ public class PDGActionNode extends PDGNode {
     protected String name;
     protected String[] parameterTypes;
 
+    public String getName() {
+        return name;
+    }
+
     public void setName(String name) {
+        this.name = name;
+    }
+
+    public PDGActionNode(PyObject astNode, int nodeType, String key, String type, String name) {
+        super(astNode, nodeType, key);
+        this.dataType = type;
         this.name = name;
     }
 
