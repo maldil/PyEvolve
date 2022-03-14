@@ -90,6 +90,7 @@ public class DotGraph {
         colors.add(COLOR_BLUE);
         colors.add(COLOR_RED);
         colors.add(COLOR_GREEN);
+        colors.add(COLOR_BLACK);
         graph = new StringBuilder();
         graph.append(addStart());
         HashMap<PDGNode, Integer> ids = new HashMap<>();

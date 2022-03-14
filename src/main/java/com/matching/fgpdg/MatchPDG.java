@@ -40,6 +40,33 @@ public class MatchPDG {
         return null;
     }
 
+    protected List<MatchedNode> getSubGraphs(PDGGraph pattern, PDGGraph code,PDGNode startNode){
+        PDGGraph _pattern=pruneAndCleanPatternPDG(pattern);
+        HashSet<PDGNode> patternNodes = _pattern.getNodes();
+        DotGraph dg = new DotGraph(_pattern);
+        dg.toDotFile(new File("./OUTPUT/"  +"____pruned_pattern__file___"+".dot"));
+        DotGraph dgc = new DotGraph(code);
+        dgc.toDotFile(new File("./OUTPUT/"  +"____code__file___"+".dot"));
+
+
+        HashSet<PDGNode> codeNodes = code.getNodes();
+        ArrayList<Pair<PDGNode,PDGNode>> startNodes = new ArrayList<>();
+        ArrayList<ArrayList<PDGNode>> matched = new ArrayList<>();
+        if (startNode !=null){
+            for (PDGNode codeNode : codeNodes) {
+                if (isEqualNodes(codeNode, startNode)){
+                    startNodes.add(Pair.make(codeNode, startNode));
+                }
+            }
+            if (startNodes.size()!=0) {
+                return startNodes.stream().map(x-> new MatchedNode(x.fst,x.snd,new HashSet<>())).collect(Collectors.toList());
+            }
+        }
+        return null;
+
+    }
+
+
     public PDGGraph pruneAndCleanPatternPDG(PDGGraph pattern) {
         ArrayList<PDGNode> remove = new ArrayList<>();
         for (PDGNode node : pattern.nodes) {

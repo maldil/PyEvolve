@@ -1,18 +1,18 @@
 package com.matching.fgpdg.nodes;
 
 import com.utils.Assertions;
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.python.antlr.base.expr;
 import org.python.core.PyObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 
 public abstract class PDGNode {
     public static final String PREFIX_DUMMY = "dummy_";
-
+    private HashMap<Object,Object> propertyMap = new HashMap<>();
     protected PyObject astNode;
     protected int astNodeType;
     protected String key;
@@ -22,6 +22,16 @@ public abstract class PDGNode {
     protected ArrayList<PDGEdge> outEdges = new ArrayList<PDGEdge>();
     private static int nodeNumber = 0;
     private int id;
+
+
+    public void setProperty(Object property,Object object){
+        this.propertyMap.put(property,object);
+    }
+
+
+    public Object getProperty(Object property){
+        return this.propertyMap.get(property);
+    }
 
     public void setInEdges(ArrayList<PDGEdge> inEdges) {
         this.inEdges = inEdges;

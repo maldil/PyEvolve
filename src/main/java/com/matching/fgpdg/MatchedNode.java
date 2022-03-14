@@ -4,30 +4,41 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.ibm.wala.util.collections.Pair;
 import com.matching.fgpdg.nodes.*;
+import com.utils.Assertions;
 import com.utils.DotGraph;
-import com.utils.Utils;
-import org.checkerframework.checker.units.qual.A;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MatchedNode {
     protected PDGNode codeNode;
+    protected PDGNode codeParaNode=null;
     protected PDGNode patternNode;
     protected MatchedNode parentNode=null;
     protected HashSet<MatchedNode> matchedChildNodes = new HashSet<>();
-    private boolean allChildsMatched=true;
+    private boolean allChildsMatched=false;
+    private boolean updateAllMatchedNodesInvoked=false;
     public enum DIRECTION {FROM,TO};
+    public enum NODE_PROPERTIES {CLONE,SWAPPED};
+    public enum SWAPPED {YES,NO};
     public MatchedNode(){
 
+    }
+
+    public PDGNode getCodeParaNode() {
+        return codeParaNode;
+    }
+
+    public void setCodeParaNode(PDGNode codeParN) {
+         this.codeParaNode=codeParN;
     }
 
     public MatchedNode(PDGNode codeNode, PDGNode patternNode,HashSet<PDGNode> visitedASTNodes) {
         this.codeNode = codeNode;
         this.patternNode = patternNode;
-        this.allChildsMatched=true;
+
         System.out.println(codeNode+"===="+patternNode);
 
         Pair<HashMap<PDGNode, HashSet<PDGNode>>, HashMap<PDGNode, HashSet<PDGNode>>> nextMatchedNodePairs
@@ -71,17 +82,22 @@ public class MatchedNode {
             matchedPatternNodes.addAll(matchedNodesFromTheChildren.fst.keySet());
             matchedPatternNodes.addAll(matchedNodesFromTheChildren.snd.keySet());
 
-            List<PDGNode> codeParaGraphs = codeNode.getInEdges().stream().filter(x -> x.getLabel().equals("para")).map(PDGEdge::getSource).filter(u->!matchedCodeNodes.contains(u)).collect(Collectors.toList());
-            codeParaGraphs.addAll(codeNode.getOutEdges().stream().filter(x -> x.getLabel().equals("para")).map(PDGEdge::getTarget).filter(u->!matchedCodeNodes.contains(u)).collect(Collectors.toList()));
-            List<PDGNode> patternParaGraphs = patternNode.getInEdges().stream().filter(x -> x.getLabel().equals("para")).map(PDGEdge::getSource).filter(u->!matchedPatternNodes.contains(u)).collect(Collectors.toList());
-            patternParaGraphs.addAll(patternNode.getOutEdges().stream().filter(x -> x.getLabel().equals("para")).map(PDGEdge::getTarget).filter(u->!matchedPatternNodes.contains(u)).collect(Collectors.toList()));
+            List<PDGNode> codeParaNodes = codeNode.getInEdges().stream().filter(x -> x.getLabel().equals("para")).map(PDGEdge::getSource).filter(u->!matchedCodeNodes.contains(u)).collect(Collectors.toList());
+            codeParaNodes.addAll(codeNode.getOutEdges().stream().filter(x -> x.getLabel().equals("para")).map(PDGEdge::getTarget).filter(u->!matchedCodeNodes.contains(u)).collect(Collectors.toList()));
+            List<PDGNode> patternParaNodes = patternNode.getInEdges().stream().filter(x -> x.getLabel().equals("para")).map(PDGEdge::getSource).filter(u->!matchedPatternNodes.contains(u)).collect(Collectors.toList());
+            patternParaNodes.addAll(patternNode.getOutEdges().stream().filter(x -> x.getLabel().equals("para")).map(PDGEdge::getTarget).filter(u->!matchedPatternNodes.contains(u)).collect(Collectors.toList()));
 
 
-            ArrayList<PDGNode> visitedCodeASTNodes = new ArrayList<>(visitedASTNodes);
-            visitedCodeASTNodes.addAll(codeParaGraphs);
+//            ArrayList<PDGNode> visitedCodeASTNodes = new ArrayList<>(visitedASTNodes);
 
-            if (codeParaGraphs.size()>0 && patternParaGraphs.size()>0){
-                for (PDGNode paraN : patternParaGraphs) {
+
+
+
+            if (codeParaNodes.size()>0 && patternParaNodes.size()>0){
+                for (PDGNode paraN : patternParaNodes) {
+                    ArrayList<PDGNode> visitedCodeASTNodes = new ArrayList<>()  ;
+                    visitedCodeASTNodes.add(codeNode);
+                    visitedCodeASTNodes.addAll(codeParaNodes);
                     if (matchedChildNodes.stream().noneMatch(x -> x.getPatternNode() == paraN)){
                         ArrayList<PDGNode> visitedPatternNode = new ArrayList<>();
                         visitedPatternNode.add(this.patternNode);
@@ -89,32 +105,69 @@ public class MatchedNode {
                         DotGraph dg = new DotGraph(patternPDG);
                         String dirPath = "./OUTPUT/";
                         dg.toDotFile(new File(dirPath  +"__patternPDG1__file___"+".dot"));
-                        for (PDGNode codeN : codeParaGraphs) {
+                        for (PDGNode codeN : codeParaNodes) {
                             PDGGraph codePDG = getSubGraphForDifferentDataFlowMatching(codeN, visitedCodeASTNodes);
-
+                            DotGraph dg1 = new DotGraph(codePDG);
+                            dg1.toDotFile(new File(dirPath  +"__patternPDG2__file___"+".dot"));
                             MatchPDG match = new MatchPDG();
-                            List<MatchedNode> subGraphs = match.getSubGraphs(patternPDG, codePDG);
-                            for (MatchedNode graph : subGraphs) {
-                                if (graph.isAllMatchedGraph()){
-                                    for (PDGNode matchedNode : graph.getCodePDGNodes()) {
-//                                        boolean can = canWalkFromNodeToNode(matchedNode, codeN );
+                            List<MatchedNode> subGraphs = match.getSubGraphs(patternPDG, codePDG, patternPDG.getPDGNode(paraN.getId()) );
+                            if (subGraphs!=null){
+                                subGraphs.forEach(x->x.updateAllMatchedNodes(x));
+                                for (MatchedNode graph : subGraphs) {
+                                    if (graph.isAllMatchedGraph()){
+                                        /*
+                                         * 1. get the code node matched to the pattern Node , paraN
+                                         * 2. get the direction of the edge between this.patternNode and the paraN
+                                         * 3. Use canWalkFromNodeToNode to check whether the we can walk from the this.codeNode to the node found in step 1
+                                         * */
+                                        ArrayList<PDGNode> codeNodes = graph.getMatchedCodeNodes(patternPDG.getPDGNode(paraN.getId()));
+//                                    assert codeNodes.size()>1;
+
+                                        PDGNode node = codeNodes.get(0);
+                                        boolean connectionFound;
+                                        if ( paraN.getInEdges().stream().map(PDGEdge::getSource).collect(Collectors.toList()).contains(patternNode)){
+                                            connectionFound = canWalkFromNodeToNode(codeNode, (PDGNode) node.getProperty(NODE_PROPERTIES.CLONE), DIRECTION.TO, new HashSet<>());
+                                        }else{
+                                            connectionFound = canWalkFromNodeToNode(codeNode, (PDGNode) node.getProperty(NODE_PROPERTIES.CLONE), DIRECTION.FROM, new HashSet<>());
+                                        }
+                                        if (connectionFound){
+                                            graph.updateCodeAndPatternNodes();
+                                            matchedChildNodes.add(graph);
+                                            graph.setCodeParaNode(codeN);
+
+                                            for (Map.Entry<PDGNode, HashSet<PDGNode>> entry : matchedNodesFromTheChildren.fst.entrySet()) {
+                                                for (PDGNode node1 : entry.getValue()) {
+                                                    if (!parentVisits.contains(node1)) {
+                                                        MatchedNode matchedNode = new MatchedNode(node1, entry.getKey(), visitedASTNodes);
+                                                        matchedNode.setParentNode(this);
+                                                        if (!matchedChildNodes.contains(matchedNode))     {
+                                                            matchedChildNodes.add(matchedNode);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            for (Map.Entry<PDGNode, HashSet<PDGNode>> entry : matchedNodesFromTheChildren.snd.entrySet()) {
+                                                for (PDGNode node1 : entry.getValue()) {
+                                                    if (!parentVisits.contains(node1)) {
+                                                         MatchedNode matchedNode = new MatchedNode(node1, entry.getKey(), visitedASTNodes);
+                                                         matchedNode.setParentNode(this);
+                                                         if (!matchedChildNodes.contains(matchedNode)){
+                                                                matchedChildNodes.add(matchedNode);
+                                                         }
+
+                                                    }
+                                                }
+                                            }
+
+
+
+
+                                            break;
+                                        }
                                     }
-
-
                                 }
                             }
 
-
-                            DotGraph dg1 = new DotGraph(codePDG);
-
-
-
-                            dg1.toDotFile(new File(dirPath  +"__codePDG1__file___"+".dot"));
-                            System.out.println();
-
-////                            List<MatchedNode> subGraphs = getMatchedSubGraphs(codeN, paraN,codeNode);
-//                            if (subGraphs!=null)
-//                                matchedChildNodes.addAll(subGraphs);
                         }
                     }
                 }
@@ -175,56 +228,97 @@ public class MatchedNode {
     public PDGGraph getSubGraphForDifferentDataFlowMatching(PDGNode node,List<PDGNode> avoidNodes){
         PDGBuildingContext context = new PDGBuildingContext(new ArrayList<>());
         PDGGraph grap = new PDGGraph(context);
-        List<PDGNode> copyAvoidNodes = new ArrayList<>(avoidNodes);
         HashSet<PDGNode> nodes = node.getAllChildNodes(20,avoidNodes);
         HashMap<Integer,PDGNode> nodeMap=new HashMap<>();
         HashSet<PDGNode> newnodes = new HashSet<>();
         for (PDGNode pdgNode : nodes) {
             if (pdgNode instanceof PDGDataNode){
                 PDGDataNode dataNode = new PDGDataNode((PDGDataNode) pdgNode);
+                dataNode.setProperty(NODE_PROPERTIES.CLONE,pdgNode);
+                dataNode.setProperty(NODE_PROPERTIES.SWAPPED,SWAPPED.NO);
                 dataNode.setId(pdgNode.getId());
-                List<PDGEdge> inedges = pdgNode.getInEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getSource())).collect(Collectors.toList());
-                dataNode.setInEdges((ArrayList<PDGEdge>) inedges);
-                List<PDGEdge> outedges = pdgNode.getOutEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getTarget())).collect(Collectors.toList());
-                dataNode.setOutEdges((ArrayList<PDGEdge>) outedges);
                 newnodes.add(dataNode);
                 nodeMap.put(pdgNode.getId(),dataNode);
             }
             else if (pdgNode instanceof PDGActionNode){
                 PDGActionNode dataNode = new PDGActionNode(  pdgNode.getAstNode(),pdgNode.getAstNodeType(),pdgNode.getKey(),pdgNode.getDataType(),((PDGActionNode) pdgNode).getName());
+                dataNode.setProperty(NODE_PROPERTIES.CLONE,pdgNode);
+                dataNode.setProperty(NODE_PROPERTIES.SWAPPED,SWAPPED.NO);
                 dataNode.setId(pdgNode.getId());
-                List<PDGEdge> inedges = pdgNode.getInEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getSource())).collect(Collectors.toList());
-                dataNode.setInEdges((ArrayList<PDGEdge>) inedges);
-                List<PDGEdge> outedges = pdgNode.getOutEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getTarget())).collect(Collectors.toList());
-                dataNode.setOutEdges((ArrayList<PDGEdge>) outedges);
                 newnodes.add(dataNode);
                 nodeMap.put(pdgNode.getId(),dataNode);
             }
-            else {
+            else if (pdgNode instanceof PDGControlNode){
                 PDGControlNode cNode= new PDGControlNode(pdgNode.getAstNode(),pdgNode.getAstNodeType(),pdgNode.getControl());
+                cNode.setProperty(NODE_PROPERTIES.CLONE,pdgNode);
+                cNode.setProperty(NODE_PROPERTIES.SWAPPED,SWAPPED.NO);
                 cNode.setId(pdgNode.getId());
-                List<PDGEdge> inedges = pdgNode.getInEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getSource())).collect(Collectors.toList());
-                cNode.setInEdges((ArrayList<PDGEdge>) inedges);
-                List<PDGEdge> outedges = pdgNode.getOutEdges().stream().filter(x -> !copyAvoidNodes.contains(x.getTarget())).collect(Collectors.toList());
-                cNode.setOutEdges((ArrayList<PDGEdge>) outedges);
                 newnodes.add(cNode);
                 nodeMap.put(pdgNode.getId(),cNode);
             }
+            else if (pdgNode instanceof PDGEntryNode){
+                PDGEntryNode entryNodennode = new PDGEntryNode(pdgNode.getAstNode(),pdgNode.getAstNodeType(),pdgNode.getLabel());
+                entryNodennode.setProperty(NODE_PROPERTIES.CLONE,pdgNode);
+                entryNodennode.setProperty(NODE_PROPERTIES.SWAPPED,SWAPPED.NO);
+                entryNodennode.setId(pdgNode.getId());
+                newnodes.add(entryNodennode);
+                nodeMap.put(pdgNode.getId(),entryNodennode);
+            }
+            else
+                Assertions.UNREACHABLE("Unhandled node type"+pdgNode.getClass());
+        }
+
+        for (PDGNode pdgNode : nodes) {
+            pdgNode.getInEdges().stream().filter(y->nodeMap.get(y.getTarget().getId())!=null&&  nodeMap.get(y.getSource().getId())!=null).forEach(x->createListNewOfEdges(x,nodeMap.get(x.getSource().getId()),nodeMap.get(x.getTarget().getId())));
+            pdgNode.getOutEdges().stream().filter(y->nodeMap.get(y.getTarget().getId())!=null&&  nodeMap.get(y.getSource().getId())!=null).forEach(x->createListNewOfEdges(x,nodeMap.get(x.getSource().getId()),nodeMap.get(x.getTarget().getId())));
 
         }
-        newnodes.forEach(y->{
-            y.getInEdges().forEach(z->{
-                z.setSource(nodeMap.get(z.getSource().getId()));
-                z.setTarget(nodeMap.get(z.getSource().getId()));
-            });
-            y.getOutEdges().forEach(z->{
-                z.setSource(nodeMap.get(z.getSource().getId()));
-                z.setTarget(nodeMap.get(z.getSource().getId()));
-            });
-        });
+
+
+//        newnodes.forEach(y->{
+//            y.getInEdges().forEach(z->{
+//                z.setSource(nodeMap.get(z.getSource().getId()));
+//                z.setTarget(nodeMap.get(z.getTarget().getId()));
+//            });
+//            y.getOutEdges().forEach(z->{
+//                z.setSource(nodeMap.get(z.getSource().getId()));
+//                z.setTarget(nodeMap.get(z.getTarget().getId()));
+//            });
+//        });
 
         grap.nodes.addAll(newnodes);
         return grap;
+    }
+
+    public static PDGNode[] concatenate(PDGNode[] ...arrays)
+    {
+        return Stream.of(arrays)
+                .flatMap(Stream::of)        // or, use `Arrays::stream`
+                .toArray(PDGNode[]::new);
+    }
+
+    private void createListNewOfEdges(PDGEdge edge, PDGNode source, PDGNode target){
+        List<PDGEdge> newEdges= new ArrayList<>();
+        if (source.getInEdges().stream().map(PDGEdge::getSource).collect(Collectors.toList()).contains(target)&&
+                source.getInEdges().stream().filter(x -> x.getSource() == target).anyMatch(y -> y.getLabel().equals(edge.getLabel())))
+            return;
+        List<PDGEdge> collect = source.getOutEdges().stream().filter(x -> x.getTarget() == target).collect(Collectors.toList());
+        if (source.getOutEdges().stream().map(PDGEdge::getTarget).collect(Collectors.toList()).contains(target)&&
+                source.getOutEdges().stream().filter(x -> x.getTarget() == target).anyMatch(y -> y.getLabel().equals(edge.getLabel())))
+            return;
+
+
+        if (edge instanceof PDGDataEdge){
+                PDGDataEdge nEdge = new PDGDataEdge(source,target,((PDGDataEdge) edge).getType());
+                newEdges.add(nEdge);
+        }
+        else if (edge instanceof PDGControlEdge){
+                PDGControlEdge nEdge = new PDGControlEdge(source,target,edge.getLabel());
+                newEdges.add(nEdge);
+        }
+        else  {
+                Assertions.UNREACHABLE("Unhandled edge type");
+        }
 
     }
 
@@ -246,6 +340,9 @@ public class MatchedNode {
 //    }
 
     public void updateAllMatchedNodes(MatchedNode matchedGraph){
+        if (this.allChildsMatched)
+            return;
+        this.allChildsMatched=true;
         List<PDGNode> childNodesogPatternNodes = patternNode.getInEdges().stream().map(PDGEdge::getSource).collect(Collectors.toList());
         childNodesogPatternNodes.addAll(patternNode.getOutEdges().stream().map(PDGEdge::getTarget).collect(Collectors.toList()));
         List<PDGNode> childNodesOfCodeNodes = codeNode.getInEdges().stream().map(PDGEdge::getSource).collect(Collectors.toList());
@@ -253,11 +350,19 @@ public class MatchedNode {
         for (PDGNode node : childNodesogPatternNodes) {
             List<PDGNode> collect1 = matchedGraph.getAllMatchedNodes().stream().filter(x -> x.getPatternNode() == node).map(MatchedNode::getCodeNode)
                     .collect(Collectors.toList());
+            List<PDGNode> collect2 = matchedGraph.getAllMatchedNodes().stream().filter(x -> x.getPatternNode() == node).filter(y->y.getCodeParaNode()!=null).map(MatchedNode::getCodeParaNode)
+                    .collect(Collectors.toList());
             if (collect1.size()>0){
 //                get matched code nodes of he collect1
                 boolean isChildNodeOfCodeNodeEqualTOChildNodeOfPatternNode=false;
                 for (PDGNode matchedCodeNode : collect1) {
                     if (childNodesOfCodeNodes.contains(matchedCodeNode)){
+                        isChildNodeOfCodeNodeEqualTOChildNodeOfPatternNode=true;
+                        break;
+                    }
+                }
+                for (PDGNode pdgNode : collect2) { //Check whether the respective child node of the code node is equal for the nodes matched through parameter edges
+                    if (childNodesOfCodeNodes.contains(pdgNode)){
                         isChildNodeOfCodeNodeEqualTOChildNodeOfPatternNode=true;
                         break;
                     }
@@ -293,6 +398,15 @@ public class MatchedNode {
             return false;
         }
     }
+
+//    public MatchedNode getAllMatchedGraph(){
+//        if (allChildsMatched) {
+//
+//
+//        }
+//        else
+//            return null;
+//    }
 
     public HashSet<MatchedNode> getMatchedChildNodes() {
         return matchedChildNodes;
@@ -536,6 +650,24 @@ public class MatchedNode {
         return nodes;
     }
 
+    public ArrayList<PDGNode> getMatchedCodeNodes(PDGNode patternNode){
+        ArrayList<PDGNode> matchedNodes = new ArrayList<>();
+        if (patternNode==this.patternNode){
+            matchedNodes.add(codeNode);
+        }
+        matchedChildNodes.forEach(x->matchedNodes.addAll(x.getMatchedCodeNodes(patternNode)));
+        return matchedNodes;
+    }
 
-
+    public void updateCodeAndPatternNodes(){
+        if (patternNode.getProperty(NODE_PROPERTIES.SWAPPED)==SWAPPED.NO){
+            patternNode= (PDGNode) patternNode.getProperty(NODE_PROPERTIES.CLONE);
+            patternNode.setProperty(NODE_PROPERTIES.SWAPPED,SWAPPED.YES);
+        }
+        if (codeNode.getProperty(NODE_PROPERTIES.SWAPPED)==SWAPPED.NO){
+            codeNode= (PDGNode) codeNode.getProperty(NODE_PROPERTIES.CLONE);
+            codeNode.setProperty(NODE_PROPERTIES.SWAPPED,SWAPPED.YES);
+        }
+        matchedChildNodes.forEach(MatchedNode::updateCodeAndPatternNodes);
+    }
 }

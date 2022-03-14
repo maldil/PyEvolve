@@ -15,6 +15,7 @@ import org.python.core.PyObject;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.matching.fgpdg.nodes.PDGDataEdge.Type.*;
 
@@ -34,6 +35,7 @@ public class PDGGraph implements Serializable {
     protected HashSet<PDGNode> changedNodes = new HashSet<>();
     private PDGBuildingContext context;
     private HashMap<String, HashSet<PDGDataNode>> defStore = new HashMap<>();
+    private HashMap<Integer,PDGNode> idPDG = new HashMap<>();
 
     public PDGGraph(FunctionDef md, PDGBuildingContext context) {
         this.context = context;
@@ -62,6 +64,15 @@ public class PDGGraph implements Serializable {
         adjustReturnNodes();
         adjustControlEdges();
         context.removeScope();
+    }
+
+    public PDGNode getPDGNode(int id){
+        if (idPDG.size()==0){
+            for (PDGNode node : nodes) {
+                idPDG.put(node.getId(),node);
+            }
+        }
+        return idPDG.get(id);
     }
 
     public PDGGraph(Module md, PDGBuildingContext context) {
