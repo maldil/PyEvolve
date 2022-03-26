@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.python.antlr.Visitor;
 import org.python.antlr.ast.*;
 import org.python.antlr.ast.Module;
+import org.python.antlr.base.stmt;
 
 import java.io.File;
 import java.io.IOException;
@@ -209,6 +210,46 @@ class MatchedNodeTest {
     }
 
     @Test
+    void testSubGraphs17() {
+        String filename="testm14";
+        String patternname = "pattern6";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs18() {
+        String filename="testm15";
+        String patternname = "pattern7";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs19() {
+        String filename="testm15";
+        String patternname = "pattern";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs20() {
+        String filename="testm16";
+        String patternname = "pattern";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
     void testGetPatternGraphForMatching1() {
         Module codeModule = getPythonModule("author/project/pattern2.py");
         PDGBuildingContext mcontext = null;
@@ -274,6 +315,16 @@ class MatchedNodeTest {
         for (org.python.antlr.base.stmt stmt : codeModule.getInternalBody()) {
             if (stmt instanceof FunctionDef){
                 func= (FunctionDef) stmt;
+                break;
+            }
+            else if (stmt instanceof ClassDef){
+                for (org.python.antlr.base.stmt stmt1 : ((ClassDef) stmt).getInternalBody()) {
+                    if (stmt1 instanceof FunctionDef){
+                        func= (FunctionDef) stmt1;
+                        break;
+                    }
+                }
+
             }
         }
         PDGBuildingContext fcontext = null;
@@ -285,7 +336,8 @@ class MatchedNodeTest {
             PDGBuildingContext mcontext = new PDGBuildingContext(patternModule.getInternalBody().stream().filter(x-> x instanceof Import
                     || x instanceof ImportFrom).collect(Collectors.toList()),"author/project/"+patternname+".py");
             PDGGraph mpdg = new PDGGraph(patternModule,mcontext);
-
+            DotGraph dgc = new DotGraph(fpdg);
+            dgc.toDotFile(new File("./OUTPUT/"  +"____code_first__file___"+".dot"));
             MatchPDG match = new MatchPDG();
             graphs=match.getSubGraphs(mpdg,fpdg );
             graphs.forEach(x->x.updateAllMatchedNodes(x));

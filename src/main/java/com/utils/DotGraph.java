@@ -55,12 +55,17 @@ public class DotGraph {
             for (PDGEdge e : node.getInEdges()) {
                 int sId = ids.get(e.getSource());
                 String label = e.getLabel();
+                String color =null;
+                if (label.equals("re_def")){
+                    color=COLOR_RED;
+                }
+
                 if (label.equals("T") || label.equals("F"))
-                    graph.append(addEdge(sId, tId, null, null, label));
+                    graph.append(addEdge(sId, tId, null, color, label));
                 else if (e instanceof PDGControlEdge)
-                    graph.append(addEdge(sId, tId, STYLE_SOLID, null, label));
+                    graph.append(addEdge(sId, tId, STYLE_SOLID, color, label));
                 else
-                    graph.append(addEdge(sId, tId, STYLE_DOTTED, null, label));
+                    graph.append(addEdge(sId, tId, STYLE_DOTTED, color, label));
             }
         }
     }

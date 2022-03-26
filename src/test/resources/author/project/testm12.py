@@ -11,9 +11,10 @@ def _multiplicative_update_h(X, W, H, beta_loss, l1_reg_H, l2_reg_H, gamma):
 
      else:
          # Numerator
-        WH_safe_X = _special_sparse_dot(W, H, X)
+        denominator = _special_sparse_dot(W, H, X)
         if sp.issparse(X):
-            WH_safe_X_data = WH_safe_X
+            return null
+     return denominator
 
 
 if __name__ == "__main__":

@@ -122,6 +122,14 @@ public class PDGBuildingContext {
         this.localVariableTypes.peek().put(identifier, type);
     }
 
+    public void updateTypeOfVariable(String identifier,   String type){
+        for (int i = localVariables.size() - 1; i >= 0; i--) {
+            HashMap<String, String> variables = this.localVariables.get(i);
+            if (variables.containsKey(identifier))
+                 this.localVariableTypes.get(i).put(identifier,type);
+        }
+    }
+
     public void pushTry() {
         stkTrys.push(new HashSet<PDGActionNode>());
     }

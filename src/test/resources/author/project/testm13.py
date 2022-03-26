@@ -13,7 +13,7 @@ def test_application_pretrained_weights_loading(self):
           preds = model.predict(x)
           names = [p[1] for p in app_module.decode_predictions(preds)[0]]
           # Test correct label is in top 3 (weak correctness test).
-          self.assertIn('African_elephant', names[3])
+          self.assertIn('African_elephant', names[9:3])
     if target_size[0] is None:
           target_size = (299, 299)
           test_image = data_utils.get_file('elephant.jpg', TEST_IMAGE_PATH)

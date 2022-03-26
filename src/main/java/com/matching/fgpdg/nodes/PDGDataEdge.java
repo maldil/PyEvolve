@@ -1,7 +1,7 @@
 package com.matching.fgpdg.nodes;
 
 public class PDGDataEdge extends PDGEdge {
-    public enum Type {RECEIVER, PARAMETER, DEFINITION, REFERENCE, CONDITION, DEPENDENCE, QUALIFIER, MAP}
+    public enum Type {RECEIVER, PARAMETER, DEFINITION, RE_DEFINITION, REFERENCE, CONDITION, DEPENDENCE, QUALIFIER, MAP}
 
     protected Type type;
 
@@ -25,6 +25,7 @@ public class PDGDataEdge extends PDGEdge {
             case REFERENCE: return "ref";
             case CONDITION: return "cond";
             case DEPENDENCE: return "dep";
+            case RE_DEFINITION: return "re_def";
             case QUALIFIER: return "qual";
             case MAP: return "map";
             default: return "";
