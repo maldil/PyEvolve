@@ -583,5 +583,12 @@ class PDGGraphTest {
         }
     }
 
+    @Test
+    void testParse() {
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        Module parse = parser.parse("author/project/test24.py");
+        System.out.println(parse);
+    }
+
 
 }
