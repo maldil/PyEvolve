@@ -1,6 +1,7 @@
 package com.matching.fgpdg;
 
 import com.google.gson.stream.JsonToken;
+import com.matching.fgpdg.nodes.Guards;
 import org.antlr.runtime.ANTLRStringStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,10 @@ public class TestTemplateParsing {
     @Test
     void testPDG2() throws Exception {
         String code= """
+                # type [[$1]]: int
+                # value [[$3]]: 0
+                # type [[$4]]: str
+                # kind [[$3]] : SimpleName
                 [[$1]] = [[$3]]
                 for [[$5]] in [[$6]]:
                         [[$9]] = [[$12]]([[$1]])
@@ -42,6 +47,7 @@ public class TestTemplateParsing {
                                 [[$1]] += [[$5]]
                 [[$20]]([[$1]])""";
         mod mod = parsePython(code);
+        Guards guard = new Guards(code);
         PyErrorVisitor error = new PyErrorVisitor();
         error.visit(mod);
         Assertions.assertEquals(error.getError(),0);

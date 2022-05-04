@@ -3,10 +3,13 @@ package com.matching.fgpdg.nodes.TypeInfo;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.gson.Gson;
+import com.matching.fgpdg.nodes.Guards;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TypeWrapper {
     Table<Integer, Integer, DataTypeClass> typeTable
@@ -22,10 +25,30 @@ public class TypeWrapper {
         }
     }
 
+    public TypeWrapper(HashMap<String,String> typeInfo){
+        Table<Integer, Integer, DataTypeClass> typeTable
+                = HashBasedTable.create();
+        for (Map.Entry<String, String> typeEntry : typeInfo.entrySet()) {
+            typeTable.put(0, 0,
+                    new DataTypeClass(typeEntry.getKey(),typeEntry.getValue()));
+        }
+        this.typeTable = typeTable;
+    }
+
     public String getTypeInfo(int lineNumber, int collomnOffset){
         if (typeTable.get(lineNumber,collomnOffset)==null){
             System.err.println("Types in "+lineNumber+" "+collomnOffset+"is not found");
+
             return null;
+        }
+        return typeTable.get(lineNumber,collomnOffset).type;
+    }
+
+    public String getTypeInfo(int lineNumber, int collomnOffset, String name){
+        if (typeTable.get(lineNumber,collomnOffset)==null){
+//            System.err.println("Types in "+lineNumber+" "+collomnOffset+"is not found");
+            return getTypeInfo(name);
+
         }
         return typeTable.get(lineNumber,collomnOffset).type;
     }
@@ -46,5 +69,15 @@ public class TypeWrapper {
             this.nodeName = nodeName;
             this.type = type;
         }
+    }
+
+    public void setTypeTable(HashMap<String,String> typeInfo) {
+        Table<Integer, Integer, DataTypeClass> typeTable
+                = HashBasedTable.create();
+        for (Map.Entry<String, String> typeEntry : typeInfo.entrySet()) {
+            typeTable.put(0, 0,
+                    new DataTypeClass(typeEntry.getKey(),typeEntry.getValue()));
+        }
+        this.typeTable = typeTable;
     }
 }

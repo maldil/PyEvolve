@@ -49,7 +49,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),48);
             Assertions.assertEquals (pdg.statementNodes.size() ,19);
-            Assertions.assertEquals (pdg.dataSources.size() ,5);
+            Assertions.assertEquals (pdg.dataSources.size() ,10);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -72,7 +72,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),31);
             Assertions.assertEquals (pdg.statementNodes.size() ,12);
-            Assertions.assertEquals (pdg.dataSources.size() ,5);
+            Assertions.assertEquals (pdg.dataSources.size() ,9);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -95,7 +95,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),34);
             Assertions.assertEquals (pdg.statementNodes.size() ,13);
-            Assertions.assertEquals (pdg.dataSources.size() ,4);
+            Assertions.assertEquals (pdg.dataSources.size() ,10);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -118,7 +118,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),44);
             Assertions.assertEquals (pdg.statementNodes.size() ,18);
-            Assertions.assertEquals (pdg.dataSources.size() ,7);
+            Assertions.assertEquals (pdg.dataSources.size() ,14);
             //TODO Tuples do not engage with other elements-FIX IT
         } catch (IOException e) {
             e.printStackTrace();
@@ -141,7 +141,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),18);
             Assertions.assertEquals (pdg.statementNodes.size() ,7);
-            Assertions.assertEquals (pdg.dataSources.size() ,2);
+            Assertions.assertEquals (pdg.dataSources.size() ,5);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -164,7 +164,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),37);
             Assertions.assertEquals (pdg.statementNodes.size() ,19);
-            Assertions.assertEquals (pdg.dataSources.size() ,4);
+            Assertions.assertEquals (pdg.dataSources.size() ,10);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -187,7 +187,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),25);
             Assertions.assertEquals (pdg.statementNodes.size() ,10);
-            Assertions.assertEquals (pdg.dataSources.size() ,2);
+            Assertions.assertEquals (pdg.dataSources.size() ,6);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -210,7 +210,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),26);
             Assertions.assertEquals (pdg.statementNodes.size() ,10);
-            Assertions.assertEquals (pdg.dataSources.size() ,5);
+            Assertions.assertEquals (pdg.dataSources.size() ,9);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -233,7 +233,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),31);
             Assertions.assertEquals (pdg.statementNodes.size() ,12);
-            Assertions.assertEquals (pdg.dataSources.size() ,4);
+            Assertions.assertEquals (pdg.dataSources.size() ,7);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -256,7 +256,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),37);
             Assertions.assertEquals (pdg.statementNodes.size() ,12);
-            Assertions.assertEquals (pdg.dataSources.size() ,3);
+            Assertions.assertEquals (pdg.dataSources.size() ,10);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -279,7 +279,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),47);
             Assertions.assertEquals (pdg.statementNodes.size() ,17);
-            Assertions.assertEquals (pdg.dataSources.size() ,3);
+            Assertions.assertEquals (pdg.dataSources.size() ,12);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -302,7 +302,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),34);
             Assertions.assertEquals (pdg.statementNodes.size() ,13);
-            Assertions.assertEquals (pdg.dataSources.size() ,2);
+            Assertions.assertEquals (pdg.dataSources.size() ,10);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -325,7 +325,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),34);
             Assertions.assertEquals (pdg.statementNodes.size() ,13);
-            Assertions.assertEquals (pdg.dataSources.size() ,2);
+            Assertions.assertEquals (pdg.dataSources.size() ,10);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -348,7 +348,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),34);
             Assertions.assertEquals (pdg.statementNodes.size() ,13);
-            Assertions.assertEquals (pdg.dataSources.size() ,2);
+            Assertions.assertEquals (pdg.dataSources.size() ,10);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -371,7 +371,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),33);
             Assertions.assertEquals (pdg.statementNodes.size() ,11);
-            Assertions.assertEquals (pdg.dataSources.size() ,4);
+            Assertions.assertEquals (pdg.dataSources.size() ,13);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -394,7 +394,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),27);
             Assertions.assertEquals (pdg.statementNodes.size() ,10);
-            Assertions.assertEquals (pdg.dataSources.size() ,2);
+            Assertions.assertEquals (pdg.dataSources.size() ,6);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -417,7 +417,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),29);
             Assertions.assertEquals (pdg.statementNodes.size() ,10);
-            Assertions.assertEquals (pdg.dataSources.size() ,4);
+            Assertions.assertEquals (pdg.dataSources.size() ,11);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -440,7 +440,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,0);
             Assertions.assertEquals (pdg.getNodes().size(),16);
             Assertions.assertEquals (pdg.statementNodes.size() ,10);
-            Assertions.assertEquals (pdg.dataSources.size() ,0);
+            Assertions.assertEquals (pdg.dataSources.size() ,1);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -463,7 +463,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,0);
             Assertions.assertEquals (pdg.getNodes().size(),17);
             Assertions.assertEquals (pdg.statementNodes.size() ,8);
-            Assertions.assertEquals (pdg.dataSources.size() ,0);
+            Assertions.assertEquals (pdg.dataSources.size() ,3);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -486,7 +486,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,0);
             Assertions.assertEquals (pdg.getNodes().size(),10);
             Assertions.assertEquals (pdg.statementNodes.size() ,2);
-            Assertions.assertEquals (pdg.dataSources.size() ,4);
+            Assertions.assertEquals (pdg.dataSources.size() ,5);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -509,7 +509,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,0);
             Assertions.assertEquals (pdg.getNodes().size(),9);
             Assertions.assertEquals (pdg.statementNodes.size() ,3);
-            Assertions.assertEquals (pdg.dataSources.size() ,0);
+            Assertions.assertEquals (pdg.dataSources.size() ,2);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -532,7 +532,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),52);
             Assertions.assertEquals (pdg.statementNodes.size() ,21);
-            Assertions.assertEquals (pdg.dataSources.size() ,5);
+            Assertions.assertEquals (pdg.dataSources.size() ,55);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -555,7 +555,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),28);
             Assertions.assertEquals (pdg.statementNodes.size() ,10);
-            Assertions.assertEquals (pdg.dataSources.size() ,3);
+            Assertions.assertEquals (pdg.dataSources.size() ,6);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -577,7 +577,7 @@ class PDGGraphTest {
             Assertions.assertEquals (pdg.parameters.length,2);
             Assertions.assertEquals (pdg.getNodes().size(),28);
             Assertions.assertEquals (pdg.statementNodes.size() ,10);
-            Assertions.assertEquals (pdg.dataSources.size() ,3);
+            Assertions.assertEquals (pdg.dataSources.size() ,38);
         } catch (IOException e) {
             e.printStackTrace();
         }

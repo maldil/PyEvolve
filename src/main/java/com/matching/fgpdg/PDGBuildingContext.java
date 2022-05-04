@@ -48,6 +48,12 @@ public class PDGBuildingContext {
         updateImportMap(importStmt);
     }
 
+    public PDGBuildingContext(List<stmt> importStmt, TypeWrapper typeWrapper){
+        updateImportMap(importStmt);
+        this.typeWrapper=typeWrapper;
+    }
+
+
 
     public TypeWrapper getTypeWrapper() {
         return typeWrapper;
@@ -153,7 +159,7 @@ public class PDGBuildingContext {
             if (info != null)
                 name = info[0];
             else
-                name=getTypeWrapper().getTypeInfo(((Name) value).getLineno() ,((Name) value).getCol_offset());
+                name=getTypeWrapper().getTypeInfo(((Name) value).getLineno() ,((Name) value).getCol_offset(),((Name) value).getInternalId());
         }
         if (astNode.getInternalSlice() instanceof Index && ((Index)astNode.getInternalSlice()).getInternalValue() instanceof Tuple){
             Tuple internalValue = (Tuple)((Index) astNode.getInternalSlice()).getInternalValue();

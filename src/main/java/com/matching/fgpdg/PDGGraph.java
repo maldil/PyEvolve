@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 
 import static com.matching.fgpdg.nodes.PDGDataEdge.Type.*;
 
-
 public class PDGGraph implements Serializable {
     private static final long serialVersionUID = -5128703931982211886L;
     protected PDGDataNode[] parameters;
@@ -571,6 +570,8 @@ public class PDGGraph implements Serializable {
             return buildPDG(control, branch, (BoolOp) node);
         if (node instanceof Break)
             return buildPDG(control, branch, (Break) node);
+        if (node instanceof Hole)
+            return buildPDG(control, branch, (Hole) node);
         Assertions.UNREACHABLE(node.getClass().toString());
         return null;
     }
@@ -725,6 +726,11 @@ public class PDGGraph implements Serializable {
             String varName = ((Name) astNode.getInternalTarget()).getInternalId();
             String varType = context.getTypeWrapper().getTypeInfo(((Name) astNode.getInternalTarget()).getLineno(),
                     ((Name) astNode.getInternalTarget()).getCol_offset());
+
+            if (varType==null){
+                varType = context.getTypeWrapper().getTypeInfo(varName);
+            }
+
             context.addLocalVariable(varName, "" + astNode.getInternalTarget().getCharStartIndex(), varType);
             PDGDataNode varp = new PDGDataNode(astNode.getInternalTarget(), astNode.getInternalTarget().getNodeType(),
                     "" + astNode.getInternalTarget().getCharStartIndex(), varType,
@@ -739,6 +745,9 @@ public class PDGGraph implements Serializable {
             for (expr var : ((Tuple) astNode.getInternalTarget()).getInternalElts()) {
                 String name = ((Name) var).getInternalId();
                 String type = context.getTypeWrapper().getTypeInfo(((Name) var).getLineno(), ((Name) var).getCol_offset());
+                if (type==null){
+                    type = context.getTypeWrapper().getTypeInfo(name);
+                }
                 context.addLocalVariable(name, "" + var.getCharStartIndex(), type);
                 PDGDataNode varNode = new PDGDataNode(var, var.getNodeType(),
                         "" + var.getCharStartIndex(), type,
@@ -771,7 +780,7 @@ public class PDGGraph implements Serializable {
             for (int i = 0; i < astNode.getInternalTargets().size(); i++) {
                 if (astNode.getInternalTargets().get(i) instanceof Name &&
                         context.getTypeWrapper().getTypeInfo(astNode.getInternalTargets().get(i).getLine(),
-                                astNode.getInternalTargets().get(i).getCharPositionInLine()) != null
+                                astNode.getInternalTargets().get(i).getCharPositionInLine(), ((Name) astNode.getInternalTargets().get(i)).getInternalId() ) != null
                 ) {
                     String[] info = context.getLocalVariableInfo(((Name) astNode.getInternalTargets().get(i)).getInternalId());
                     if (info==null){
@@ -779,13 +788,13 @@ public class PDGGraph implements Serializable {
                                 (((Name) astNode.getInternalTargets().get(i)).getInternalId(), "" +
                                                 astNode.getInternalTargets().get(i).getCharStartIndex(),
                                         context.getTypeWrapper().getTypeInfo(astNode.getInternalTargets().get(i).getLine(),
-                                                astNode.getInternalTargets().get(i).getCharPositionInLine()));
+                                                astNode.getInternalTargets().get(i).getCharPositionInLine(), ((Name) astNode.getInternalTargets().get(i)).getInternalId()));
                     }
                     else if (!info[1].equals(context.getTypeWrapper().getTypeInfo(astNode.getInternalTargets().get(i).getLine(),
-                            astNode.getInternalTargets().get(i).getCharPositionInLine()))){
+                            astNode.getInternalTargets().get(i).getCharPositionInLine(), ((Name) astNode.getInternalTargets().get(i)).getInternalId()))){
                         context.updateTypeOfVariable(((Name) astNode.getInternalTargets().get(i)).getInternalId(),
                                 context.getTypeWrapper().getTypeInfo(astNode.getInternalTargets().get(i).getLine(),
-                                astNode.getInternalTargets().get(i).getCharPositionInLine()) );
+                                astNode.getInternalTargets().get(i).getCharPositionInLine(), ((Name) astNode.getInternalTargets().get(i)).getInternalId()) );
 
 
                     }
@@ -801,7 +810,8 @@ public class PDGGraph implements Serializable {
         } else {
             if (astNode.getInternalTargets().get(0) instanceof Name &&
                     context.getTypeWrapper().getTypeInfo(astNode.getInternalTargets().get(0).getLine(),
-                            astNode.getInternalTargets().get(0).getCharPositionInLine()) != null) {
+                            astNode.getInternalTargets().get(0).getCharPositionInLine(),
+                            ((Name) astNode.getInternalTargets().get(0)).getInternalId() ) != null) {
 
                 String[] info = context.getLocalVariableInfo((((Name) astNode.getInternalTargets().get(0)).getInternalId() ));
                 if(info==null){
@@ -809,14 +819,14 @@ public class PDGGraph implements Serializable {
                             (((Name) astNode.getInternalTargets().get(0)).getInternalId(), "" +
                                             astNode.getInternalTargets().get(0).getCharStartIndex(),
                                     context.getTypeWrapper().getTypeInfo(astNode.getInternalTargets().get(0).getLine(),
-                                            astNode.getInternalTargets().get(0).getCharPositionInLine()));
+                                            astNode.getInternalTargets().get(0).getCharPositionInLine(), ((Name) astNode.getInternalTargets().get(0)).getInternalId()));
 
                 }
                 else if (!info[1].equals(context.getTypeWrapper().getTypeInfo(astNode.getInternalTargets().get(0).getLine(),
-                        astNode.getInternalTargets().get(0).getCharPositionInLine()))){
+                        astNode.getInternalTargets().get(0).getCharPositionInLine(),((Name) astNode.getInternalTargets().get(0)).getInternalId()))){
                     context.updateTypeOfVariable(((Name) astNode.getInternalTargets().get(0)).getInternalId(),
                             context.getTypeWrapper().getTypeInfo(astNode.getInternalTargets().get(0).getLine(),
-                            astNode.getInternalTargets().get(0).getCharPositionInLine()));
+                            astNode.getInternalTargets().get(0).getCharPositionInLine(), ((Name) astNode.getInternalTargets().get(0)).getInternalId()));
 
                 }
 
@@ -911,7 +921,8 @@ public class PDGGraph implements Serializable {
                             ((Name) astNode.getInternalElts().get(i)).getInternalId(), "" +
                                     (astNode.getInternalElts().get(i)).getCharStartIndex(),
                             context.getTypeWrapper().getTypeInfo((astNode.getInternalElts().get(i)).getLine(),
-                                    ((Name) (astNode.getInternalElts().get(i))).getCol_offset()));
+                                    ((Name) (astNode.getInternalElts().get(i))).getCol_offset(),
+                                    ((Name) astNode.getInternalElts().get(i)).getInternalId()));
                     pgs[i] = buildArgumentPDG(control, branch, astNode.getInternalElts().get(i));
                 } else {
                     pgs[i] = buildArgumentPDG(control, branch, astNode.getInternalElts().get(i));
@@ -975,10 +986,10 @@ public class PDGGraph implements Serializable {
             return new PDGGraph(context, new PDGDataNode(
                     astNode, astNode.getNodeType(), name, context.getImportsMap().get(name),
                     name, false, false));
-        } else if (context.getTypeWrapper().getTypeInfo(astNode.getLineno(), astNode.getCol_offset()) != null) {
+        } else if (context.getTypeWrapper().getTypeInfo(astNode.getLineno(), astNode.getCol_offset(),astNode.getInternalId()) != null) {
             return new PDGGraph(context, new PDGDataNode(
                     astNode, astNode.getNodeType(), name,
-                    context.getTypeWrapper().getTypeInfo(astNode.getLineno(), astNode.getCol_offset()),
+                    context.getTypeWrapper().getTypeInfo(astNode.getLineno(), astNode.getCol_offset(),astNode.getInternalId()),
                     name, false, false));
         } else if (Character.isUpperCase(name.charAt(0))) {
             return new PDGGraph(context, new PDGDataNode(
@@ -1322,7 +1333,7 @@ public class PDGGraph implements Serializable {
         } else
             pgs = new PDGGraph[0];
         PDGNode node = new PDGActionNode(control, branch,
-                astNode, astNode.getNodeType(), null, "[]", "<new>");
+                astNode, astNode.getNodeType(), null, "[]", "[list]");
         if (pgs.length > 0) {
             for (PDGGraph pg : pgs)
                 pg.mergeSequentialData(node, PARAMETER);
@@ -1626,6 +1637,12 @@ public class PDGGraph implements Serializable {
         else
             Assertions.UNREACHABLE(astNode.getInternalOp().toString());
         return pdg;
+
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
+                              Hole astNode) {
+        return new PDGGraph(context);
 
     }
 
