@@ -1,6 +1,7 @@
 package com.matching;
 
-import com.matching.fgpdg.nodes.AlphanumericHole;
+import com.matching.fgpdg.nodes.ast.AlphanumericHole;
+import com.matching.fgpdg.nodes.ast.LazyHole;
 import com.utils.Assertions;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CharStream;
@@ -12,7 +13,6 @@ import org.python.antlr.ast.Module;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.mod;
 import org.python.antlr.base.stmt;
-import org.python.core.PyObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,24 +69,60 @@ public class ConcreatePythonParser  {
 
     class PyHoleVisitorAndRepair extends Visitor {
         @Override
-        public Object visitList(List node) throws Exception {
-            if (node.getInternalElts().size()==1 && node.getInternalElts().get(0) instanceof List
-            && ((List) node.getInternalElts().get(0)).getInternalElts().size()==1 && ((List) node.getInternalElts().get(0)).getInternalElts().get(0) instanceof Hole)
-            {
-                AlphanumericHole alphanumericHole = new AlphanumericHole();
-                updateDataOnHole(node, alphanumericHole);
+        public Object visitAttribute(Attribute node) throws Exception {
+                if (node.getInternalHole() !=null){
+                    Hole hole = new LazyHole();
+                    hole.setCharStartIndex(node.getCharStartIndex());
+                    hole.setCharStopIndex(node.getCharStopIndex());
+                    hole.setCol_offset(node.getCol_offset());
+                    hole.setLineno(node.getLineno());
+                    hole.setN( node.getInternalHole().getN());
+                    hole.setParent(node.getParent());
+                    node.setAttr(hole);
+                    node.setInternalHole(hole);
+                }
+                else if (node.getInternalAlphHole() !=null){
+                    Hole hole = new AlphanumericHole();
+                    hole.setCharStartIndex(node.getCharStartIndex());
+                    hole.setCharStopIndex(node.getCharStopIndex());
+                    hole.setCol_offset(node.getCol_offset());
+                    hole.setLineno(node.getLineno());
+                    hole.setN( node.getInternalAlphHole().getN());
+                    hole.setParent(node.getParent());
+                    node.setAttr(hole);
+                    node.setInternalHole(hole);
+                }
 
+
+
+
+            return super.visitAttribute (node);
+        }
+
+        @Override
+        public Object visitList(List node) throws Exception {
+            Hole hole=null;
+            if (node.getInternalElts().size()==1 && node.getInternalElts().get(0) instanceof AlphHole){
+                hole = new AlphanumericHole();
+                updateDataOnHole(node, hole);
+            }
+            else if (node.getInternalElts().size()==1 && node.getInternalElts().get(0) instanceof Hole){
+                hole = new LazyHole();
+                updateDataOnHole(node, hole);
+            }
+            if (hole!=null)
+            {
                 if (node.getParent()!=null) {
                     int childIndez = node.getParent().getChildren().indexOf(node);
                     node.getParent().getChildren().remove(node);
-                    node.getParent().getChildren().add(childIndez, alphanumericHole);
+                    node.getParent().getChildren().add(childIndez, hole);
                     if (node.getParent() instanceof Assign) {
                         if (((Assign) node.getParent()).getInternalValue() == node) {
-                            ((Assign) node.getParent()).setValue(alphanumericHole);
+                            ((Assign) node.getParent()).setValue(hole);
                         } else if (((Assign) node.getParent()).getInternalTargets().contains(node)) {
                             int index = ((Assign) node.getParent()).getInternalTargets().indexOf(node);
                             ((Assign) node.getParent()).getInternalTargets().remove(node);
-                            ((Assign) node.getParent()).getInternalTargets().add(index, alphanumericHole);
+                            ((Assign) node.getParent()).getInternalTargets().add(index, hole);
                         } else {
                             Assertions.UNREACHABLE();
                         }
@@ -94,17 +130,17 @@ public class ConcreatePythonParser  {
                     }
                     else if (node.getParent() instanceof For) {
                         if (((For) node.getParent()).getInternalTarget() ==  node){
-                            ((For) node.getParent()).setTarget(alphanumericHole);
+                            ((For) node.getParent()).setTarget(hole);
                         }
                         else if (((For) node.getParent()).getInternalIter() == node ){
-                            ((For) node.getParent()).setIter(alphanumericHole);
+                            ((For) node.getParent()).setIter(hole);
                         }
                         else if (((For) node.getParent()).getInternalBody().contains(node)){
                             int index = ((For) node.getParent()).getInternalBody().indexOf(node);
                             ((For) node.getParent()).getInternalBody().remove(node);
                             Expr expr = new Expr();
                             updateDataOnHole(node, expr);
-                            expr.setValue(alphanumericHole);
+                            expr.setValue(hole);
                             ((For) node.getParent()).getInternalBody().add(index,expr);
                         }
                         else if (((For) node.getParent()).getInternalOrelse().contains(node)){
@@ -112,7 +148,7 @@ public class ConcreatePythonParser  {
                             ((For) node.getParent()).getInternalOrelse().remove(node);
                             Expr expr = new Expr();
                             updateDataOnHole(node, expr);
-                            expr.setValue(alphanumericHole);
+                            expr.setValue(hole);
                             ((For) node.getParent()).getInternalOrelse().add(index,expr);
                         }
                         else {
@@ -122,20 +158,20 @@ public class ConcreatePythonParser  {
                     }
                     else if (node.getParent() instanceof Expr) {
                         if (((Expr) node.getParent()).getInternalValue()==node)
-                            ((Expr) node.getParent()).setValue(alphanumericHole);
+                            ((Expr) node.getParent()).setValue(hole);
                         else
                             Assertions.UNREACHABLE();
                     }
                     else if (node.getParent() instanceof If) {
                         if (((If) node.getParent()).getInternalTest()==node){
-                            ((If) node.getParent()).setTest(alphanumericHole);
+                            ((If) node.getParent()).setTest(hole);
                         }
                         else if (((If) node.getParent()).getInternalBody().contains(node)){
                             int index = ((If) node.getParent()).getInternalBody().indexOf(node);
                             ((If) node.getParent()).getInternalBody().remove(node);
                             Expr expr = new Expr();
                             updateDataOnHole(node, expr);
-                            expr.setValue(alphanumericHole);
+                            expr.setValue(hole);
                             ((If) node.getParent()).getInternalBody().add(index,expr);
                         }
                         else if (((If) node.getParent()).getInternalOrelse().contains(node)){
@@ -143,13 +179,13 @@ public class ConcreatePythonParser  {
                             ((If) node.getParent()).getInternalOrelse().remove(node);
                             Expr expr = new Expr();
                             updateDataOnHole(node, expr);
-                            expr.setValue(alphanumericHole);
+                            expr.setValue(hole);
                             ((If) node.getParent()).getInternalOrelse().add(index,expr);
                         }
                     }
                     else if (node.getParent() instanceof Attribute) {
                         if (((Attribute) node.getParent()).getInternalValue()==node){
-                            ((Attribute) node.getParent()).setValue(alphanumericHole);
+                            ((Attribute) node.getParent()).setValue(hole);
                         }
 //                        else if (((Attribute) node.getParent()).getInternalHole() instanceof Hole)
 
@@ -174,13 +210,16 @@ public class ConcreatePythonParser  {
             expr.setParent(node.getParent());
         }
 
-        private void updateDataOnHole(List node, AlphanumericHole alphanumericHole) {
-            alphanumericHole.setCharStartIndex(node.getCharStartIndex());
-            alphanumericHole.setCharStopIndex(node.getCharStopIndex());
-            alphanumericHole.setCol_offset(node.getCol_offset());
-            alphanumericHole.setLineno(node.getLineno());
-            alphanumericHole.setN(((Hole) ((List) node.getInternalElts().get(0)).getInternalElts().get(0)).getN());
-            alphanumericHole.setParent(node.getParent());
+        private void updateDataOnHole(List node, Hole hole) {
+            hole.setCharStartIndex(node.getCharStartIndex());
+            hole.setCharStopIndex(node.getCharStopIndex());
+            hole.setCol_offset(node.getCol_offset());
+            hole.setLineno(node.getLineno());
+            if (node.getInternalElts().get(0) instanceof Hole)
+                hole.setN( ((Hole)(node.getInternalElts().get(0))).getN());
+            else if (node.getInternalElts().get(0) instanceof AlphHole)
+                hole.setN( ((AlphHole)(node.getInternalElts().get(0))).getN());
+            hole.setParent(node.getParent());
         }
 
 

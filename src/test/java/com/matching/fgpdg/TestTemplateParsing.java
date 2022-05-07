@@ -22,8 +22,9 @@ public class TestTemplateParsing {
         String code= """
                 [[$1]] = [[$3]]
                 for [[$5]] in [[$6]]:
-                        [[$9]] += [[$11]]
+                        [[%9]] += [[$11]]
                         [[$1]] += [[$5]]
+                x = 3%4
                 [[$15]]([[$1]])
                 """;
         mod mod = parsePython(code);

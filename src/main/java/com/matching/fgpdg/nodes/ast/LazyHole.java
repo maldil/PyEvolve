@@ -1,4 +1,4 @@
-package com.matching.fgpdg.nodes;
+package com.matching.fgpdg.nodes.ast;
 
 import org.python.antlr.ast.Hole;
 
