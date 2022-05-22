@@ -13,6 +13,7 @@ import org.python.antlr.ast.*;
 import org.python.antlr.ast.Module;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.mod;
+import org.python.antlr.base.slice;
 import org.python.antlr.base.stmt;
 import org.python.core.PyObject;
 
@@ -34,7 +35,7 @@ public class ConcreatePythonParser  {
             file = new ANTLRInputStream(inputStream.getInputStream(fileName));
             PythonParser parser =new PythonParser(file, inputStream.getName(), "UTF-8");
             mod mod = parser.parseModule();
-            return  prepareHoles(mod);
+            return  (Module)mod;
         } catch (IOException e) {
             Assertions.UNREACHABLE();
             return null;
@@ -107,6 +108,24 @@ public class ConcreatePythonParser  {
 
     class PyHoleVisitorAndRepair extends Visitor {
         @Override
+        public Object visitIndex(Index node) throws Exception {
+            Hole lhole=null;
+            if (node.getInternalValue() instanceof List && ((List)node.getInternalValue()).getInternalElts().size()==1 &&
+                    ((List)node.getInternalValue()).getInternalElts().get(0) instanceof AlphHole){
+                lhole = new AlphanumericHole();
+                updateDataOnHole((List) node.getInternalValue(), lhole);
+                node.setValue(lhole);
+            }
+            else if (node.getInternalValue() instanceof List && ((List)node.getInternalValue()).getInternalElts().size()==1 && ((List)node.getInternalValue()).getInternalElts().get(0) instanceof Hole){
+                lhole = new LazyHole();
+                updateDataOnHole((List) node.getInternalValue(), lhole);
+                node.setValue(lhole);
+            }
+            return super.visitIndex (node);
+        }
+
+
+        @Override
         public Object visitAttribute(Attribute node) throws Exception {
                 if (node.getInternalHole() !=null){
                     Hole hole = new LazyHole();
@@ -130,10 +149,6 @@ public class ConcreatePythonParser  {
                     node.setAttr(hole);
                     node.setInternalHole(hole);
                 }
-
-
-
-
             return super.visitAttribute (node);
         }
 
@@ -495,6 +510,12 @@ public class ConcreatePythonParser  {
                             ((Call)node.getParent()).getInternalArgs().remove(node);
                             ((Call)node.getParent()).getInternalArgs().add(index,hole);
                         }
+                        for (keyword internalKeyword : ((Call) node.getParent()).getInternalKeywords()) {
+                            if (internalKeyword.getInternalValue()==node){
+                                internalKeyword.setValue(hole);
+                            }
+                        }
+
                     }
                     else if (node.getParent() instanceof Compare){
                         if (((Compare)node.getParent()).getInternalLeft()==node){
@@ -511,6 +532,31 @@ public class ConcreatePythonParser  {
                             ((Subscript)node.getParent()).setValue(hole);
                         }
 
+                    }
+                    else if (node.getParent() instanceof Tuple){
+                        java.util.List<expr> tuple = new ArrayList<>(((Tuple)node.getParent()).getInternalElts());
+                        if (tuple.contains(node)){
+                            int index =tuple.indexOf(node);
+                            tuple.remove(node);
+                            tuple.add(index,hole);
+                        }
+                        ((Tuple)node.getParent()).setElts(tuple);
+
+                    }
+                    else if (node.getParent() instanceof keyword){
+                        if (((keyword) node.getParent()).getInternalValue()==node){
+                            ((keyword) node.getParent()).setValue(hole);
+                        }
+                    }
+                    else if (node.getParent() instanceof Index){
+                        if (((Index)node.getParent()).getInternalValue()==node){
+                            ((Index) node.getParent()).setValue(hole);
+                        }
+                    }
+                    else if (node.getParent() instanceof ExtSlice){
+                        if (((ExtSlice)node.getParent()).getInternalDims().contains(node)){
+
+                        }
                     }
                     else {
                         Assertions.UNREACHABLE(node.getParent().getClass().toString());
@@ -548,6 +594,14 @@ public class ConcreatePythonParser  {
 
     class ParentUpdater extends Visitor {
         @Override
+        public Object visitExtSlice(ExtSlice node) throws Exception {
+            updateParent(node);
+
+//            node.getInternalValue().setParent(node);
+            return super.visitExtSlice(node);
+        }
+
+        @Override
         public Object visitExpr(Expr node) throws Exception {
             updateParent(node);
 
@@ -561,10 +615,18 @@ public class ConcreatePythonParser  {
             }
         }
 
-        private void updateParent(expr node) {
+        private void updateParent(PythonTree node) {
             for (PythonTree child : node.getChildren()) {
                 child.setParent(node);
             }
+        }
+        private void updateParent(expr node) {
+            if (node.getChildren()!=null){
+                for (PythonTree child : node.getChildren()) {
+                    child.setParent(node);
+                }
+            }
+
         }
 
         @Override
@@ -576,6 +638,11 @@ public class ConcreatePythonParser  {
         @Override
         public Object visitAttribute(Attribute node) throws Exception {
             updateParent(node);
+            node.getInternalValue().setParent(node);
+            if (node.getInternalAlphHole()!=null)
+                node.getInternalAlphHole().setParent(node);
+            if (node.getInternalHole()!=null)
+                node.getInternalHole().setParent(node);
             return super.visitAttribute(node);
         }
 
@@ -631,6 +698,32 @@ public class ConcreatePythonParser  {
                 generator.getInternalTarget().setParent(generator);
             }
             return super.visitGeneratorExp(node);
+        }
+        @Override
+        public Object visitSubscript(Subscript node) throws Exception {
+            updateParent(node);
+            node.getInternalValue().setParent(node);
+            node.getInternalSlice().setParent(node);
+            return super.visitSubscript(node);
+        }
+
+        @Override
+        public Object visitIndex(Index node) throws Exception {
+            updateParent(node);
+
+
+
+            return super.visitIndex(node);
+        }
+
+        @Override
+        public Object visitCall(Call node) throws Exception {
+            updateParent(node);
+            for (expr arg : node.getInternalArgs()) {
+                arg.setParent(node);
+            }
+            node.getInternalFunc().setParent(node);
+            return super.visitCall(node);
         }
 
     }

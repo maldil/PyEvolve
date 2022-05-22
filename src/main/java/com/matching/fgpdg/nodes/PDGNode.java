@@ -79,6 +79,11 @@ public abstract class PDGNode {
     public String getDataName() {
         if (this instanceof PDGDataNode)
             return ((PDGDataNode) this).getDataName();
+        else if (this instanceof PDGHoleNode) {
+            return ((PDGHoleNode)this).getDataName();
+
+        }
+
         return null;
     }
 

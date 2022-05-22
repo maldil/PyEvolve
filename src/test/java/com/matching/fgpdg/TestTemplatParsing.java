@@ -168,6 +168,69 @@ public class TestTemplatParsing {
         Assertions.assertEquals(3,count.alpHole+count.lazyHole);
     }
 
+    @Test
+    void testTemplate12() throws Exception {
+        String code = "def generate_benchmark_params_cpu_gpu(*params_list):\n" +
+                "  \"\"\"Extend the benchmark names with CPU and GPU suffix.\n" +
+                "  Args:\n" +
+                "    *params_list: A list of tuples represents the benchmark parameters.\n" +
+                "  Returns:\n" +
+                "    A list of strings with the benchmark name extended with CPU and GPU suffix.\n" +
+                "  \"\"\"\n" +
+                "  benchmark_params = []\n" +
+                "  for params in params_list:\n" +
+                "    benchmark_params.extend([\n" +
+                "        ((:[[l1]][0] + '_CPU',) + param[1:]) for param in params\n" +
+                "    ])\n" +
+                "    benchmark_params.extend([\n" +
+                "        ((param[0] + :[[l2]],) + param[1:]) for param in params\n" +
+                "    ])\n" +
+                "  return benchmark_params";
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        Module module = parser.parseTemplates(code);
+        HoleCounter count = new HoleCounter();
+        count.visit(module);
+        Assertions.assertEquals(2,count.alpHole+count.lazyHole);
+    }
+
+    @Test
+    void testTemplate13() throws Exception {
+        String code = "if :[[l1]] is :[[l2]]:\n" +
+                "    raise ValueError('Input data is required.')\n" +
+                "if 'optimizer' is None:\n" +
+                "    raise ValueError('Optimizer is required.')\n" +
+                "if 'loss' is None:\n" +
+                "    raise ValueError('Loss function is required.')\n" +
+                "if :[[l3]] < :[[l4]]:\n" +
+                "    raise ValueError('`num_gpus` cannot be negative')\n";
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        Module module = parser.parseTemplates(code);
+        HoleCounter count = new HoleCounter();
+        count.visit(module);
+        Assertions.assertEquals(4,count.alpHole+count.lazyHole);
+    }
+
+    @Test
+    void testTemplate14() throws Exception {
+        String code = "app = tf.keras.applications.Xception\n" +
+                ":[[l1]], :[[l2]] = (\n" +
+                "        saved_model_benchmark_util.save_and_load_benchmark(app))\n" +
+                "\n" +
+                "self.report_benchmark(\n" +
+                "        iters=save_result['iters'],\n" +
+                "        wall_time=save_result['wall_time'],\n" +
+                "        name=save_result['name'])\n" +
+                "\n" +
+                "self.report_benchmark(\n" +
+                "        iters=load_result['iters'],\n" +
+                "        wall_time=:[[l3]],\n" +
+                "        name=load_result['name'])";
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        Module module = parser.parseTemplates(code);
+        HoleCounter count = new HoleCounter();
+        count.visit(module);
+        Assertions.assertEquals(3,count.alpHole+count.lazyHole);
+    }
     private int getCharacterCount(String code,char charc){
         int count=0;
         for (int i = 0; i < code.length(); i++) {

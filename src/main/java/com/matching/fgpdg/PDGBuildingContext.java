@@ -2,6 +2,7 @@ package com.matching.fgpdg;
 
 import com.matching.fgpdg.nodes.PDGActionNode;
 import com.matching.fgpdg.nodes.TypeInfo.TypeWrapper;
+import com.matching.fgpdg.nodes.ast.AlphanumericHole;
 import com.utils.Assertions;
 import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
@@ -49,8 +50,8 @@ public class PDGBuildingContext {
     }
 
     public PDGBuildingContext(List<stmt> importStmt, TypeWrapper typeWrapper){
-        updateImportMap(importStmt);
         this.typeWrapper=typeWrapper;
+        updateImportMap(importStmt);
     }
 
 
@@ -89,6 +90,13 @@ public class PDGBuildingContext {
                 }
             }
         }
+        if (this.typeWrapper.getGuards()!=null){
+            for (Map.Entry<String, String> entry : this.typeWrapper.getGuards().getImports().entrySet()) {
+                importsMap.put(entry.getKey(),entry.getValue());
+            }
+        }
+
+
     }
 
     public String getFieldType(String name) {
@@ -176,11 +184,29 @@ public class PDGBuildingContext {
 
     }
 
-    private String getFQName(Attribute node){
-        if (node.getInternalValue() instanceof Name)
-            return  ((Name)node.getInternalValue()).getInternalId() + "." + node.getInternalAttr();
+    private String getFQName(Attribute node) {
+        if (node.getInternalValue() instanceof Name){
+            if (!node.getInternalAttr().equals("Hole")) {
+                    return ((Name) node.getInternalValue()).getInternalId() + "." + node.getInternalAttr();
+            } else {
+                    return ((Name) node.getInternalValue()).getInternalId() + "." + node.getInternalHole().toString();
+            }
+        }
         else if(node.getInternalValue() instanceof Attribute){
-            return  getFQName((Attribute) node.getInternalValue()) + "." + node.getInternalAttr();
+            if (!node.getInternalAttr().equals("Hole")) {
+                return getFQName((Attribute) node.getInternalValue()) + "." + node.getInternalAttr();
+            }
+            else {
+                return getFQName((Attribute) node.getInternalValue()) + "." + node.getInternalHole().toString();
+            }
+        }
+        else if (node.getInternalValue() instanceof Hole){
+            if (!node.getInternalAttr().equals("Hole")) {
+                return node.getInternalValue().toString() + "." + node.getInternalAttr();
+            }
+            else {
+                return node.getInternalValue().toString() + "." + node.getInternalHole().toString();
+            }
         }
         else{
             Assertions.UNREACHABLE();

@@ -10,17 +10,15 @@ import java.util.stream.Collectors;
 
 public class Guards {
 
-    private HashMap<String,String> types = new HashMap<>();
+    private HashMap<String,String> types;
     private HashMap<String,String> kinds = new HashMap<>();
     private HashMap<String,String> values = new HashMap<>();
     private HashMap<String,String> imports = new HashMap<>();
     public Guards(String code) {
-        Map<String, String> values = Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("value")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[3]));
-        Map<String, String> types = Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("type")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[3]));
-        Map<String, String> kinds = Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("kind")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[3]));
-        Map<String, String> imports = Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("import")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[3]));
-
-
+        values = (HashMap<String,String>)Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("value")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[4]));
+        types = (HashMap<String,String>)Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("type")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[4]));
+        kinds = (HashMap<String,String>)Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("kind")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[4]));
+        imports = (HashMap<String,String>)Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("import")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[4]));
     }
 
     public String getTypeOfTemplateVariable(String templateVariable){
@@ -49,5 +47,9 @@ public class Guards {
 
     public HashMap<String, String> getValues() {
         return values;
+    }
+
+    public HashMap<String, String> getImports() {
+        return imports;
     }
 }

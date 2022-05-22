@@ -14,6 +14,13 @@ import java.util.Map;
 public class TypeWrapper {
     Table<Integer, Integer, DataTypeClass> typeTable
             = HashBasedTable.create();
+    Table<Integer, Integer, DataTypeClass> valueTable
+            = HashBasedTable.create();
+    Table<Integer, Integer, DataTypeClass> kindsTable
+            = HashBasedTable.create();
+    Table<Integer, Integer, DataTypeClass> importTable
+            = HashBasedTable.create();
+    Guards guards;
     public TypeWrapper(String path) throws IOException {
         Gson gson = new Gson();
         String s = Files.readString(Path.of(path));
@@ -34,6 +41,25 @@ public class TypeWrapper {
         }
         this.typeTable = typeTable;
     }
+
+    public TypeWrapper(Guards guard){
+        for (Map.Entry<String, String> typeEntry : guard.getTypes().entrySet()) {
+            this.typeTable.put(0, 0,
+                    new DataTypeClass(typeEntry.getKey(),typeEntry.getValue()));
+        }
+        for (Map.Entry<String, String> typeEntry : guard.getValues().entrySet()) {
+            this.valueTable.put(0, 0,
+                    new DataTypeClass(typeEntry.getKey(),typeEntry.getValue()));
+        }
+        for (Map.Entry<String, String> typeEntry : guard.getKinds().entrySet()) {
+            this.kindsTable.put(0, 0,
+                    new DataTypeClass(typeEntry.getKey(),typeEntry.getValue()));
+        }
+        this.guards=guard;
+
+    }
+
+
 
     public String getTypeInfo(int lineNumber, int collomnOffset){
         if (typeTable.get(lineNumber,collomnOffset)==null){
@@ -79,5 +105,9 @@ public class TypeWrapper {
                     new DataTypeClass(typeEntry.getKey(),typeEntry.getValue()));
         }
         this.typeTable = typeTable;
+    }
+
+    public Guards getGuards() {
+        return guards;
     }
 }

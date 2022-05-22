@@ -16,6 +16,9 @@ public class DotGraph {
     public static final String SHAPE_BOX = "box";
     public static final String SHAPE_DIAMOND = "diamond";
     public static final String SHAPE_ELLIPSE = "ellipse";
+    public static final String SHAPE_TRIANGLE = "triangle";
+    public static final String SHAPE_POLYGON = "polygon";
+    public static final String SHAPE_PENTAGON = "pentagon";
     public static final String COLOR_BLACK = "black";
     public static final String COLOR_BLUE= "blue";
     public static final String COLOR_RED = "red";
@@ -40,6 +43,19 @@ public class DotGraph {
         for (PDGNode node : pd.getNodes()) {
             ids.put(node, ++id);
             String color = null;
+            if (node instanceof PDGHoleNode){
+                if (((PDGHoleNode) node).isDataNode()){
+                    color=COLOR_RED;
+                }
+                if (((PDGHoleNode) node).isActionNode()){
+                    color=COLOR_GREEN;
+                }
+                if (((PDGHoleNode) node).isControlNode()){
+                    color=COLOR_BLUE;
+                }
+
+
+            }
             addNode(id, node, color);
         }
 
@@ -80,6 +96,9 @@ public class DotGraph {
         }
         else if (node instanceof PDGControlNode){
             shape = SHAPE_DIAMOND;
+        }
+        else if (node instanceof PDGHoleNode){
+            shape = SHAPE_PENTAGON;
         }
 
         String style=null;
