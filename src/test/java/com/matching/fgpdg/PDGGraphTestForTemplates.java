@@ -64,4 +64,22 @@ public class PDGGraphTestForTemplates {
         dg.toDotFile(new File(dirPath  +"file___"+".dot"));
         Assertions.assertEquals(pdg.getNodes().size(),47);
     }
+
+    @Test
+    void testPDG4() throws Exception {
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        String code = """
+                with :[l3] as :[[l1]]:
+                    :[[l13]] = :[[l16]].:[[l18]](:[[l1]], :[l21])""";
+        Module parse = parser.parseTemplates(code);
+        Guards guard = new Guards(code);
+        TypeWrapper wrapper = new TypeWrapper(guard);
+        PDGBuildingContext context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x -> x instanceof Import
+                || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
+        PDGGraph pdg = new PDGGraph(parse,context);
+        DotGraph dg = new DotGraph(pdg);
+        String dirPath = "./OUTPUT/";
+        dg.toDotFile(new File(dirPath  +"file___"+".dot"));
+        Assertions.assertEquals(pdg.getNodes().size(),12);
+    }
 }

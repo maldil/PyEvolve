@@ -124,6 +124,60 @@ public class ConcreatePythonParser  {
             return super.visitIndex (node);
         }
 
+        @Override
+        public Object visitCall(Call node) throws Exception {
+            if (node.getInternalFunc() instanceof Attribute){
+                if (((Attribute)node.getInternalFunc()).getInternalHole() !=null){
+                    Hole hole = new LazyHole();
+                    hole.setCharStartIndex(((Attribute)node.getInternalFunc()).getCharStartIndex());
+                    hole.setCharStopIndex(((Attribute)node.getInternalFunc()).getCharStopIndex());
+                    hole.setCol_offset(((Attribute)node.getInternalFunc()).getCol_offset());
+                    hole.setLineno(((Attribute)node.getInternalFunc()).getLineno());
+                    hole.setN( ((Attribute)node.getInternalFunc()).getInternalHole().getN());
+                    hole.setParent(((Attribute)node.getInternalFunc()).getParent());
+                    ((Attribute)node.getInternalFunc()).setAttr(hole);
+                    ((Attribute)node.getInternalFunc()).setInternalHole(hole);
+                }
+                else if (((Attribute)node.getInternalFunc()).getInternalAlphHole()!=null){
+                    Hole hole = new AlphanumericHole();
+                    hole.setCharStartIndex(((Attribute)node.getInternalFunc()).getCharStartIndex());
+                    hole.setCharStopIndex(((Attribute)node.getInternalFunc()).getCharStopIndex());
+                    hole.setCol_offset(((Attribute)node.getInternalFunc()).getCol_offset());
+                    hole.setLineno(((Attribute)node.getInternalFunc()).getLineno());
+                    hole.setN( ((Attribute)node.getInternalFunc()).getInternalAlphHole().getN());
+                    hole.setParent(((Attribute)node.getInternalFunc()).getParent());
+                    ((Attribute)node.getInternalFunc()).setAttr(hole);
+                    ((Attribute)node.getInternalFunc()).setInternalHole(hole);
+                }
+
+
+            }
+            java.util.List<expr> arguments = new ArrayList<>(node.getInternalArgs());
+
+            for (expr elt : node.getInternalArgs()) {
+                Hole lhole=null;
+                if (elt instanceof List && ((List)elt).getInternalElts().size()==1 && ((List)elt).getInternalElts().get(0) instanceof AlphHole){
+                    lhole = new AlphanumericHole();
+                    updateDataOnHole((List) elt, lhole);
+                }
+                else if (elt instanceof List && ((List)elt).getInternalElts().size()==1 && ((List)elt).getInternalElts().get(0) instanceof Hole){
+                    lhole = new LazyHole();
+                    updateDataOnHole((List) elt, lhole);
+                }
+                if (lhole!=null){
+                    int index = arguments.indexOf(elt);
+                    arguments.remove(elt);
+                    arguments.add(index,lhole);
+                }
+
+
+            }
+            node.setArgs(arguments);
+
+
+            return super.visitCall(node);
+        }
+
 
         @Override
         public Object visitAttribute(Attribute node) throws Exception {

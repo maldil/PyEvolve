@@ -1518,11 +1518,18 @@ public class PDGGraph implements Serializable {
         if (astNode.getInternalOptional_vars() != null) {
             PDGGraph lg = buildPDG(control, branch, astNode.getInternalOptional_vars());
             PDGDataNode lnode = lg.getOnlyDataOut();
+
             PDGGraph rg = buildPDG(control, branch, astNode.getInternalContext_expr());
             rg.mergeSequentialData(new PDGActionNode(control, branch,
                     astNode, PyObject.WITHITEM, null, null, "AS"), PARAMETER);
-            rg.mergeSequentialData(lnode, DEFINITION);
-
+            if (lnode!=null){
+                rg.mergeSequentialData(lnode, DEFINITION);
+            }else if (lg.getOnlyHoleDataOut()!=null){
+                rg.mergeSequentialHoleData(lg.getOnlyHoleDataOut(), DEFINITION);
+            }
+            else{
+                Assertions.UNREACHABLE();
+            }
             rg.nodes.addAll(lg.nodes);
             rg.statementNodes.addAll(lg.statementNodes);
             lg.dataSources.remove(lnode);
