@@ -2021,7 +2021,7 @@ public class PDGGraph implements Serializable {
         String value = context.getTypeWrapper().getGuards().getValueOfTemplateVariable(name);
         if (type != null) {
             context.addLocalVariable(name,"",type);
-            return new PDGGraph(context, new PDGAlphHole(
+            return new PDGGraph(context, new PDGLazyHole(
                     astNode, astNode.getNodeType(),value, name,type,name,true,false,false));
         }
         return new PDGGraph(context);

@@ -97,8 +97,12 @@ public class DotGraph {
         else if (node instanceof PDGControlNode){
             shape = SHAPE_DIAMOND;
         }
-        else if (node instanceof PDGHoleNode){
+        else if (node instanceof PDGAlphHole){
             shape = SHAPE_PENTAGON;
+        }
+        else if (node instanceof PDGLazyHole){
+            shape = SHAPE_PENTAGON;
+            color=COLOR_BLUE;
         }
 
         String style=null;

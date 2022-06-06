@@ -82,4 +82,69 @@ public class PDGGraphTestForTemplates {
         dg.toDotFile(new File(dirPath  +"file___"+".dot"));
         Assertions.assertEquals(pdg.getNodes().size(),12);
     }
+
+    @Test
+    void testPDG5() throws Exception {
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        String code = """
+                # type :[[l1]] : int[]\n 
+                mean = sum(:[[l1]])/len(:[[l1]])""";
+        Module parse = parser.parseTemplates(code);
+        Guards guard = new Guards(code);
+        TypeWrapper wrapper = new TypeWrapper(guard);
+        PDGBuildingContext context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x -> x instanceof Import
+                || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
+        PDGGraph pdg = new PDGGraph(parse,context);
+        DotGraph dg = new DotGraph(pdg);
+        String dirPath = "./OUTPUT/";
+        dg.toDotFile(new File(dirPath  +"file___"+".dot"));
+        Assertions.assertEquals(pdg.getNodes().size(),8);
+    }
+
+    @Test
+    void testPDG6() throws Exception {
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        String code = """ 
+                # import :[[l1]] : numpy\n
+                :[[l1]].dot(:[[l1]].dot(:[[l2]], :[[l3]]), :[[l4]]))""";
+        Module parse = parser.parseTemplates(code);
+        Guards guard = new Guards(code);
+        TypeWrapper wrapper = new TypeWrapper(guard);
+        PDGBuildingContext context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x -> x instanceof Import
+                || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
+        PDGGraph pdg = new PDGGraph(parse,context);
+        DotGraph dg = new DotGraph(pdg);
+        String dirPath = "./OUTPUT/";
+        dg.toDotFile(new File(dirPath  +"file___"+".dot"));
+        Assertions.assertEquals(pdg.getNodes().size(),7);
+    }
+
+
+    @Test
+    void testPDG7() throws Exception {
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        String code = """
+                # type :[[l1]] : bool
+                :[[l1]] = False
+                for :[[l2]] in callbacks.values():
+                    if :[l3]:
+                          :[[l1]] = True
+                          break
+                """;
+        Module parse = parser.parseTemplates(code);
+        Guards guard = new Guards(code);
+        TypeWrapper wrapper = new TypeWrapper(guard);
+        PDGBuildingContext context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x -> x instanceof Import
+                || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
+        PDGGraph pdg = new PDGGraph(parse,context);
+        DotGraph dg = new DotGraph(pdg);
+        String dirPath = "./OUTPUT/";
+        dg.toDotFile(new File(dirPath  +"file___"+".dot"));
+        Assertions.assertEquals(pdg.getNodes().size(),18);
+    }
+
+
+
+
+
 }
