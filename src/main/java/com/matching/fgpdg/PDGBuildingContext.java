@@ -3,6 +3,7 @@ package com.matching.fgpdg;
 import com.matching.fgpdg.nodes.PDGActionNode;
 import com.matching.fgpdg.nodes.TypeInfo.TypeWrapper;
 import com.matching.fgpdg.nodes.ast.AlphanumericHole;
+import com.matching.fgpdg.nodes.ast.LazyHole;
 import com.utils.Assertions;
 import org.eclipse.jdt.core.dom.ArrayAccess;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
@@ -159,7 +160,7 @@ public class PDGBuildingContext {
             name = getKey((Subscript) value);
         }
         else if (value instanceof Attribute){
-            name = getFQName((Attribute)value);
+            name = getFullNameOfAttribute((Attribute)value);
         }
         else if (value instanceof Name){
             name = ((Name) value).getInternalId();
@@ -184,33 +185,86 @@ public class PDGBuildingContext {
 
     }
 
-    private String getFQName(Attribute node) {
-        if (node.getInternalValue() instanceof Name){
-            if (!node.getInternalAttr().equals("Hole")) {
-                    return ((Name) node.getInternalValue()).getInternalId() + "." + node.getInternalAttr();
-            } else {
-                    return ((Name) node.getInternalValue()).getInternalId() + "." + node.getInternalHole().toString();
-            }
+    private String getFullNameOfAttribute(Attribute atr){
+        if (atr.getInternalValue() instanceof Name)
+            return ((Name) atr.getInternalValue()).getInternalId()+atr.getInternalAttr();
+        else if (atr.getInternalValue() instanceof AlphanumericHole)
+            return (atr.getInternalValue()).toString()+atr.getInternalAttr();
+        else if (atr.getInternalValue() instanceof LazyHole)
+            return (atr.getInternalValue()).toString()+atr.getInternalAttr();
+        else if ( atr.getInternalValue() instanceof Subscript){
+            return getFullNameOfAttribute((Subscript)atr.getInternalValue()) + "."+atr.getInternalAttr();
         }
-        else if(node.getInternalValue() instanceof Attribute){
-            if (!node.getInternalAttr().equals("Hole")) {
-                return getFQName((Attribute) node.getInternalValue()) + "." + node.getInternalAttr();
-            }
-            else {
-                return getFQName((Attribute) node.getInternalValue()) + "." + node.getInternalHole().toString();
-            }
+        else if ( atr.getInternalValue() instanceof Attribute){
+            return getFullNameOfAttribute((Attribute) atr.getInternalValue())+atr.getInternalAttr();
         }
-        else if (node.getInternalValue() instanceof Hole){
-            if (!node.getInternalAttr().equals("Hole")) {
-                return node.getInternalValue().toString() + "." + node.getInternalAttr();
-            }
-            else {
-                return node.getInternalValue().toString() + "." + node.getInternalHole().toString();
-            }
+        else if ( atr.getInternalValue() instanceof Call){
+            return getFullNameOfAttribute((Call) atr.getInternalValue())+atr.getInternalAttr();
         }
         else{
             Assertions.UNREACHABLE();
-            return "";
+            return null;
         }
     }
-}
+
+
+    private String getFullNameOfAttribute(Call node){
+        if (node.getInternalFunc() instanceof Attribute){
+            return getFullNameOfAttribute((Attribute)node.getInternalFunc())+"()";
+        }
+        else if (node.getInternalFunc() instanceof Name){
+            return ((Name) node.getInternalFunc()).getInternalId()+"()";
+        }
+        else if (node.getInternalFunc() instanceof Subscript){
+            return getFullNameOfAttribute((Subscript)node.getInternalFunc())+"()";
+        }
+        else if (node.getInternalFunc() instanceof Call){
+            return getFullNameOfAttribute((Call)node.getInternalFunc())+"()";
+        }
+        else{
+            Assertions.UNREACHABLE();
+            return null;
+        }
+
+
+    }
+
+
+    private String getFullNameOfAttribute(Subscript atr){
+        if (atr.getInternalValue() instanceof Name){
+            if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Num)
+                return ((Name) atr.getInternalValue()).getInternalId()+ "["+((Num)((Index)atr.getInternalSlice()).getInternalValue()).getInternalN() +"]";
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof BinOp)
+                return ((Name) atr.getInternalValue()).getInternalId()+ "["+((BinOp)((Index)atr.getInternalSlice()).getInternalValue()).getInternalRight()
+                        +((BinOp)((Index)atr.getInternalSlice()).getInternalValue()).getInternalOp().name() +
+                        ((BinOp)((Index)atr.getInternalSlice()).getInternalValue()).getInternalLeft()+"]";
+            else
+                return ((Name) atr.getInternalValue()).getInternalId()+ "["+((Str)((Index)atr.getInternalSlice()).getInternalValue()).getInternalS() +"]";
+        }
+        else if (atr.getInternalValue() instanceof AlphanumericHole)
+            return (atr.getInternalValue()).toString()+ "["+((Num)((Index)atr.getInternalSlice()).getInternalValue()).getInternalN()  +"]";
+        else if (atr.getInternalValue() instanceof LazyHole)
+            return (atr.getInternalValue()).toString()+ "["+((Num)((Index)atr.getInternalSlice()).getInternalValue()).getInternalN() +"]";
+        else if ( atr.getInternalValue() instanceof Subscript){
+            if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Num)
+                return getFullNameOfAttribute((Subscript)atr.getInternalValue()) + "["+((Num)((Index)atr.getInternalSlice()).getInternalValue()).getInternalN() +"]";
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Num)
+                return getFullNameOfAttribute((Subscript)atr.getInternalValue()) + "["+((Name)((Index)atr.getInternalSlice()).getInternalValue()).getInternalId() +"]";
+            else
+                return getFullNameOfAttribute((Subscript)atr.getInternalValue()) + "["+((Str)((Index)atr.getInternalSlice()).getInternalValue()).getInternalS() +"]";
+        }
+        else if ( atr.getInternalValue() instanceof Attribute){
+            if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Num)
+                return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+((Num)((Index)atr.getInternalSlice()).getInternalValue()).getInternalN() +"]";
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Name)
+                return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+((Name)((Index)atr.getInternalSlice()).getInternalValue()).getInternalId() +"]";
+            else
+                return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+((Str)((Index)atr.getInternalSlice()).getInternalValue()).getInternalS() +"]";
+        }
+        else{
+            Assertions.UNREACHABLE();
+            return null;
+        }
+    }
+
+    }
