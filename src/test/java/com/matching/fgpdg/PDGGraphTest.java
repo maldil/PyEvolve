@@ -672,6 +672,50 @@ class PDGGraphTest {
     }
 
     @Test
+    void testPDG29() {
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        Module parse = parser.parse("author/project/test30.py");
+        FunctionDef func = (FunctionDef) parse.getInternalBody().get(1);
+        PDGBuildingContext context = null;
+        try {
+            context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x-> x instanceof Import
+                    || x instanceof ImportFrom).collect(Collectors.toList()), "author/project/test30.py");
+            PDGGraph pdg = new PDGGraph(func,context);
+            DotGraph dg = new DotGraph(pdg);
+            String dirPath = "./OUTPUT/";
+            dg.toDotFile(new File(dirPath  +"file___"+".dot"));
+            Assertions.assertEquals (pdg.parameters.length,0);
+            Assertions.assertEquals (pdg.getNodes().size(),33);
+            Assertions.assertEquals (pdg.statementNodes.size() ,15);
+            Assertions.assertEquals (pdg.dataSources.size() ,9);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testPDG30() {
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        Module parse = parser.parse("author/project/test31.py");
+        FunctionDef func = (FunctionDef) parse.getInternalBody().get(1);
+        PDGBuildingContext context = null;
+        try {
+            context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x-> x instanceof Import
+                    || x instanceof ImportFrom).collect(Collectors.toList()), "author/project/test30.py");
+            PDGGraph pdg = new PDGGraph(func,context);
+            DotGraph dg = new DotGraph(pdg);
+            String dirPath = "./OUTPUT/";
+            dg.toDotFile(new File(dirPath  +"file___"+".dot"));
+            Assertions.assertEquals (pdg.parameters.length,0);
+            Assertions.assertEquals (pdg.getNodes().size(),27);
+            Assertions.assertEquals (pdg.statementNodes.size() ,10);
+            Assertions.assertEquals (pdg.dataSources.size() ,10);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
     void testParse() {
         ConcreatePythonParser parser = new ConcreatePythonParser();
         Module parse = parser.parse("author/project/test24.py");

@@ -234,6 +234,10 @@ public class PDGBuildingContext {
         if (atr.getInternalValue() instanceof Name){
             if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Num)
                 return ((Name) atr.getInternalValue()).getInternalId()+ "["+((Num)((Index)atr.getInternalSlice()).getInternalValue()).getInternalN() +"]";
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Str)
+                return ((Name) atr.getInternalValue()).getInternalId()+ "["+((Str)((Index)atr.getInternalSlice()).getInternalValue()).getInternalS() +"]";
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Name)
+                return ((Name) atr.getInternalValue()).getInternalId()+ "["+((Name)((Index)atr.getInternalSlice()).getInternalValue()).getInternalId() +"]";
             else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof BinOp)
                 return ((Name) atr.getInternalValue()).getInternalId()+ "["+((BinOp)((Index)atr.getInternalSlice()).getInternalValue()).getInternalRight()
                         +((BinOp)((Index)atr.getInternalSlice()).getInternalValue()).getInternalOp().name() +
