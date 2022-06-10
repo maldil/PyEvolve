@@ -619,7 +619,7 @@ class PDGGraphTest {
             String dirPath = "./OUTPUT/";
             dg.toDotFile(new File(dirPath  +"file___"+".dot"));
             Assertions.assertEquals (pdg.parameters.length,1);
-            Assertions.assertEquals (pdg.getNodes().size(),35);
+            Assertions.assertEquals (pdg.getNodes().size(),40);
             Assertions.assertEquals (pdg.statementNodes.size() ,11);
             Assertions.assertEquals (pdg.dataSources.size() ,2);
         } catch (IOException e) {
@@ -702,6 +702,29 @@ class PDGGraphTest {
         try {
             context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x-> x instanceof Import
                     || x instanceof ImportFrom).collect(Collectors.toList()), "author/project/test30.py");
+            PDGGraph pdg = new PDGGraph(func,context);
+            DotGraph dg = new DotGraph(pdg);
+            String dirPath = "./OUTPUT/";
+            dg.toDotFile(new File(dirPath  +"file___"+".dot"));
+            Assertions.assertEquals (pdg.parameters.length,0);
+            Assertions.assertEquals (pdg.getNodes().size(),27);
+            Assertions.assertEquals (pdg.statementNodes.size() ,10);
+            Assertions.assertEquals (pdg.dataSources.size() ,10);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    void testPDG31() {
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        Module parse = parser.parse("author/project/test32.py");
+        FunctionDef func = (FunctionDef) parse.getInternalBody().get(1);
+        PDGBuildingContext context = null;
+        try {
+            context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x-> x instanceof Import
+                    || x instanceof ImportFrom).collect(Collectors.toList()), "author/project/test32.py");
             PDGGraph pdg = new PDGGraph(func,context);
             DotGraph dg = new DotGraph(pdg);
             String dirPath = "./OUTPUT/";

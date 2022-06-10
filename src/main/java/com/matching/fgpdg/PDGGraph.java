@@ -531,6 +531,10 @@ public class PDGGraph implements Serializable {
     private PDGGraph buildArgumentPDG(PDGNode control, String branch,
                                       PyObject exp) {
         PDGGraph pdg = buildPDG(control, branch, exp);
+        if (pdg ==null){
+            System.out.println();
+            buildPDG(control, branch, exp);
+        }
         if (pdg.isEmpty())
             return pdg;
         if (pdg.nodes.size() == 1)
@@ -715,6 +719,12 @@ public class PDGGraph implements Serializable {
             return buildPDG(control, branch, (Ellipsis) node);
         if (node instanceof Bytes)
             return buildPDG(control, branch, (Bytes) node);
+        if (node instanceof Nonlocal)
+            return buildPDG(control, branch, (Nonlocal) node);
+        if (node instanceof YieldFrom)
+            return buildPDG(control, branch, (YieldFrom) node);
+        if (node instanceof ErrorExpr)
+            return buildPDG(control, branch, (ErrorExpr) node);
         Assertions.UNREACHABLE(node.getClass().toString());
         return null;
     }
@@ -886,6 +896,9 @@ public class PDGGraph implements Serializable {
             if (varType == null) {
                 varType = context.getTypeWrapper().getTypeInfo(varName);
             }
+            if (varType == null) {
+                varType = "Any";
+            }
 
             context.addLocalVariable(varName, "" + astNode.getInternalTarget().getCharStartIndex(), varType);
             PDGDataNode varp = new PDGDataNode(astNode.getInternalTarget(), astNode.getInternalTarget().getNodeType(),
@@ -894,7 +907,32 @@ public class PDGGraph implements Serializable {
             pdg.mergeSequentialData(varp, PDGDataEdge.Type.DEFINITION);
             pdg.mergeSequentialData(new PDGDataNode(null, varp.getAstNodeType(),
                     varp.getKey(), varp.getDataType(), varp.getDataName()), REFERENCE);
-        } else if (astNode.getInternalTarget() instanceof Tuple) {
+        }
+        else if (astNode.getInternalTarget() instanceof List) {
+            for (expr var : ((List) astNode.getInternalTarget()).getInternalElts()) {
+                if (var instanceof Name) {
+                    String name = ((Name) var).getInternalId();
+                    String type = context.getTypeWrapper().getTypeInfo(((Name) var).getLineno(), ((Name) var).getCol_offset());
+                    if (type == null) {
+                        type = context.getTypeWrapper().getTypeInfo(name);
+                    }
+                    if (type == null) {
+                        type = "Any";
+                    }
+                    context.addLocalVariable(name, "" + var.getCharStartIndex(), type);
+                    PDGDataNode varNode = new PDGDataNode(var, var.getNodeType(),
+                            "" + var.getCharStartIndex(), type,
+                            name, false, true);
+                    pdg.mergeSequentialData(varNode, PDGDataEdge.Type.DEFINITION);
+                    pdg.mergeSequentialData(new PDGDataNode(null, varNode.getAstNodeType(),
+                            varNode.getKey(), varNode.getDataType(), varNode.getDataName()), REFERENCE);
+                } else if (var instanceof Tuple) {
+                    //TODO impliment this
+                }
+            }
+
+        }
+        else if (astNode.getInternalTarget() instanceof Tuple) {
 //            PDGGraph gt = buildArgumentPDG(control,branch,astNode.getInternalTarget());
 //            pdg.mergeBranches(gt);
             for (expr var : ((Tuple) astNode.getInternalTarget()).getInternalElts()) {
@@ -903,6 +941,9 @@ public class PDGGraph implements Serializable {
                     String type = context.getTypeWrapper().getTypeInfo(((Name) var).getLineno(), ((Name) var).getCol_offset());
                     if (type == null) {
                         type = context.getTypeWrapper().getTypeInfo(name);
+                    }
+                    if (type == null) {
+                        type = "Any";
                     }
                     context.addLocalVariable(name, "" + var.getCharStartIndex(), type);
                     PDGDataNode varNode = new PDGDataNode(var, var.getNodeType(),
@@ -1030,10 +1071,6 @@ public class PDGGraph implements Serializable {
         }
 
         PDGGraph rg = buildPDG(control, branch, astNode.getInternalValue());
-        if (rg==null){
-            System.out.println();
-            buildPDG(control, branch, astNode.getInternalValue());
-        }
         ArrayList<PDGActionNode> rets = rg.getReturns();
         if (rets.size() > 0) {
             Assertions.UNREACHABLE();
@@ -1136,25 +1173,26 @@ public class PDGGraph implements Serializable {
         PDGGraph[] pgs = new PDGGraph[astNode.getInternalElts().size()];
         if (astNode.getInternalElts().size() <= 10) {
             for (int i = 0; i < astNode.getInternalElts().size(); i++) {
-                String[] info = null;
-                if (astNode.getInternalElts().get(i) instanceof Name) {
-                    info = context.getLocalVariableInfo(((Name) astNode.getInternalElts().get(i)).getInternalId());
-                }
-                if (info != null) {
-                    pgs[i] = new PDGGraph(context, new PDGDataNode(
-                            (astNode.getInternalElts().get(i)), (astNode.getInternalElts().get(i)).getNodeType(), info[0], info[1],
-                            ((Name) astNode.getInternalElts().get(i)).getInternalId(), false, false));
-                } else if (astNode.getInternalElts().get(i) instanceof Name) {
-                    context.addLocalVariable(
-                            ((Name) astNode.getInternalElts().get(i)).getInternalId(), "" +
-                                    (astNode.getInternalElts().get(i)).getCharStartIndex(),
-                            context.getTypeWrapper().getTypeInfo((astNode.getInternalElts().get(i)).getLine(),
-                                    ((Name) (astNode.getInternalElts().get(i))).getCol_offset(),
-                                    ((Name) astNode.getInternalElts().get(i)).getInternalId()));
-                    pgs[i] = buildArgumentPDG(control, branch, astNode.getInternalElts().get(i));
-                } else {
-                    pgs[i] = buildArgumentPDG(control, branch, astNode.getInternalElts().get(i));
-                }
+                pgs[i] = buildArgumentPDG(control, branch, astNode.getInternalElts().get(i));
+//                String[] info = null;
+//                if (astNode.getInternalElts().get(i) instanceof Name) {
+//                    info = context.getLocalVariableInfo(((Name) astNode.getInternalElts().get(i)).getInternalId());
+//                }
+//                if (info != null) {
+//                    pgs[i] = new PDGGraph(context, new PDGDataNode(
+//                            (astNode.getInternalElts().get(i)), (astNode.getInternalElts().get(i)).getNodeType(), info[0], info[1],
+//                            ((Name) astNode.getInternalElts().get(i)).getInternalId(), false, false));
+//                } else if (astNode.getInternalElts().get(i) instanceof Name) {
+//                    context.addLocalVariable(
+//                            ((Name) astNode.getInternalElts().get(i)).getInternalId(), "" +
+//                                    (astNode.getInternalElts().get(i)).getCharStartIndex(),
+//                            context.getTypeWrapper().getTypeInfo((astNode.getInternalElts().get(i)).getLine(),
+//                                    ((Name) (astNode.getInternalElts().get(i))).getCol_offset(),
+//                                    ((Name) astNode.getInternalElts().get(i)).getInternalId()));
+//                    pgs[i] = buildArgumentPDG(control, branch, astNode.getInternalElts().get(i));
+//                } else {
+//                    pgs[i] = buildArgumentPDG(control, branch, astNode.getInternalElts().get(i));
+//                }
             }
         } else {
             pgs = new PDGGraph[0];
@@ -1196,6 +1234,8 @@ public class PDGGraph implements Serializable {
         String name = astNode.getInternalId();
         String[] info = context.getLocalVariableInfo(name);
         if (info != null) {
+            if (info[1]==null)
+                info[1]="Any";
             return new PDGGraph(context, new PDGDataNode(
                     astNode, astNode.getNodeType(), info[0], info[1],
                     name, false, false));
@@ -1355,6 +1395,12 @@ public class PDGGraph implements Serializable {
             }
 
         }
+        else if (astNode.getInternalFunc() instanceof Lambda){
+            pgs[0] = buildArgumentPDG(control, branch,
+                    astNode.getInternalFunc());
+            node = new PDGActionNode(control, branch,
+                    astNode, ( astNode.getInternalFunc()).getNodeType(), null,null, "lambda");
+        }
         PDGGraph pdg = null;
         if (astNode.getInternalArgs().size() <= 100) {
             for (int i = 0; i < astNode.getInternalArgs().size(); i++)
@@ -1445,6 +1491,8 @@ public class PDGGraph implements Serializable {
 
         if (type != null && !type.endsWith("]"))
             type = type + "[.]";
+        else
+            type = "Any";
         PDGNode node = new PDGDataNode(astNode, astNode.getNodeType(),
                 context.getKey(astNode), type,
                 astNode.toString());
@@ -1572,8 +1620,9 @@ public class PDGGraph implements Serializable {
                 rg.mergeSequentialData(lnode, DEFINITION);
             } else if (lg.getOnlyHoleDataOut() != null) {
                 rg.mergeSequentialHoleData(lg.getOnlyHoleDataOut(), DEFINITION);
-            } else {
-                Assertions.UNREACHABLE();
+            }
+            else {
+                //TODO implement the else branch
             }
             rg.nodes.addAll(lg.nodes);
             rg.statementNodes.addAll(lg.statementNodes);
@@ -1772,14 +1821,20 @@ public class PDGGraph implements Serializable {
 
         } else if (astNode.getInternalTarget() instanceof Tuple) {
             for (expr elt : ((Tuple) astNode.getInternalTarget()).getInternalElts()) {
-                String name = ((Name) elt).getInternalId();
-                String type = context.getTypeWrapper().getTypeInfo(elt.getLine(), elt.getCharPositionInLine());
-                if (type == null)
-                    type = context.getTypeWrapper().getTypeInfo(name);
-                context.addLocalVariable(name, "" + elt.getCharStartIndex(), type);
-                PDGDataNode pdn = new PDGDataNode(elt, elt.getNodeType(), "" + elt.getCharStartIndex(), type,
-                        name, false, true);
-                loopVariables.add(pdn);
+                if (elt instanceof Name){
+                    String name = ((Name) elt).getInternalId();
+                    String type = context.getTypeWrapper().getTypeInfo(elt.getLine(), elt.getCharPositionInLine());
+                    if (type == null)
+                        type = context.getTypeWrapper().getTypeInfo(name);
+                    context.addLocalVariable(name, "" + elt.getCharStartIndex(), type);
+                    PDGDataNode pdn = new PDGDataNode(elt, elt.getNodeType(), "" + elt.getCharStartIndex(), type,
+                            name, false, true);
+                    loopVariables.add(pdn);
+                }
+                else if (elt instanceof Tuple){
+                    //TODO impliment this
+                }
+
             }
 
         }
@@ -1989,6 +2044,30 @@ public class PDGGraph implements Serializable {
     }
 
     private PDGGraph buildPDG(PDGNode control, String branch,
+                              Nonlocal astNode) {
+        PDGGraph[] pdgs;
+        PDGGraph pdg = new PDGGraph(context);
+        ;
+        PDGActionNode node = null;
+        if (astNode.getInternalNameNodes().size() > 0) {
+            pdgs = new PDGGraph[astNode.getInternalNameNodes().size()];
+            for (int i = 0; i < astNode.getInternalNameNodes().size(); i++) {
+                pdgs[i] = buildArgumentPDG(control, branch, astNode.getInternalNameNodes().get(i));
+            }
+            pdg.mergeParallel(pdgs);
+            node = new PDGActionNode(control, branch, astNode, astNode.getNodeType(),
+                    null, null, "Global");
+            pdg.mergeSequentialData(node, PARAMETER);
+        } else {
+            node = new PDGActionNode(control, branch, astNode, astNode.getNodeType(),
+                    null, null, "Global");
+            pdg = new PDGGraph(context, node);
+        }
+
+        return pdg;
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
                               Yield astNode) {
         PDGGraph pdg = null;
         PDGActionNode node = null;
@@ -2006,6 +2085,23 @@ public class PDGGraph implements Serializable {
     }
 
     private PDGGraph buildPDG(PDGNode control, String branch,
+                              YieldFrom astNode) {
+        PDGGraph pdg = null;
+        PDGActionNode node = null;
+        if (astNode.getInternalValue() != null) {
+            pdg = buildArgumentPDG(control, branch, astNode.getInternalValue());
+            node = new PDGActionNode(control, branch, astNode, astNode.getNodeType(),
+                    null, null, "yieldfrom");
+            pdg.mergeSequentialData(node, PARAMETER);
+        } else {
+            node = new PDGActionNode(control, branch, astNode, astNode.getNodeType(),
+                    null, null, "yieldfrom");
+            pdg = new PDGGraph(context, node);
+        }
+        return pdg;
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
                               Attribute astNode) {
 
         PDGGraph pdg = buildArgumentPDG(control, branch, astNode.getInternalValue());
@@ -2014,6 +2110,7 @@ public class PDGGraph implements Serializable {
             if (astNode.getInternalAttr() != null) {
                 if (node.getDataType()==null){
                     System.out.println();
+                    buildArgumentPDG(control, branch, astNode.getInternalValue());
                 }
                 if (node.getDataType().startsWith("UNKNOWN")) {
                     String name = astNode.getInternalAttr();
@@ -2060,7 +2157,9 @@ public class PDGGraph implements Serializable {
     private PDGGraph buildPDG(PDGNode control, String branch,
                               UnaryOp astNode) {
         PDGGraph pdg = buildArgumentPDG(control, branch, astNode.getOperand());
-        if (astNode.getInternalOp() == unaryopType.Invert || astNode.getInternalOp() == unaryopType.Not || astNode.getInternalOp() == unaryopType.USub) {
+        if (astNode.getInternalOp() == unaryopType.Invert || astNode.getInternalOp() == unaryopType.Not || astNode.getInternalOp() == unaryopType.USub
+                || astNode.getInternalOp() == unaryopType.UAdd
+        ) {
             pdg.mergeSequentialData(
                     new PDGActionNode(control, branch, astNode, astNode.getNodeType(),
                             null, null, astNode.getInternalOp().toString()),
@@ -2411,6 +2510,11 @@ public class PDGGraph implements Serializable {
     }
 
     private PDGGraph buildPDG(PDGNode control, String branch,
+                              ErrorExpr astNode) {
+        return new PDGGraph(context);
+    }
+
+    private PDGGraph buildPDG(PDGNode control, String branch,
                               ClassDef astNode) {
         return new PDGGraph(context);
     }
@@ -2430,7 +2534,9 @@ public class PDGGraph implements Serializable {
         else if (atr.getInternalValue() instanceof Call) {
             return getFullNameOfAttribute((Call) atr.getInternalValue()) + atr.getInternalAttr();
         }
-
+        else if (atr.getInternalValue() instanceof Str) {
+            return ((Str) atr.getInternalValue()).getInternalS() + atr.getInternalAttr();
+        }
         else {
             Assertions.UNREACHABLE();
             return null;
@@ -2450,7 +2556,7 @@ public class PDGGraph implements Serializable {
     }
 
     private String getFullNameOfAttribute(Subscript atr) {
-        if (atr.getInternalValue() instanceof Name) {
+        if (atr.getInternalValue() instanceof Name && atr.getInternalSlice() instanceof Index) {
             if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Num)
                 return ((Name) atr.getInternalValue()).getInternalId() + "[" + ((Num) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalN() + "]";
             if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Name)
@@ -2461,6 +2567,17 @@ public class PDGGraph implements Serializable {
                 return ((Name) atr.getInternalValue()).getInternalId() + "[" + ((BinOp) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalRight()
                         + ((BinOp) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalOp().name() +
                         ((BinOp) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalLeft() + "]";
+            else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Subscript)
+                return ((Name) atr.getInternalValue()).getInternalId() + "[" + getFullNameOfAttribute( (Subscript)((Index) atr.getInternalSlice()).getInternalValue())  + "]";
+            else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof List){
+                return ((Name) atr.getInternalValue()).getInternalId() +"[]";
+            }
+            else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Attribute){
+                return ((Name) atr.getInternalValue()).getInternalId() + "[" + getFullNameOfAttribute((Attribute)((Index) atr.getInternalSlice()).getInternalValue()) + "]";
+            }
+            else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Call){
+                return ((Name) atr.getInternalValue()).getInternalId() + "[" + getFullNameOfAttribute((Call)((Index) atr.getInternalSlice()).getInternalValue()) + "]";
+            }
             else
                 return ((Name) atr.getInternalValue()).getInternalId() + "[" + ((Str) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalS() + "]";
         } else if (atr.getInternalValue() instanceof AlphanumericHole)
@@ -2470,7 +2587,7 @@ public class PDGGraph implements Serializable {
         else if (atr.getInternalValue() instanceof Subscript) {
             if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Num)
                 return getFullNameOfAttribute((Subscript) atr.getInternalValue()) + "[" + ((Num) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalN() + "]";
-            else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Num)
+            else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Name)
                 return getFullNameOfAttribute((Subscript) atr.getInternalValue()) + "[" + ((Name) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalId() + "]";
             else
                 return getFullNameOfAttribute((Subscript) atr.getInternalValue()) + "[" + ((Str) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalS() + "]";
@@ -2481,6 +2598,12 @@ public class PDGGraph implements Serializable {
                 return getFullNameOfAttribute((Attribute) atr.getInternalValue()) + "[" + ((Name) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalId() + "]";
             else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Subscript)
                 return getFullNameOfAttribute((Attribute) atr.getInternalValue()) + "[ ]";
+            else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Call){
+                return getFullNameOfAttribute((Attribute) atr.getInternalValue()) + "[" + getFullNameOfAttribute((Call)((Index) atr.getInternalSlice()).getInternalValue()) + "]";
+            }
+            else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Attribute){
+                return getFullNameOfAttribute((Attribute) atr.getInternalValue()) + "[" + getFullNameOfAttribute((Attribute)((Index) atr.getInternalSlice()).getInternalValue()) + "]";
+            }
             else
                 return getFullNameOfAttribute((Attribute) atr.getInternalValue()) + "[" + ((Str) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalS() + "]";
         } else if (atr.getInternalValue() instanceof Subscript) {
@@ -2520,8 +2643,8 @@ public class PDGGraph implements Serializable {
             }
         }
         else {
-            Assertions.UNREACHABLE();
-            return null;
+
+            return "[]";
         }
     }
 }

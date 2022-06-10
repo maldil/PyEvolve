@@ -399,9 +399,6 @@ class MatchedNodeTest {
         Assertions.assertEquals(false,matchNode.canWalkFromNodeToNode(startNode, endNode, MatchedNode.DIRECTION.FROM, new HashSet<>()));
         Assertions.assertTrue(matchNode.canWalkFromNodeToNode(endNode,startNode,  MatchedNode.DIRECTION.FROM, new HashSet<>()));
         Assertions.assertEquals(false,matchNode.canWalkFromNodeToNode(endNode,startNode,  MatchedNode.DIRECTION.TO, new HashSet<>()));
-        System.out.println();
-
-
     }
 
     class PyASTVisitor extends Visitor {

@@ -242,6 +242,9 @@ public class PDGBuildingContext {
                 return ((Name) atr.getInternalValue()).getInternalId()+ "["+((BinOp)((Index)atr.getInternalSlice()).getInternalValue()).getInternalRight()
                         +((BinOp)((Index)atr.getInternalSlice()).getInternalValue()).getInternalOp().name() +
                         ((BinOp)((Index)atr.getInternalSlice()).getInternalValue()).getInternalLeft()+"]";
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof org.python.antlr.ast.List){
+                return ((Name) atr.getInternalValue()).getInternalId() +"[]";
+            }
             else
                 return ((Name) atr.getInternalValue()).getInternalId()+ "["+((Str)((Index)atr.getInternalSlice()).getInternalValue()).getInternalS() +"]";
         }
@@ -264,6 +267,33 @@ public class PDGBuildingContext {
                 return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+((Name)((Index)atr.getInternalSlice()).getInternalValue()).getInternalId() +"]";
             else
                 return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+((Str)((Index)atr.getInternalSlice()).getInternalValue()).getInternalS() +"]";
+        }
+        else if (atr.getInternalValue() instanceof Call) {
+            if (((Call) atr.getInternalValue()).getInternalFunc() instanceof Name) {
+                String fuName = ((Name) ((Call) atr.getInternalValue()).getInternalFunc()).getInternalId() + "()";
+                if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Num)
+                    return fuName + "[" + ((Num) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalN() + "]";
+                else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Name)
+                    return fuName + "[" + ((Name) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalId() + "]";
+                else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Subscript)
+                    return fuName + "[ ]";
+                else
+                    return fuName + "[" + ((Str) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalS() + "]";
+            }
+            else{
+                if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Num)
+                    return getFullNameOfAttribute((Attribute) ((Call) atr.getInternalValue()).getInternalFunc())
+                            + "[" + ((Num) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalN() + "]";
+                else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Name)
+                    return getFullNameOfAttribute((Attribute) ((Call) atr.getInternalValue()).getInternalFunc())
+                            + "[" + ((Name) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalId() + "]";
+                else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Subscript)
+                    return getFullNameOfAttribute((Attribute) ((Call) atr.getInternalValue()).getInternalFunc())
+                            + "[ ]";
+                else
+                    return getFullNameOfAttribute((Attribute) ((Call) atr.getInternalValue()).getInternalFunc())
+                            + "[" + ((Str) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalS() + "]";
+            }
         }
         else{
             Assertions.UNREACHABLE();
