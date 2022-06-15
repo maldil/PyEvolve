@@ -1027,7 +1027,7 @@ public class PDGGraph implements Serializable {
                     String[] info = context.getLocalVariableInfo(":[[l" + ((Hole) astNode.getInternalTargets().get(i)).getN() + "]]");
                     if (info == null) {
                         context.addLocalVariable(":[[l" + ((Hole) astNode.getInternalTargets().get(i)).getN() + "]]",
-                                "", context.getTypeWrapper().getGuards().getTypes().get(":[[l" + ((Hole) astNode.getInternalTargets().get(i)).getN() + "]]"));
+                                "", context.getTypeWrapper().getGuards().getTypes().get(":[[l" + ((Hole) astNode.getInternalTargets().get(i)).getN() + "]]").snd);
 
                     }
                 }
@@ -1060,7 +1060,7 @@ public class PDGGraph implements Serializable {
             } else if (astNode.getInternalTargets().get(0) instanceof Hole &&
                     context.getTypeWrapper().getGuards().getTypes().get(":[[l" + ((Hole) astNode.getInternalTargets().get(0)).getN() + "]]") != null) {
                 context.addLocalVariable(":[[l" + ((Hole) astNode.getInternalTargets().get(0)).getN() + "]]",
-                        "", context.getTypeWrapper().getGuards().getTypes().get(":[[l" + ((Hole) astNode.getInternalTargets().get(0)).getN() + "]]"));
+                        "", context.getTypeWrapper().getGuards().getTypes().get(":[[l" + ((Hole) astNode.getInternalTargets().get(0)).getN() + "]]").snd);
 
             }
             lg = buildPDG(control, branch, astNode.getInternalTargets().get(0));

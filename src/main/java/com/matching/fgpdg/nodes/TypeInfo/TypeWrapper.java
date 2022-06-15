@@ -3,6 +3,7 @@ package com.matching.fgpdg.nodes.TypeInfo;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.gson.Gson;
+import com.ibm.wala.util.collections.Pair;
 import com.matching.fgpdg.nodes.Guards;
 
 import java.io.IOException;
@@ -43,9 +44,9 @@ public class TypeWrapper {
     }
 
     public TypeWrapper(Guards guard){
-        for (Map.Entry<String, String> typeEntry : guard.getTypes().entrySet()) {
-            this.typeTable.put(0, 0,
-                    new DataTypeClass(typeEntry.getKey(),typeEntry.getValue()));
+        for (Map.Entry<String, Pair<Pair<Integer, Integer>, String>> typeEntry : guard.getTypes().entrySet()) {
+            this.typeTable.put(typeEntry.getValue().fst.fst, typeEntry.getValue().fst.snd,
+                    new DataTypeClass(typeEntry.getKey(),typeEntry.getValue().snd));
         }
         for (Map.Entry<String, String> typeEntry : guard.getValues().entrySet()) {
             this.valueTable.put(0, 0,
@@ -56,7 +57,6 @@ public class TypeWrapper {
                     new DataTypeClass(typeEntry.getKey(),typeEntry.getValue()));
         }
         this.guards=guard;
-
     }
 
 

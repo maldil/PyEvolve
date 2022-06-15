@@ -76,7 +76,7 @@ public class Utils {
 //
 //    }
 
-    public static void markNodesInCode(String code, List<MatchedNode> pdgs,String fileName) throws IOException {
+    public static void markNodesInCode(String code, List<MatchedNode> pdgs,String fileName, String stylefile) throws IOException {
         if(new File(code).exists())
         {
             code = getFileContent(code);
@@ -97,10 +97,10 @@ public class Utils {
                 }
             }
         }
-        writeMatchCodeToHTML(code, fileName, duration);
+        writeMatchCodeToHTML(code, fileName, duration,stylefile);
     }
 
-    private static void writeMatchCodeToHTML(String code, String fileName, List<Interval> duration) {
+    private static void writeMatchCodeToHTML(String code, String fileName, List<Interval> duration, String styleFile) {
         String s = markupCode(duration.stream().map(x -> {
             ArrayList<Integer> list = new ArrayList<>();
             list.add(x.start);
@@ -109,8 +109,8 @@ public class Utils {
         }).collect(Collectors.toCollection(ArrayList::new)), code);
 
         StringBuilder sampleChange = new StringBuilder();
-        sampleChange.append("<link rel=\"stylesheet\" href=\"./default.css\">\n" +
-                "<script src=\"./highlight.pack.js\"></script> \n" +
+        sampleChange.append("<link rel=\"stylesheet\" href=\""+styleFile+"/default.css\">\n" +
+                "<script src=\""+styleFile+"/highlight.pack.js\"></script> \n" +
                 "<script>hljs.initHighlightingOnLoad();</script>\n");
         sampleChange.append("<html>");
 

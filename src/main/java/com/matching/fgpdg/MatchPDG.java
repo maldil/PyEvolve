@@ -1,10 +1,7 @@
 package com.matching.fgpdg;
 
 import com.ibm.wala.util.collections.Pair;
-import com.matching.fgpdg.nodes.PDGActionNode;
-import com.matching.fgpdg.nodes.PDGDataEdge;
-import com.matching.fgpdg.nodes.PDGEdge;
-import com.matching.fgpdg.nodes.PDGNode;
+import com.matching.fgpdg.nodes.*;
 import com.utils.DotGraph;
 import com.utils.Utils;
 
@@ -14,18 +11,20 @@ import java.util.stream.Collectors;
 
 public class MatchPDG {
     public HashSet<PDGNode> visitedASTNodes= new HashSet<>();
-    protected List<MatchedNode> getSubGraphs(PDGGraph pattern, PDGGraph code)  {
+    PDGBuildingContext patternContext;PDGBuildingContext codeContext;
+    protected List<MatchedNode> getSubGraphs(PDGGraph pattern, PDGGraph code,PDGBuildingContext patternContext,PDGBuildingContext cContext )  {
+        this.patternContext=patternContext;
+        this.codeContext=cContext;
         PDGGraph _pattern=pruneAndCleanPatternPDG(pattern);
         HashSet<PDGNode> patternNodes = _pattern.getNodes();
-        DotGraph dg = new DotGraph(pattern);
+        DotGraph dg = new DotGraph(_pattern);
         dg.toDotFile(new File("./OUTPUT/"  +"____pruned_pattern__file___"+".dot"));
-        DotGraph dgc = new DotGraph(code);
-        dgc.toDotFile(new File("./OUTPUT/"  +"____code__file___"+".dot"));
+//        DotGraph dgc = new DotGraph(code);
+//        dgc.toDotFile(new File("./OUTPUT/"  +"____code__file___"+".dot"));
 
 
         HashSet<PDGNode> codeNodes = code.getNodes();
         ArrayList<Pair<PDGNode,PDGNode>> startNodes = new ArrayList<>();
-        ArrayList<ArrayList<PDGNode>> matched = new ArrayList<>();
         PDGNode maxDOF = Utils.getMaxDOF(patternNodes);
         if (maxDOF!=null){
             for (PDGNode codeNode : codeNodes) {
@@ -34,7 +33,7 @@ public class MatchPDG {
                     }
             }
             if (startNodes.size()!=0) {
-                return startNodes.stream().map(x-> new MatchedNode(x.fst,x.snd,new HashSet<>())).collect(Collectors.toList());
+                return startNodes.stream().map(x-> new MatchedNode(x.fst,x.snd,new HashSet<>(),patternContext,cContext)).collect(Collectors.toList());
             }
         }
         return null;
@@ -43,10 +42,10 @@ public class MatchPDG {
     protected List<MatchedNode> getSubGraphs(PDGGraph pattern, PDGGraph code,PDGNode startNode){
         PDGGraph _pattern=pruneAndCleanPatternPDG(pattern);
         HashSet<PDGNode> patternNodes = _pattern.getNodes();
-        DotGraph dg = new DotGraph(_pattern);
-        dg.toDotFile(new File("./OUTPUT/"  +"____pruned_pattern__file___"+".dot"));
-        DotGraph dgc = new DotGraph(code);
-        dgc.toDotFile(new File("./OUTPUT/"  +"____code__file___"+".dot"));
+//        DotGraph dg = new DotGraph(_pattern);
+//        dg.toDotFile(new File("./OUTPUT/"  +"____pruned_pattern__file___"+".dot"));
+//        DotGraph dgc = new DotGraph(code);
+//        dgc.toDotFile(new File("./OUTPUT/"  +"____code__file___"+".dot"));
 
 
         HashSet<PDGNode> codeNodes = code.getNodes();
@@ -59,7 +58,7 @@ public class MatchPDG {
                 }
             }
             if (startNodes.size()!=0) {
-                return startNodes.stream().map(x-> new MatchedNode(x.fst,x.snd,new HashSet<>())).collect(Collectors.toList());
+                return startNodes.stream().map(x-> new MatchedNode(x.fst,x.snd,new HashSet<>(),this.patternContext,this.codeContext)).collect(Collectors.toList());
             }
         }
         return null;
@@ -71,6 +70,15 @@ public class MatchPDG {
         ArrayList<PDGNode> remove = new ArrayList<>();
         for (PDGNode node : pattern.nodes) {
             if (node instanceof PDGActionNode && node.getLabel().equals("empty")){
+                remove.add(node);
+                for (PDGEdge inEdge : node.getInEdges()) {
+                    inEdge.getSource().getOutEdges().remove(inEdge);
+                }
+                for (PDGEdge outEdge : node.getOutEdges()) {
+                    outEdge.getTarget().getInEdges().remove(outEdge);
+                }
+            }
+            else if (node instanceof PDGDataNode && node.getLabel().equals("self(self)")){
                 remove.add(node);
                 for (PDGEdge inEdge : node.getInEdges()) {
                     inEdge.getSource().getOutEdges().remove(inEdge);

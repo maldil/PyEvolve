@@ -23,6 +23,8 @@ public class MatchedNode {
     public enum DIRECTION {FROM,TO};
     public enum NODE_PROPERTIES {CLONE,SWAPPED};
     public enum SWAPPED {YES,NO};
+    PDGBuildingContext patternContext;
+    PDGBuildingContext codeContext;
     public MatchedNode(){
 
     }
@@ -35,10 +37,11 @@ public class MatchedNode {
          this.codeParaNode=codeParN;
     }
 
-    public MatchedNode(PDGNode codeNode, PDGNode patternNode,HashSet<PDGNode> visitedASTNodes) {
+    public MatchedNode(PDGNode codeNode, PDGNode patternNode,HashSet<PDGNode> visitedASTNodes, PDGBuildingContext pContex, PDGBuildingContext cContex) {
         this.codeNode = codeNode;
         this.patternNode = patternNode;
-
+        this.codeContext = cContex;
+        this.patternContext = pContex;
         System.out.println(codeNode+"===="+patternNode);
 
         Pair<HashMap<PDGNode, HashSet<PDGNode>>, HashMap<PDGNode, HashSet<PDGNode>>> nextMatchedNodePairs
@@ -51,7 +54,7 @@ public class MatchedNode {
             for (Map.Entry<PDGNode, HashSet<PDGNode>> entry : nextMatchedNodePairs.fst.entrySet()) {
                 for (PDGNode node : entry.getValue()) {
                     if (!parentVisits.contains(node)) {
-                        MatchedNode matchedNode = new MatchedNode(node, entry.getKey(), visitedASTNodes);
+                        MatchedNode matchedNode = new MatchedNode(node, entry.getKey(), visitedASTNodes,patternContext,codeContext);
                         matchedNode.setParentNode(this);
                         matchedChildNodes.add(matchedNode);
                     }
@@ -60,7 +63,7 @@ public class MatchedNode {
             for (Map.Entry<PDGNode, HashSet<PDGNode>> entry : nextMatchedNodePairs.snd.entrySet()) {
                 for (PDGNode node : entry.getValue()) {
                     if (!parentVisits.contains(node)) {
-                        MatchedNode matchedNode = new MatchedNode(node, entry.getKey(), visitedASTNodes);
+                        MatchedNode matchedNode = new MatchedNode(node, entry.getKey(), visitedASTNodes,patternContext,codeContext);
                         matchedNode.setParentNode(this);
                         matchedChildNodes.add(matchedNode);
                     }
@@ -101,18 +104,18 @@ public class MatchedNode {
                     if (matchedChildNodes.stream().noneMatch(x -> x.getPatternNode() == paraN)){
                         ArrayList<PDGNode> visitedPatternNode = new ArrayList<>();
                         visitedPatternNode.add(this.patternNode);
-                        PDGGraph patternPDG = getSubGraphForDifferentDataFlowMatching(paraN, visitedPatternNode);
+                        PDGGraph patternPDG = getSubGraphForDifferentDataFlowMatching(paraN, visitedPatternNode,this.patternContext);
                         DotGraph dg = new DotGraph(patternPDG);
                         String dirPath = "./OUTPUT/";
                         dg.toDotFile(new File(dirPath  +"__patternPDG1__file___"+".dot"));
                         for (PDGNode codeN : codeParaNodes) {
-                            PDGGraph codePDG = getSubGraphForDifferentDataFlowMatching(codeN, visitedCodeASTNodes);
+                            PDGGraph codePDG = getSubGraphForDifferentDataFlowMatching(codeN, visitedCodeASTNodes,this.codeContext);
                             DotGraph dg1 = new DotGraph(codePDG);
                             dg1.toDotFile(new File(dirPath  +"__patternPDG2__file___"+".dot"));
                             MatchPDG match = new MatchPDG();
                             List<MatchedNode> subGraphs = match.getSubGraphs(patternPDG, codePDG, patternPDG.getPDGNode(paraN.getId()) );
                             if (subGraphs!=null){
-                                subGraphs.forEach(x->x.updateAllMatchedNodes(x));
+                                subGraphs.forEach(x->x.updateAllMatchedNodes(x,patternPDG));
                                 for (MatchedNode graph : subGraphs) {
                                     if (graph.isAllMatchedGraph()){
                                         /*
@@ -138,7 +141,7 @@ public class MatchedNode {
                                             for (Map.Entry<PDGNode, HashSet<PDGNode>> entry : matchedNodesFromTheChildren.fst.entrySet()) {
                                                 for (PDGNode node1 : entry.getValue()) {
                                                     if (!parentVisits.contains(node1)) {
-                                                        MatchedNode matchedNode = new MatchedNode(node1, entry.getKey(), visitedASTNodes);
+                                                        MatchedNode matchedNode = new MatchedNode(node1, entry.getKey(), visitedASTNodes,patternContext,codeContext);
                                                         matchedNode.setParentNode(this);
                                                         if (!matchedChildNodes.contains(matchedNode))     {
                                                             matchedChildNodes.add(matchedNode);
@@ -149,7 +152,7 @@ public class MatchedNode {
                                             for (Map.Entry<PDGNode, HashSet<PDGNode>> entry : matchedNodesFromTheChildren.snd.entrySet()) {
                                                 for (PDGNode node1 : entry.getValue()) {
                                                     if (!parentVisits.contains(node1)) {
-                                                         MatchedNode matchedNode = new MatchedNode(node1, entry.getKey(), visitedASTNodes);
+                                                         MatchedNode matchedNode = new MatchedNode(node1, entry.getKey(), visitedASTNodes,patternContext,codeContext);
                                                          matchedNode.setParentNode(this);
                                                          if (!matchedChildNodes.contains(matchedNode)){
                                                                 matchedChildNodes.add(matchedNode);
@@ -225,8 +228,7 @@ public class MatchedNode {
     node: the node that become the start of the sub-graph
     voidNode: nodes that have already been visited
     * */
-    public PDGGraph getSubGraphForDifferentDataFlowMatching(PDGNode node,List<PDGNode> avoidNodes){
-        PDGBuildingContext context = new PDGBuildingContext(new ArrayList<>());
+    public PDGGraph getSubGraphForDifferentDataFlowMatching(PDGNode node,List<PDGNode> avoidNodes,PDGBuildingContext context ){
         PDGGraph grap = new PDGGraph(context);
         HashSet<PDGNode> nodes = node.getAllChildNodes(20,avoidNodes);
         HashMap<Integer,PDGNode> nodeMap=new HashMap<>();
@@ -263,6 +265,17 @@ public class MatchedNode {
                 entryNodennode.setId(pdgNode.getId());
                 newnodes.add(entryNodennode);
                 nodeMap.put(pdgNode.getId(),entryNodennode);
+            }
+            else if (pdgNode instanceof PDGAlphHole){
+                PDGAlphHole alpHole = new PDGAlphHole(pdgNode.getAstNode(),pdgNode.getAstNodeType(),
+                        ((PDGAlphHole) pdgNode).getValue(),pdgNode.getKey(),pdgNode.getDataType(),pdgNode.getDataName(),
+                        ((PDGAlphHole) pdgNode).isDataNode(),((PDGAlphHole) pdgNode).isActionNode(),
+                        ((PDGAlphHole) pdgNode).isControlNode());
+                alpHole.setProperty(NODE_PROPERTIES.CLONE,pdgNode);
+                alpHole.setProperty(NODE_PROPERTIES.SWAPPED,SWAPPED.NO);
+                alpHole.setId(pdgNode.getId());
+                newnodes.add(alpHole);
+                nodeMap.put(pdgNode.getId(),alpHole);
             }
             else
                 Assertions.UNREACHABLE("Unhandled node type"+pdgNode.getClass());
@@ -339,15 +352,21 @@ public class MatchedNode {
 //        return subGraphs;
 //    }
 
-    public void updateAllMatchedNodes(MatchedNode matchedGraph){
+    public void updateAllMatchedNodes(MatchedNode matchedGraph, PDGGraph patternPDG){
         if (this.allChildsMatched)
             return;
+        for (PDGNode node : patternPDG.getNodes()) {
+            if(!matchedGraph.getAllMatchedNodes().stream().map(MatchedNode::getPatternNode).collect(Collectors.toList()).contains(node)){
+                this.allChildsMatched=false;
+                return;
+            }
+        }
         this.allChildsMatched=true;
-        List<PDGNode> childNodesogPatternNodes = patternNode.getInEdges().stream().map(PDGEdge::getSource).collect(Collectors.toList());
-        childNodesogPatternNodes.addAll(patternNode.getOutEdges().stream().map(PDGEdge::getTarget).collect(Collectors.toList()));
+        List<PDGNode> childNodesofPatternNodes = patternNode.getInEdges().stream().map(PDGEdge::getSource).collect(Collectors.toList());
+        childNodesofPatternNodes.addAll(patternNode.getOutEdges().stream().map(PDGEdge::getTarget).collect(Collectors.toList()));
         List<PDGNode> childNodesOfCodeNodes = codeNode.getInEdges().stream().map(PDGEdge::getSource).collect(Collectors.toList());
         childNodesOfCodeNodes.addAll(codeNode.getOutEdges().stream().map(PDGEdge::getTarget).collect(Collectors.toList()));
-        for (PDGNode node : childNodesogPatternNodes) {
+        for (PDGNode node : childNodesofPatternNodes) {
             List<PDGNode> collect1 = matchedGraph.getAllMatchedNodes().stream().filter(x -> x.getPatternNode() == node).map(MatchedNode::getCodeNode)
                     .collect(Collectors.toList());
             List<PDGNode> collect2 = matchedGraph.getAllMatchedNodes().stream().filter(x -> x.getPatternNode() == node).filter(y->y.getCodeParaNode()!=null).map(MatchedNode::getCodeParaNode)
@@ -377,7 +396,7 @@ public class MatchedNode {
                 allChildsMatched=false;
             }
         }
-        matchedChildNodes.forEach(x->x.updateAllMatchedNodes(matchedGraph));
+        matchedChildNodes.forEach(x->x.updateAllMatchedNodes(matchedGraph,patternPDG));
     }
 
     public boolean isAllMatchedGraph(){

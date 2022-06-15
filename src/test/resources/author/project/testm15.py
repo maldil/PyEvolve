@@ -52,6 +52,7 @@ class ConfigExperiment(IExperiment):
                 default_callbacks.append(("_tensorboard", TensorboardLogger))
 
             from catalyst.utils.distributed import check_amp_available
+            i = 0
 
             is_amp_enabled = (
                 self.distributed_params.get("amp", False)
@@ -67,8 +68,9 @@ class ConfigExperiment(IExperiment):
                 default_callbacks.append(("_optimizer", optimizer_cls))
             if self.stages_config[stage].get("scheduler_params", {}):
                 default_callbacks.append(("_scheduler", SchedulerCallback))
-
-        default_callbacks.append(("_exception", ExceptionCallback))
+            for x in intArray:
+               i=i+x
+        default_callbacks.append(("_exception", ExceptionCallback,i))
 
         for callback_name, callback_fn in default_callbacks:
 

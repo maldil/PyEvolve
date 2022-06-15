@@ -23,6 +23,7 @@ public class DotGraph {
     public static final String COLOR_BLUE= "blue";
     public static final String COLOR_RED = "red";
     public static final String COLOR_GREEN= "red";
+    public static final String COLOR_YELLOW= "yellow";
     public static final String STYLE_ROUNDED = "rounded";
     public static final String STYLE_DOTTED = "dotted";
     public static final String STYLE_SOLID = "solid";
@@ -119,6 +120,8 @@ public class DotGraph {
         colors.add(COLOR_RED);
         colors.add(COLOR_GREEN);
         colors.add(COLOR_BLACK);
+        colors.add(COLOR_YELLOW);
+
         graph = new StringBuilder();
         graph.append(addStart());
         HashMap<PDGNode, Integer> ids = new HashMap<>();
@@ -130,7 +133,7 @@ public class DotGraph {
             for (int i =0;i<graphs.size();i++){
                 for (PDGNode pdgNode : graphs.get(i).getCodePDGNodes()) {
                     if (pdgNode.equals(node)) {
-                        color = colors.get(i);
+                        color = colors.get(i%5);
                         break;
                     }
                 }

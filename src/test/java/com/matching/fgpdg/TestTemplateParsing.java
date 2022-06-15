@@ -37,9 +37,9 @@ public class TestTemplateParsing {
     @Test
     void testPDG2() throws Exception {
         String code= """
-                # type [[$1]]: int
-                # value [[$3]]: 0
-                # type [[$4]]: str
+                # type [[$1]] : int
+                # value [[$3]] : 0
+                # type [[$4]] : str
                 # kind [[$3]] : SimpleName
                 [[$1]] = [[$3]]
                 for [[$5]] in [[$6]]:

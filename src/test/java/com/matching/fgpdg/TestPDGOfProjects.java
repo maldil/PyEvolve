@@ -2,6 +2,7 @@ package com.matching.fgpdg;
 
 import com.matching.ConcreatePythonParser;
 import com.utils.DotGraph;
+import org.inferrules.Utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.python.antlr.Visitor;
@@ -20,33 +21,14 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.lang.System.exit;
+import static org.inferrules.Utils.getAllFunctions;
 
 public class TestPDGOfProjects {
-    public static ArrayList<FunctionDef>  getAllFunctions(Module  ast){
-        PyFuncDefVisitor fu = new PyFuncDefVisitor();
-        try {
-            fu.visit(ast);
-            return fu.funcDefs;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-    }
-
-    static class PyFuncDefVisitor extends Visitor {
-        ArrayList<FunctionDef> funcDefs = new ArrayList<>();
-        @Override
-        public Object visitFunctionDef(FunctionDef node) throws Exception {
-            funcDefs.add(node);
-            return super.visitFunctionDef (node);
-        }
-    }
-
     @Test
     void testKerasPDG() {
         String projectPath = Configurations.PROJECT_REPOSITORY+"keras-team/keras/";
         File dir = new File(projectPath);
-        ArrayList<File> files = getPythonFiles(Objects.requireNonNull(dir.listFiles()));
+        ArrayList<File> files = Utils.getPythonFiles(Objects.requireNonNull(dir.listFiles()));
         for (File file : files) {
             System.out.println(file.getAbsolutePath());
             ConcreatePythonParser parser = new ConcreatePythonParser();
@@ -72,7 +54,7 @@ public class TestPDGOfProjects {
     void testTensorFlowPDG() {
         String projectPath = Configurations.PROJECT_REPOSITORY+"nltk/nltk/";
         File dir = new File(projectPath);
-        ArrayList<File> files = getPythonFiles(Objects.requireNonNull(dir.listFiles()));
+        ArrayList<File> files = Utils.getPythonFiles(Objects.requireNonNull(dir.listFiles()));
         for (File file : files) {
             System.out.println(file.getAbsolutePath());
             ConcreatePythonParser parser = new ConcreatePythonParser();
@@ -98,7 +80,7 @@ public class TestPDGOfProjects {
     void testPytorchPDG() {
         String projectPath = Configurations.PROJECT_REPOSITORY+"pytorch/pytorch/";
         File dir = new File(projectPath);
-        ArrayList<File> files = getPythonFiles(Objects.requireNonNull(dir.listFiles()));
+        ArrayList<File> files = Utils.getPythonFiles(Objects.requireNonNull(dir.listFiles()));
         for (File file : files) {
             System.out.println(file.getAbsolutePath());
             ConcreatePythonParser parser = new ConcreatePythonParser();
@@ -120,19 +102,5 @@ public class TestPDGOfProjects {
         }
     }
 
-    public static ArrayList<File> getPythonFiles(File[] files) {
-        ArrayList<File> pythonFiles = new ArrayList<>();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                if (!file.getName().startsWith(".")) {
-                    pythonFiles.addAll(getPythonFiles(Objects.requireNonNull(file.listFiles()))); // Calls same method again.
-                }
-            } else {
-                if (file.getName().endsWith(".py")) {
-                    pythonFiles.add(file);
-                }
-            }
-        }
-        return pythonFiles;
-    }
+
 }

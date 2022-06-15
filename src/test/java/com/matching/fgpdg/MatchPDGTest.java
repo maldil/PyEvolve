@@ -26,9 +26,10 @@ class MatchPDGTest {
             PDGGraph mpdg = new PDGGraph(patternModule,mcontext);
 
             MatchPDG match = new MatchPDG();
-            List<MatchedNode> graphs = match.getSubGraphs(mpdg,fpdg );
+            List<MatchedNode> graphs = match.getSubGraphs(mpdg,fpdg,mcontext,fcontext );
+
             match.drawMatchedGraphs(fpdg,graphs,"OUTPUT/matches/text1.dot");
-            Utils.markNodesInCode("src/test/resources/author/project/test1.py",graphs,"OUTPUT/matches/text1.html");
+            Utils.markNodesInCode("src/test/resources/author/project/test1.py",graphs,"OUTPUT/matches/text1.html","");
         } catch (IOException e) {
             e.printStackTrace();
         }

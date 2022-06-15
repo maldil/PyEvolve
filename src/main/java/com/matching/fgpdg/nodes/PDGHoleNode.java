@@ -77,4 +77,8 @@ public class PDGHoleNode  extends PDGNode {
             this.controlNode = node.controlNode;
             this.actionNode = node.actionNode;
     }
+
+    public String getValue() {
+        return value;
+    }
 }

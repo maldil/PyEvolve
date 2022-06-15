@@ -1,28 +1,77 @@
 package com.matching.fgpdg.nodes;
 
+import com.ibm.wala.util.collections.Pair;
+import org.antlr.runtime.ANTLRStringStream;
+import org.python.antlr.AnalyzingParser;
+import org.python.antlr.Visitor;
+import org.python.antlr.ast.ErrorExpr;
+import org.python.antlr.ast.Expr;
+import org.python.antlr.ast.Module;
+import org.python.antlr.ast.Name;
+import org.python.antlr.base.mod;
 import org.python.modules._hashlib;
+import org.python.modules._imp$new_module_exposer;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Guards {
 
-    private HashMap<String,String> types;
+    private HashMap<String, Pair<Pair<Integer,Integer>, String>> types=new HashMap<>();
     private HashMap<String,String> kinds = new HashMap<>();
     private HashMap<String,String> values = new HashMap<>();
     private HashMap<String,String> imports = new HashMap<>();
+
     public Guards(String code) {
+        Module mod = (Module)parsePython(code);
+        PyNameVisitor lineNumber= new PyNameVisitor();
+        try {
+            lineNumber.visit(mod);
+            for (String type : Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("type")).collect(Collectors.toList())) {
+                if (lineNumber.mapRowCol.get(type.split(" ")[2])!=null){
+                    for (Pair<Integer, Integer> typePair : lineNumber.mapRowCol.get(type.split(" ")[2])) {
+                        types.put(type.split(" ")[2],Pair.make(Pair.make(typePair.fst,typePair.snd),type.split(" ")[4]));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         values = (HashMap<String,String>)Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("value")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[4]));
-        types = (HashMap<String,String>)Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("type")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[4]));
-        kinds = (HashMap<String,String>)Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("kind")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[4]));
+                kinds = (HashMap<String,String>)Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("kind")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[4]));
         imports = (HashMap<String,String>)Arrays.stream(code.split("\n")).filter(x -> x.contains("#") && x.contains("import")).collect(Collectors.toMap(y -> y.split(" ")[2], y -> y.split(" ")[4]));
     }
 
+
+    public static mod parsePython(String code) {
+        ANTLRStringStream antlrSting = new ANTLRStringStream(code);
+        AnalyzingParser p = new AnalyzingParser(antlrSting, "", "ascii");
+        return p.parseModule();
+    }
+
+    static class PyNameVisitor extends Visitor {
+        private HashMap<String, List<Pair<Integer, Integer>>> mapRowCol = new HashMap<>();
+
+        @Override
+        public Object visitName(Name node) throws Exception {
+            if (mapRowCol.get(node.getInternalId())==null){
+                ArrayList<Pair<Integer,Integer>> arrayRowCol = new ArrayList<>();
+                arrayRowCol.add(Pair.make(node.getLineno(),node.getCol_offset()));
+                mapRowCol.put(node.getInternalId(),arrayRowCol);
+            }
+            else{
+                mapRowCol.get(node.getInternalId()).add(Pair.make(node.getLineno(),node.getCol_offset()));
+            }
+            return super.visitName(node);
+        }
+    }
+
     public String getTypeOfTemplateVariable(String templateVariable){
-        return types.getOrDefault(templateVariable, "AnyType");
+        if (types.get(templateVariable)!=null)
+            return types.get(templateVariable).snd;
+        else
+            return "Any";
+//        return types.getOrDefault(templateVariable, "AnyType");
     }
 
     public String getValueOfTemplateVariable(String templateVariable){
@@ -37,7 +86,7 @@ public class Guards {
         return imports.getOrDefault(templateVariable, "AnyImport");
     }
 
-    public HashMap<String, String> getTypes() {
+    public HashMap<String, Pair<Pair<Integer,Integer>, String>> getTypes() {
         return types;
     }
 

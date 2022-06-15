@@ -5,10 +5,15 @@ import com.google.gson.Gson;
 import com.inferrules.comby.jsonResponse.CombyMatch;
 import com.inferrules.core.Template;
 import com.inferrules.utils.Utilities;
+import com.matching.fgpdg.TestPDGOfProjects;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
+import org.python.antlr.Visitor;
+import org.python.antlr.ast.FunctionDef;
+import org.python.antlr.ast.Module;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -16,9 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
@@ -56,6 +59,42 @@ public class Utils {
                 .collect(groupingBy(x->x._1(), collectingAndThen(toList(), xs -> xs.stream().map(x -> x._2()).distinct().count())))
                 .entrySet().stream().allMatch(x->x.getValue() == 1)
                 ;
+    }
+
+    public static ArrayList<File> getPythonFiles(File[] files) {
+        ArrayList<File> pythonFiles = new ArrayList<>();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                if (!file.getName().startsWith(".")) {
+                    pythonFiles.addAll(getPythonFiles(Objects.requireNonNull(file.listFiles()))); // Calls same method again.
+                }
+            } else {
+                if (file.getName().endsWith(".py")) {
+                    pythonFiles.add(file);
+                }
+            }
+        }
+        return pythonFiles;
+    }
+
+    public static ArrayList<FunctionDef>  getAllFunctions(Module ast){
+        PyFuncDefVisitor fu = new PyFuncDefVisitor();
+        try {
+            fu.visit(ast);
+            return fu.funcDefs;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    static class PyFuncDefVisitor extends Visitor {
+        ArrayList<FunctionDef> funcDefs = new ArrayList<>();
+        @Override
+        public Object visitFunctionDef(FunctionDef node) throws Exception {
+            funcDefs.add(node);
+            return super.visitFunctionDef (node);
+        }
     }
 
 

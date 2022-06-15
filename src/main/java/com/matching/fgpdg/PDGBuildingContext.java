@@ -91,6 +91,7 @@ public class PDGBuildingContext {
                 }
             }
         }
+
         if (this.typeWrapper.getGuards()!=null){
             for (Map.Entry<String, String> entry : this.typeWrapper.getGuards().getImports().entrySet()) {
                 importsMap.put(entry.getKey(),entry.getValue());
@@ -265,6 +266,8 @@ public class PDGBuildingContext {
                 return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+((Num)((Index)atr.getInternalSlice()).getInternalValue()).getInternalN() +"]";
             else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Name)
                 return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+((Name)((Index)atr.getInternalSlice()).getInternalValue()).getInternalId() +"]";
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Attribute)
+                return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+getFullNameOfAttribute((Attribute) ((Index)atr.getInternalSlice()).getInternalValue())+"]";
             else
                 return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+((Str)((Index)atr.getInternalSlice()).getInternalValue()).getInternalS() +"]";
         }
