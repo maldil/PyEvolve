@@ -17,18 +17,21 @@ public class PDGAlphHole extends PDGHoleNode {
 
     @Override
     public  boolean isEqualNodes(PDGNode node){
-        if (node instanceof PDGDataNode){
-
+        if (node instanceof PDGDataNode && this.isDataNode()  ){
+            return true;
         }
-        else if (node instanceof PDGActionNode){
-
+        else if (node instanceof PDGActionNode && (this.isDataNode() && this.isActionNode()) ){
+            return true;
         }
-        else if (node instanceof PDGControlNode){
-
+        else if (node instanceof PDGControlNode && this.isControlNode()){
+            return true;
         }
         return false;
 
 //        return node instanceof PDGActionNode && getLabel().equals(node.getLabel());
     }
+
+
+
 
 }

@@ -19,8 +19,8 @@ public class MatchPDG {
         HashSet<PDGNode> patternNodes = _pattern.getNodes();
         DotGraph dg = new DotGraph(_pattern);
         dg.toDotFile(new File("./OUTPUT/"  +"____pruned_pattern__file___"+".dot"));
-//        DotGraph dgc = new DotGraph(code);
-//        dgc.toDotFile(new File("./OUTPUT/"  +"____code__file___"+".dot"));
+        DotGraph dgc = new DotGraph(code);
+        dgc.toDotFile(new File("./OUTPUT/"  +"____code__file___"+".dot"));
 
 
         HashSet<PDGNode> codeNodes = code.getNodes();

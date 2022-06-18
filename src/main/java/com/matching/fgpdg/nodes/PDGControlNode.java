@@ -35,7 +35,7 @@ public class PDGControlNode extends PDGNode {
 
     @Override
     public String toString() {
-        return getLabel();
+        return "("+getId()+")"+getLabel();
     }
 
     public PDGGraph getBody() {

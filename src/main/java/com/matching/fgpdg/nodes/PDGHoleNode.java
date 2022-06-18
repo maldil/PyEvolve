@@ -81,4 +81,9 @@ public class PDGHoleNode  extends PDGNode {
     public String getValue() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        return "("+getId()+")"+getLabel();
+    }
 }

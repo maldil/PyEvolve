@@ -74,7 +74,7 @@ public class PDGActionNode extends PDGNode {
 
     @Override
     public String toString() {
-        return getLabel();
+        return "("+getId()+")"+getLabel();
     }
 
     public boolean hasBackwardDataDependence(PDGActionNode preNode) {

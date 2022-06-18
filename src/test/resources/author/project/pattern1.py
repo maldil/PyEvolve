@@ -1,4 +1,5 @@
-mean = sum(somelist)/len(somelist)
+# type mean : Any
+mean = sum(:[[l1]])/len(:[[l1]])
 
 
 

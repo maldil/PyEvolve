@@ -101,7 +101,7 @@ public class PDGDataNode extends PDGNode {
 
     @Override
     public String toString() {
-        return getLabel();
+        return "("+getId()+")"+getLabel();
     }
 
     public boolean isField() {
@@ -129,6 +129,9 @@ public class PDGDataNode extends PDGNode {
                 }
 
             }
+        }
+        else if (node instanceof PDGAlphHole){
+            return true;
         }
         else{
             return false;

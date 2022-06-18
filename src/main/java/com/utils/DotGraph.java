@@ -111,7 +111,7 @@ public class DotGraph {
             style=STYLE_DASHED;
         else if (node.version==1)
             style=STYLE_SOLID;
-        graph.append(addNode(id, node.getLabel(), shape, style, color, color));
+        graph.append(addNode(id, "("+node.getId()+")"+node.getLabel(), shape, style, color, color));
     }
 
     public DotGraph(PDGGraph fpdg, List<MatchedNode> graphs) {
