@@ -48,7 +48,7 @@ public class TestTemplateParsing {
                                 [[$1]] += [[$5]]
                 [[$20]]([[$1]])""";
         mod mod = parsePython(code);
-        Guards guard = new Guards(code);
+        Guards guard = new Guards(code,(Module) mod);
         PyErrorVisitor error = new PyErrorVisitor();
         error.visit(mod);
         Assertions.assertEquals(error.getError(),0);

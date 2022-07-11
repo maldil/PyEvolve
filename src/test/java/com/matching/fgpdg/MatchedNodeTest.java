@@ -89,6 +89,7 @@ class MatchedNodeTest {
         Assertions.assertEquals(17,nodes);
     }
 
+
     @Test
     void testSubGraphs7()  throws Exception{
         String filename="testm4";
@@ -258,6 +259,95 @@ class MatchedNodeTest {
 //        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
     }
 
+    @Test
+    void testSubGraphs22() throws Exception {
+        String filename="test33";
+        String patternname = "pattern_v1";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs23() throws Exception {
+        String filename="testm18";
+        String patternname = "pattern";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs24() throws Exception {
+        String filename="testm19";
+        String patternname = "GroupOfPatterns/p1";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs25() throws Exception {
+        String filename="testm20";
+        String patternname = "pattern8";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs26() throws Exception {
+        String filename="testm23";
+        String patternname = "pattern9";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs27() throws Exception {
+        String filename="testm22";
+        String patternname = "pattern9";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs28() throws Exception {
+        String filename="testm23";
+        String patternname = "pattern9";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs29() throws Exception {
+        String filename="testm24";
+        String patternname = "pattern10";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs30() throws Exception {
+        String filename="testm25";
+        String patternname = "pattern11";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
 
     @Test
     void testGetPatternGraphForMatching1() {
@@ -349,12 +439,11 @@ class MatchedNodeTest {
             }
         }
         PDGBuildingContext fcontext = null;
-
             fcontext = new PDGBuildingContext(codeModule.getInternalBody().stream().filter(x-> x instanceof Import
                     || x instanceof ImportFrom).collect(Collectors.toList()), "author/project/"+filename+".py");
             PDGGraph fpdg = new PDGGraph(func,fcontext);
             fpdg.getNodes().forEach(x-> System.out.println(x.getId()));
-            Guards guards = new Guards(com.utils.Utils.getFileContent(getPathToResources("author/project/"+patternname+".py")));
+            Guards guards = new Guards(com.utils.Utils.getFileContent(getPathToResources("author/project/"+patternname+".py")),patternModule);
             TypeWrapper wrapper = new TypeWrapper(guards);
             PDGBuildingContext mcontext = new PDGBuildingContext(patternModule.getInternalBody().stream().filter(x -> x instanceof Import
                 || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
@@ -366,7 +455,7 @@ class MatchedNodeTest {
 
             match.drawMatchedGraphs(fpdg,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),"OUTPUT/matches/"+filename+".dot");
             Utils.markNodesInCode("src/test/resources/author/project/"+filename+".py",
-                    graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),"OUTPUT/matches/"+filename+".html","");;
+                    graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),"OUTPUT/matches/"+filename+".html","","x@x");;
 
         return graphs;
     }

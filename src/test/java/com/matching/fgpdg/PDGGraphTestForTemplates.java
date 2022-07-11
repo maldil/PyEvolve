@@ -27,7 +27,7 @@ public class PDGGraphTestForTemplates {
                 "for :[[l2]] in :[[l3]]:\n"+
                 "   :[[l1]]=:[[l1]]+:[[l2]]";
         Module parse = parser.parseTemplates(code);
-        Guards guard = new Guards(code);
+        Guards guard = new Guards(code,parse);
         TypeWrapper wrapper = new TypeWrapper(guard);
         PDGBuildingContext context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x -> x instanceof Import
                 || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
@@ -54,7 +54,7 @@ public class PDGGraphTestForTemplates {
                     :[[l44]] = :[[l11]].matmul(:[[l11]]().t)
                 :[[l56]].:[[l58]](:[[l44]] + :[[l1]]).:[[l62]]""";
         Module parse = parser.parseTemplates(code);
-        Guards guard = new Guards(code);
+        Guards guard = new Guards(code,parse);
         TypeWrapper wrapper = new TypeWrapper(guard);
         PDGBuildingContext context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x -> x instanceof Import
                 || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
@@ -72,7 +72,7 @@ public class PDGGraphTestForTemplates {
                 with :[l3] as :[[l1]]:
                     :[[l13]] = :[[l16]].:[[l18]](:[[l1]], :[l21])""";
         Module parse = parser.parseTemplates(code);
-        Guards guard = new Guards(code);
+        Guards guard = new Guards(code,parse);
         TypeWrapper wrapper = new TypeWrapper(guard);
         PDGBuildingContext context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x -> x instanceof Import
                 || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
@@ -90,7 +90,7 @@ public class PDGGraphTestForTemplates {
                 # type :[[l1]] : int[]\n 
                 mean = sum(:[[l1]])/len(:[[l1]])""";
         Module parse = parser.parseTemplates(code);
-        Guards guard = new Guards(code);
+        Guards guard = new Guards(code,parse);
         TypeWrapper wrapper = new TypeWrapper(guard);
         PDGBuildingContext context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x -> x instanceof Import
                 || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
@@ -108,7 +108,7 @@ public class PDGGraphTestForTemplates {
                 # import :[[l1]] : numpy\n
                 :[[l1]].dot(:[[l1]].dot(:[[l2]], :[[l3]]), :[[l4]]))""";
         Module parse = parser.parseTemplates(code);
-        Guards guard = new Guards(code);
+        Guards guard = new Guards(code,parse);
         TypeWrapper wrapper = new TypeWrapper(guard);
         PDGBuildingContext context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x -> x instanceof Import
                 || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
@@ -132,7 +132,7 @@ public class PDGGraphTestForTemplates {
                           break
                 """;
         Module parse = parser.parseTemplates(code);
-        Guards guard = new Guards(code);
+        Guards guard = new Guards(code,parse);
         TypeWrapper wrapper = new TypeWrapper(guard);
         PDGBuildingContext context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x -> x instanceof Import
                 || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);

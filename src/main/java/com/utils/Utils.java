@@ -76,7 +76,7 @@ public class Utils {
 //
 //    }
 
-    public static void markNodesInCode(String code, List<MatchedNode> pdgs,String fileName, String stylefile) throws IOException {
+    public static void markNodesInCode(String code, List<MatchedNode> pdgs,String fileName, String stylefile,String link) throws IOException {
         if(new File(code).exists())
         {
             code = getFileContent(code);
@@ -97,11 +97,13 @@ public class Utils {
                 }
             }
         }
-        writeMatchCodeToHTML(code, fileName, duration,stylefile);
+        writeMatchCodeToHTML(code, fileName, duration,stylefile,link);
     }
 
-    private static void writeMatchCodeToHTML(String code, String fileName, List<Interval> duration, String styleFile) {
-        String s = markupCode(duration.stream().map(x -> {
+    private static void writeMatchCodeToHTML(String code, String fileName, List<Interval> duration, String styleFile,String githubLink) {
+        String s = "\n<a href=\""+githubLink.split("@")[0] +"\">GitHubLink</a>"+"\n\n"+
+                "\n<a href=\""+githubLink.split("@")[1] +"\">GitMyHubLink</a>"+"\n\n"+
+                markupCode(duration.stream().map(x -> {
             ArrayList<Integer> list = new ArrayList<>();
             list.add(x.start);
             list.add(x.end-x.start);

@@ -129,6 +129,9 @@ public class PDGDataNode extends PDGNode {
                 }
 
             }
+            else if (this.astNodeType==PyObject.STR && this.astNodeType == node.astNodeType){
+                return true;
+            }
         }
         else if (node instanceof PDGAlphHole){
             return true;

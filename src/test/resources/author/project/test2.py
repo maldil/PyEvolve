@@ -7,6 +7,7 @@ def function1(sentence,boo):
         for yy in range(100):
             hhh+=sentence[1]
 #             print("some message")
+    xx = [1,2,3,4]
     return hhh
 
 if __name__ == "__main__":

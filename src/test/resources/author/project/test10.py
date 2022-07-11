@@ -6,6 +6,8 @@ def function1(sentence,boo):
     fruits = ["apple", "banana", "cherry", "kiwi", "mango"]
     bpp=fruits[0]
     newlist = [x+bpp for x,y in fruits]
+    xx=[1,2,3,4]
+    yy=[]
     return newlist
 
 if __name__ == "__main__":

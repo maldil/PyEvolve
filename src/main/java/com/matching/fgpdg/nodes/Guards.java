@@ -4,15 +4,14 @@ import com.ibm.wala.util.collections.Pair;
 import org.antlr.runtime.ANTLRStringStream;
 import org.python.antlr.AnalyzingParser;
 import org.python.antlr.Visitor;
-import org.python.antlr.ast.ErrorExpr;
-import org.python.antlr.ast.Expr;
+import org.python.antlr.ast.*;
 import org.python.antlr.ast.Module;
-import org.python.antlr.ast.Name;
 import org.python.antlr.base.mod;
 import org.python.modules._hashlib;
 import org.python.modules._imp$new_module_exposer;
 
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Guards {
@@ -22,8 +21,8 @@ public class Guards {
     private HashMap<String,String> values = new HashMap<>();
     private HashMap<String,String> imports = new HashMap<>();
 
-    public Guards(String code) {
-        Module mod = (Module)parsePython(code);
+    public Guards(String code, Module mod) {
+//        Module mod = (Module)parsePython(code);
         PyNameVisitor lineNumber= new PyNameVisitor();
         try {
             lineNumber.visit(mod);
@@ -64,6 +63,26 @@ public class Guards {
             }
             return super.visitName(node);
         }
+//        @Override
+//        public Object visitAttribute(Attribute node) throws Exception {
+//            if (node.getInternalValue() instanceof Name){
+//                if (mapRowCol.get(((Name)node.getInternalValue()).getInternalId())==null){
+//                    ArrayList<Pair<Integer,Integer>> arrayRowCol = new ArrayList<>();
+//                    arrayRowCol.add(Pair.make(((Name)node.getInternalValue()).getLineno(),
+//                            ((Name)node.getInternalValue()).getCol_offset()));
+//                    mapRowCol.put(((Name)node.getInternalValue()).getInternalId(),arrayRowCol);
+//                }
+//                else{
+//                    mapRowCol.get(((Name)node.getInternalValue()).getInternalId()).
+//                            add(Pair.make(((Name)node.getInternalValue()).getLineno(),((Name)node.getInternalValue()).getCol_offset()));
+//                }
+//            }
+//
+//
+//
+//
+//            return super.visitAttribute(node);
+//        }
     }
 
     public String getTypeOfTemplateVariable(String templateVariable){

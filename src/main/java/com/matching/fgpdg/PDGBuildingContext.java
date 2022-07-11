@@ -203,8 +203,8 @@ public class PDGBuildingContext {
             return getFullNameOfAttribute((Call) atr.getInternalValue())+atr.getInternalAttr();
         }
         else{
-            Assertions.UNREACHABLE();
-            return null;
+
+            return "";
         }
     }
 
@@ -223,8 +223,7 @@ public class PDGBuildingContext {
             return getFullNameOfAttribute((Call)node.getInternalFunc())+"()";
         }
         else{
-            Assertions.UNREACHABLE();
-            return null;
+            return "";
         }
 
 
@@ -232,7 +231,13 @@ public class PDGBuildingContext {
 
 
     private String getFullNameOfAttribute(Subscript atr){
-        if (atr.getInternalValue() instanceof Name){
+        if (atr.getInternalSlice() instanceof ExtSlice){
+            return "::";
+        }
+        else if (atr.getInternalSlice() instanceof Slice){
+            return ":";
+        }
+        else if (atr.getInternalValue() instanceof Name){
             if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Num)
                 return ((Name) atr.getInternalValue()).getInternalId()+ "["+((Num)((Index)atr.getInternalSlice()).getInternalValue()).getInternalN() +"]";
             else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Str)
@@ -246,8 +251,14 @@ public class PDGBuildingContext {
             else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof org.python.antlr.ast.List){
                 return ((Name) atr.getInternalValue()).getInternalId() +"[]";
             }
-            else
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Subscript){
+                return ((Name) atr.getInternalValue()).getInternalId()+ "["+getFullNameOfAttribute((Subscript) ((Index)atr.getInternalSlice()).getInternalValue()) +"]";
+            }
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Str){
                 return ((Name) atr.getInternalValue()).getInternalId()+ "["+((Str)((Index)atr.getInternalSlice()).getInternalValue()).getInternalS() +"]";
+            }
+            else
+                return ((Name) atr.getInternalValue()).getInternalId()+ "["  +"]";
         }
         else if (atr.getInternalValue() instanceof AlphanumericHole)
             return (atr.getInternalValue()).toString()+ "["+((Num)((Index)atr.getInternalSlice()).getInternalValue()).getInternalN()  +"]";
@@ -258,8 +269,17 @@ public class PDGBuildingContext {
                 return getFullNameOfAttribute((Subscript)atr.getInternalValue()) + "["+((Num)((Index)atr.getInternalSlice()).getInternalValue()).getInternalN() +"]";
             else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Num)
                 return getFullNameOfAttribute((Subscript)atr.getInternalValue()) + "["+((Name)((Index)atr.getInternalSlice()).getInternalValue()).getInternalId() +"]";
-            else
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Name){
+                return getFullNameOfAttribute((Subscript)atr.getInternalValue()) + "["+((Name)((Index)atr.getInternalSlice()).getInternalValue()).getInternalId() +"]";
+            }
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Attribute){
+                return getFullNameOfAttribute((Subscript)atr.getInternalValue()) + "["+getFullNameOfAttribute(((Attribute)((Index)atr.getInternalSlice()).getInternalValue())) +"]";
+
+            }
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Str)
                 return getFullNameOfAttribute((Subscript)atr.getInternalValue()) + "["+((Str)((Index)atr.getInternalSlice()).getInternalValue()).getInternalS() +"]";
+            else
+                return getFullNameOfAttribute((Subscript)atr.getInternalValue()) + "["  +"]";
         }
         else if ( atr.getInternalValue() instanceof Attribute){
             if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Num)
@@ -268,8 +288,13 @@ public class PDGBuildingContext {
                 return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+((Name)((Index)atr.getInternalSlice()).getInternalValue()).getInternalId() +"]";
             else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Attribute)
                 return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+getFullNameOfAttribute((Attribute) ((Index)atr.getInternalSlice()).getInternalValue())+"]";
-            else
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Subscript){
+                return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+getFullNameOfAttribute((Subscript)((Index)atr.getInternalSlice()).getInternalValue()) +"]";
+            }
+            else if (((Index)atr.getInternalSlice()).getInternalValue() instanceof Str)
                 return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+((Str)((Index)atr.getInternalSlice()).getInternalValue()).getInternalS() +"]";
+            else
+                return getFullNameOfAttribute((Attribute)atr.getInternalValue()) + "["+  "]";
         }
         else if (atr.getInternalValue() instanceof Call) {
             if (((Call) atr.getInternalValue()).getInternalFunc() instanceof Name) {
@@ -280,8 +305,10 @@ public class PDGBuildingContext {
                     return fuName + "[" + ((Name) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalId() + "]";
                 else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Subscript)
                     return fuName + "[ ]";
-                else
+                else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Str)
                     return fuName + "[" + ((Str) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalS() + "]";
+                else
+                    return fuName +"[ ]";
             }
             else{
                 if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Num)
@@ -293,9 +320,12 @@ public class PDGBuildingContext {
                 else if (((Index) atr.getInternalSlice()).getInternalValue() instanceof Subscript)
                     return getFullNameOfAttribute((Attribute) ((Call) atr.getInternalValue()).getInternalFunc())
                             + "[ ]";
-                else
+                else if  (((Index) atr.getInternalSlice()).getInternalValue() instanceof Str)
                     return getFullNameOfAttribute((Attribute) ((Call) atr.getInternalValue()).getInternalFunc())
                             + "[" + ((Str) ((Index) atr.getInternalSlice()).getInternalValue()).getInternalS() + "]";
+                else{
+                    return "";
+                }
             }
         }
         else{

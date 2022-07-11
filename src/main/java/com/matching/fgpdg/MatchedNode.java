@@ -42,7 +42,7 @@ public class MatchedNode {
         this.patternNode = patternNode;
         this.codeContext = cContex;
         this.patternContext = pContex;
-        System.out.println(codeNode+"===="+patternNode);
+//        System.out.println(codeNode+"===="+patternNode);
 
         Pair<HashMap<PDGNode, HashSet<PDGNode>>, HashMap<PDGNode, HashSet<PDGNode>>> nextMatchedNodePairs
                 = getNextMatchedNodePairs(Pair.make(codeNode, patternNode));

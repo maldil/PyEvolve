@@ -34,6 +34,7 @@ dependencies {
     compile 'com.google.guava:guava:29.0-jre'
     testImplementation group: 'org.junit.jupiter', name:'junit-jupiter-api', version:'5.7.0'
     testRuntimeOnly group: 'org.junit.jupiter', name:'junit-jupiter-engine', version:'5.7.0'
+    compile 'org.eclipse.jgit:org.eclipse.jgit:4.6.0.201612231935-r'
 }
 generateGrammarSource {
     maxHeapSize = "128m"

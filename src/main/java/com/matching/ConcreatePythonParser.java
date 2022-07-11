@@ -7,6 +7,7 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.python.antlr.AnalyzingParser;
+import org.python.antlr.ParseException;
 import org.python.antlr.PythonTree;
 import org.python.antlr.Visitor;
 import org.python.antlr.ast.*;
@@ -36,12 +37,7 @@ public class ConcreatePythonParser  {
             PythonParser parser =new PythonParser(file, inputStream.getName(), "UTF-8");
             mod mod = parser.parseModule();
             return  (Module)mod;
-        } catch (IOException e) {
-            Assertions.UNREACHABLE();
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assertions.UNREACHABLE();
+        } catch (Exception | NoClassDefFoundError e) {
             return null;
         }
     }

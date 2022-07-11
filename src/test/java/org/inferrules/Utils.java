@@ -83,7 +83,6 @@ public class Utils {
             fu.visit(ast);
             return fu.funcDefs;
         } catch (Exception e) {
-            e.printStackTrace();
             return new ArrayList<>();
         }
     }

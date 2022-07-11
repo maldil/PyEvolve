@@ -24,7 +24,7 @@ public class PDGGraphOfTemplates {
     void testPDG1() throws Exception {
         ConcreatePythonParser parser = new ConcreatePythonParser();
         Module parse = parser.parse("author/project/testtemplate.py");
-        Guards guards = new Guards(Utils.getFileContent(getPathToResources("author/project/testtemplate.py")));
+        Guards guards = new Guards(Utils.getFileContent(getPathToResources("author/project/testtemplate.py")),parse);
         TypeWrapper wrapper = new TypeWrapper(guards);
         PDGBuildingContext context = new PDGBuildingContext(parse.getInternalBody().stream().filter(x -> x instanceof Import
                 || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
