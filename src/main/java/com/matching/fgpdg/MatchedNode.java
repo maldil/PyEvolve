@@ -42,6 +42,7 @@ public class MatchedNode {
         this.patternNode = patternNode;
         this.codeContext = cContex;
         this.patternContext = pContex;
+
 //        System.out.println(codeNode+"===="+patternNode);
 
         Pair<HashMap<PDGNode, HashSet<PDGNode>>, HashMap<PDGNode, HashSet<PDGNode>>> nextMatchedNodePairs
@@ -276,6 +277,17 @@ public class MatchedNode {
                 alpHole.setId(pdgNode.getId());
                 newnodes.add(alpHole);
                 nodeMap.put(pdgNode.getId(),alpHole);
+            }
+            else if (pdgNode instanceof PDGLazyHole){
+                PDGLazyHole lazyHole = new PDGLazyHole(pdgNode.getAstNode(),pdgNode.getAstNodeType(),
+                        ((PDGLazyHole) pdgNode).getValue(),pdgNode.getKey(),pdgNode.getDataType(),pdgNode.getDataName(),
+                        ((PDGLazyHole) pdgNode).isDataNode(),((PDGLazyHole) pdgNode).isActionNode(),
+                        ((PDGLazyHole) pdgNode).isControlNode());
+                lazyHole.setProperty(NODE_PROPERTIES.CLONE,pdgNode);
+                lazyHole.setProperty(NODE_PROPERTIES.SWAPPED,SWAPPED.NO);
+                lazyHole.setId(pdgNode.getId());
+                newnodes.add(lazyHole);
+                nodeMap.put(pdgNode.getId(),lazyHole);
             }
             else
                 Assertions.UNREACHABLE("Unhandled node type"+pdgNode.getClass());

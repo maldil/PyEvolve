@@ -5,5 +5,6 @@ def function1(sentence,callbacks):
     z=0
     print(ff)
     for v in ff.values():
-        z=z+v
+        q=z+v
+        z=q
     return z

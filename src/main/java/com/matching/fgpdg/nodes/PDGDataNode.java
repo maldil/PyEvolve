@@ -136,6 +136,9 @@ public class PDGDataNode extends PDGNode {
         else if (node instanceof PDGAlphHole){
             return true;
         }
+        else if (node instanceof PDGLazyHole){
+            return true;
+        }
         else{
             return false;
         }

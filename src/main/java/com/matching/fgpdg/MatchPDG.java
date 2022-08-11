@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class MatchPDG {
     public HashSet<PDGNode> visitedASTNodes= new HashSet<>();
     PDGBuildingContext patternContext;PDGBuildingContext codeContext;
-    protected List<MatchedNode> getSubGraphs(PDGGraph pattern, PDGGraph code,PDGBuildingContext patternContext,PDGBuildingContext cContext )  {
+    public List<MatchedNode> getSubGraphs(PDGGraph pattern, PDGGraph code,PDGBuildingContext patternContext,PDGBuildingContext cContext )  {
         this.patternContext=patternContext;
         this.codeContext=cContext;
         PDGGraph _pattern=pruneAndCleanPatternPDG(pattern);

@@ -63,6 +63,20 @@ public class Guards {
             }
             return super.visitName(node);
         }
+
+        @Override
+        public Object visitHole(Hole node) throws Exception {
+            if (mapRowCol.get(node.toString())==null){
+                ArrayList<Pair<Integer,Integer>> arrayRowCol = new ArrayList<>();
+                arrayRowCol.add(Pair.make(node.getLineno(),node.getCol_offset()));
+                mapRowCol.put(node.toString(),arrayRowCol);
+            }
+            else{
+                mapRowCol.get(node.toString()).add(Pair.make(node.getLineno(),node.getCol_offset()));
+            }
+
+            return super.visitHole(node);
+        }
 //        @Override
 //        public Object visitAttribute(Attribute node) throws Exception {
 //            if (node.getInternalValue() instanceof Name){

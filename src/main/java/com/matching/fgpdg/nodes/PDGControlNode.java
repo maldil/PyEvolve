@@ -63,6 +63,8 @@ public class PDGControlNode extends PDGNode {
 
     @Override
     public  boolean isEqualNodes(PDGNode node){
+        if (node instanceof PDGLazyHole)
+            return true;
         return node instanceof PDGControlNode && getLabel().equals(node.getLabel());
     }
 }

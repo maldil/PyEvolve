@@ -5,7 +5,7 @@ import com.matching.fgpdg.nodes.*;
 import com.matching.fgpdg.nodes.TypeInfo.TypeWrapper;
 import com.utils.DotGraph;
 import com.utils.FileIO;
-import com.utils.Utils;
+import org.inferrules.Utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.python.antlr.Visitor;
@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.inferrules.Utils.getMatchedNodes;
+import static org.inferrules.Utils.getPythonModule;
 
 class MatchedNodeTest {
 
@@ -341,8 +344,101 @@ class MatchedNodeTest {
 
     @Test
     void testSubGraphs30() throws Exception {
-        String filename="testm25";
-        String patternname = "pattern11";
+        String filename="test26";
+        String patternname = "pattern12";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs31() throws Exception {
+        String filename="testm27";
+        String patternname = "pattern12";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs32() throws Exception {
+        String filename="testm28";
+        String patternname = "pattern13";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs33() throws Exception {
+        String filename="testm29";
+        String patternname = "pattern9";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs34() throws Exception {
+        String filename="testm30";
+        String patternname = "pattern";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs35() throws Exception {
+        String filename="testm31";
+        String patternname = "pattern14";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+
+    @Test
+    void testSubGraphs36() throws Exception {
+        String filename="test34";
+        String patternname = "pattern15";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+
+
+    @Test
+    void testSubGraphs37() throws Exception {
+        String filename="test35";
+        String patternname = "pattern16";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs38() throws Exception {
+        String filename="test32";
+        String patternname = "pattern15";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs39() throws Exception {
+        String filename="test26";
+        String patternname = "pattern12";
         List<MatchedNode> graphs =null;
         graphs = getMatchedNodes(filename, patternname, graphs);
         Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
@@ -410,66 +506,67 @@ class MatchedNodeTest {
         Assertions.assertEquals(9,flowMatching.getNodes().size());
     }
 
-    private String getPathToResources(String name){
-        File f = new File(name);
-        if (f.exists()) {
-            return f.getAbsolutePath();
-        }
-        return getClass().getClassLoader().getResource(name).getPath();
+//    private String getPathToResources(String name){
+//        File f = new File(name);
+//        if (f.exists()) {
+//            return f.getAbsolutePath();
+//        }
+//        return getClass().getClassLoader().getResource(name).getPath();
+//
+//    }
 
-    }
-
-    private List<MatchedNode> getMatchedNodes(String filename, String patternname, List<MatchedNode> graphs) throws Exception {
-        Module codeModule = getPythonModule("author/project/"+filename+".py");
-        Module patternModule = getPythonModuleForTemplate(getPathToResources("author/project/"+patternname+".py"));
-        FunctionDef func=null;
-        for (org.python.antlr.base.stmt stmt : codeModule.getInternalBody()) {
-            if (stmt instanceof FunctionDef){
-                func= (FunctionDef) stmt;
-                break;
-            }
-            else if (stmt instanceof ClassDef){
-                for (org.python.antlr.base.stmt stmt1 : ((ClassDef) stmt).getInternalBody()) {
-                    if (stmt1 instanceof FunctionDef){
-                        func= (FunctionDef) stmt1;
-                        break;
-                    }
-                }
-
-            }
-        }
-        PDGBuildingContext fcontext = null;
-            fcontext = new PDGBuildingContext(codeModule.getInternalBody().stream().filter(x-> x instanceof Import
-                    || x instanceof ImportFrom).collect(Collectors.toList()), "author/project/"+filename+".py");
-            PDGGraph fpdg = new PDGGraph(func,fcontext);
-            fpdg.getNodes().forEach(x-> System.out.println(x.getId()));
-            Guards guards = new Guards(com.utils.Utils.getFileContent(getPathToResources("author/project/"+patternname+".py")),patternModule);
-            TypeWrapper wrapper = new TypeWrapper(guards);
-            PDGBuildingContext mcontext = new PDGBuildingContext(patternModule.getInternalBody().stream().filter(x -> x instanceof Import
-                || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
-            PDGGraph mpdg = new PDGGraph(patternModule,mcontext);
-            MatchPDG match = new MatchPDG();
-            graphs=match.getSubGraphs(mpdg,fpdg,mcontext,fcontext );
-            graphs.forEach(x->x.updateAllMatchedNodes(x,mpdg));
-            List<MatchedNode> finalPatterns = graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList());
-
-            match.drawMatchedGraphs(fpdg,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),"OUTPUT/matches/"+filename+".dot");
-            Utils.markNodesInCode("src/test/resources/author/project/"+filename+".py",
-                    graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),"OUTPUT/matches/"+filename+".html","","x@x");;
-
-        return graphs;
-    }
-
-
-    private Module getPythonModule(String fileName){
-        ConcreatePythonParser parser = new ConcreatePythonParser();
-        return parser.parse(fileName);
-    }
-
-    private Module getPythonModuleForTemplate(String fileName) throws Exception {
-        ConcreatePythonParser parser = new ConcreatePythonParser();
-        return parser.parseTemplates(FileIO.readStringFromFile(fileName));
-    }
+//    private List<MatchedNode> getMatchedNodes(String filename, String patternname, List<MatchedNode> graphs) throws Exception {
+//        Module codeModule = getPythonModule("author/project/"+filename+".py");
+//        Module patternModule = getPythonModuleForTemplate(getPathToResources("author/project/"+patternname+".py"));
+//        patternModule.toString();
+//        FunctionDef func=null;
+//        for (org.python.antlr.base.stmt stmt : codeModule.getInternalBody()) {
+//            if (stmt instanceof FunctionDef){
+//                func= (FunctionDef) stmt;
+//                break;
+//            }
+//            else if (stmt instanceof ClassDef){
+//                for (org.python.antlr.base.stmt stmt1 : ((ClassDef) stmt).getInternalBody()) {
+//                    if (stmt1 instanceof FunctionDef){
+//                        func= (FunctionDef) stmt1;
+//                        break;
+//                    }
+//                }
+//
+//            }
+//        }
+//        PDGBuildingContext fcontext = null;
+//            fcontext = new PDGBuildingContext(codeModule.getInternalBody().stream().filter(x-> x instanceof Import
+//                    || x instanceof ImportFrom).collect(Collectors.toList()), "author/project/"+filename+".py");
+//            PDGGraph fpdg = new PDGGraph(func,fcontext);
+//            fpdg.getNodes().forEach(x-> System.out.println(x.getId()));
+//            Guards guards = new Guards(com.utils.Utils.getFileContent(getPathToResources("author/project/"+patternname+".py")),patternModule);
+//            TypeWrapper wrapper = new TypeWrapper(guards);
+//            PDGBuildingContext mcontext = new PDGBuildingContext(patternModule.getInternalBody().stream().filter(x -> x instanceof Import
+//                || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
+//            PDGGraph mpdg = new PDGGraph(patternModule,mcontext);
+//            MatchPDG match = new MatchPDG();
+//            graphs=match.getSubGraphs(mpdg,fpdg,mcontext,fcontext );
+//            graphs.forEach(x->x.updateAllMatchedNodes(x,mpdg));
+//            List<MatchedNode> finalPatterns = graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList());
+//
+//            match.drawMatchedGraphs(fpdg,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),"OUTPUT/matches/"+filename+".dot");
+//            Utils.markNodesInCode("src/test/resources/author/project/"+filename+".py",
+//                    graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),"OUTPUT/matches/"+filename+".html","","x@x");;
+//
+//        return graphs;
+//    }
+//
+//
+//    private Module getPythonModule(String fileName){
+//        ConcreatePythonParser parser = new ConcreatePythonParser();
+//        return parser.parse(fileName);
+//    }
+//
+//    private Module getPythonModuleForTemplate(String fileName) throws Exception {
+//        ConcreatePythonParser parser = new ConcreatePythonParser();
+//        return parser.parseTemplates(FileIO.readStringFromFile(fileName));
+//    }
 
     @Test
     void canWalkFromNodeToNode() {

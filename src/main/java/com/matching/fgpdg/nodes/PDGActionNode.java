@@ -105,6 +105,8 @@ public class PDGActionNode extends PDGNode {
 
     @Override
     public  boolean isEqualNodes(PDGNode node){
+        if (node instanceof PDGLazyHole)
+            return true;
         return node instanceof PDGActionNode && getLabel().equals(node.getLabel());
     }
 }

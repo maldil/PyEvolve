@@ -541,6 +541,9 @@ public class PDGGraph implements Serializable {
             for (PDGNode node : pdg.nodes)
                 if (node instanceof PDGDataNode)
                     return pdg;
+                else if (node instanceof PDGAlphHole && ((PDGAlphHole) node).isDataNode()){
+                    return pdg;
+                }
         ArrayList<PDGDataNode> defs = pdg.getDefinitions();
         if (!defs.isEmpty()) {
             PDGDataNode def = defs.get(0);
@@ -1032,16 +1035,12 @@ public class PDGGraph implements Serializable {
                         context.updateTypeOfVariable(((Name) astNode.getInternalTargets().get(i)).getInternalId(),
                                 context.getTypeWrapper().getTypeInfo(astNode.getInternalTargets().get(i).getLine(),
                                         astNode.getInternalTargets().get(i).getCharPositionInLine(), ((Name) astNode.getInternalTargets().get(i)).getInternalId()));
-
-
                     }
-
-
                 } else if (astNode.getInternalTargets().get(i) instanceof Hole && context.getTypeWrapper().getGuards().getTypes().get(":[[l" + ((Hole) astNode.getInternalTargets().get(i)).getN() + "]]") != null) {
                     String[] info = context.getLocalVariableInfo(":[[l" + ((Hole) astNode.getInternalTargets().get(i)).getN() + "]]");
                     if (info == null) {
                         context.addLocalVariable(":[[l" + ((Hole) astNode.getInternalTargets().get(i)).getN() + "]]",
-                                "", context.getTypeWrapper().getGuards().getTypes().get(":[[l" + ((Hole) astNode.getInternalTargets().get(i)).getN() + "]]").snd);
+                                ""+astNode.getInternalTargets().get(i).getCharStartIndex(), context.getTypeWrapper().getGuards().getTypes().get(":[[l" + ((Hole) astNode.getInternalTargets().get(i)).getN() + "]]").snd);
 
                     }
                 }
@@ -1073,8 +1072,12 @@ public class PDGGraph implements Serializable {
                 }
             } else if (astNode.getInternalTargets().get(0) instanceof Hole &&
                     context.getTypeWrapper().getGuards().getTypes().get(":[[l" + ((Hole) astNode.getInternalTargets().get(0)).getN() + "]]") != null) {
-                context.addLocalVariable(":[[l" + ((Hole) astNode.getInternalTargets().get(0)).getN() + "]]",
-                        "", context.getTypeWrapper().getGuards().getTypes().get(":[[l" + ((Hole) astNode.getInternalTargets().get(0)).getN() + "]]").snd);
+                String[] info = context.getLocalVariableInfo(((Hole)astNode.getInternalTargets().get(0)).toString());
+                if (info==null)
+                    context.addLocalVariable(":[[l" + ((Hole) astNode.getInternalTargets().get(0)).getN() + "]]",
+                        ""+astNode.getInternalTargets().get(0).getCharStartIndex(),
+                            context.getTypeWrapper().getGuards().getTypes().get(":[[l" +
+                                    ((Hole) astNode.getInternalTargets().get(0)).getN() + "]]").snd);
 
             }
             lg = buildPDG(control, branch, astNode.getInternalTargets().get(0));
@@ -2248,9 +2251,9 @@ public class PDGGraph implements Serializable {
         String type = context.getTypeWrapper().getGuards().getTypeOfTemplateVariable(name);
         String value = context.getTypeWrapper().getGuards().getValueOfTemplateVariable(name);
         if (type != null) {
-            context.addLocalVariable(name, "", type);
+            context.addLocalVariable(name, ""+astNode.getCharStartIndex(), type);
             PDGGraph pdg = new PDGGraph(context, new PDGAlphHole(
-                    astNode, astNode.getNodeType(), value, name, type, name, true, false, false));
+                    astNode, astNode.getNodeType(), value, ""+astNode.getCharStartIndex(), type, name, true, false, false));
 
             return pdg;
         }
@@ -2296,7 +2299,7 @@ public class PDGGraph implements Serializable {
         if (type != null) {
             context.addLocalVariable(name, "", type);
             return new PDGGraph(context, new PDGLazyHole(
-                    astNode, astNode.getNodeType(), value, name, type, name, true, false, false));
+                    astNode, astNode.getNodeType(), value, ""+astNode.getCharStartIndex(), type, name, true, false, false));
         }
         return new PDGGraph(context);
     }

@@ -6,6 +6,7 @@ import com.matching.fgpdg.nodes.PDGActionNode;
 import com.matching.fgpdg.nodes.PDGDataNode;
 import com.matching.fgpdg.nodes.PDGNode;
 import org.apache.commons.io.IOUtils;
+import org.python.antlr.ast.Assign;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.stmt;
 
@@ -90,7 +91,14 @@ public class Utils {
                         duration.add(new Interval(((expr)node.getAstNode()).getCharStartIndex(),((expr)node.getAstNode()).getCharStopIndex()));
                     }
                     else if (node.getAstNode() instanceof stmt){
+                        System.out.println(node.getAstNode().getClass());
                         duration.add(new Interval(((stmt)node.getAstNode()).getCharStartIndex(),((stmt)node.getAstNode()).getCharStopIndex()));
+                    }
+                    else if (node.getAstNode() instanceof org.python.antlr.ast.Assign){
+                        duration.add(new Interval(((Assign)node.getAstNode()).getCharStartIndex(),((stmt)node.getAstNode()).getCharStopIndex()));
+                    }
+                    else if (node.getAstNode() instanceof org.python.antlr.ast.arg){
+                        duration.add(new Interval(((org.python.antlr.ast.arg)node.getAstNode()).getCharStartIndex(),((org.python.antlr.ast.arg)node.getAstNode()).getCharStopIndex()));
                     }
                     else
                         Assertions.UNREACHABLE();

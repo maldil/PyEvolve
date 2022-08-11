@@ -14,5 +14,5 @@ def test_compute_multithreading():
             in_queues[i].put(t)
         for i in range(2):
             out_queues[i].get()
-
+    print (a if b else 0)
     assert len(thread_ids) == 2

@@ -2,6 +2,6 @@
 # type intArray : Any
 # type x : int
 # type x : Any
-number = :[[l1]]
+number = 0
 for x in intArray:
    number=number+x
