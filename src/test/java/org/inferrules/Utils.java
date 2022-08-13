@@ -129,7 +129,7 @@ public class Utils {
         fcontext = new PDGBuildingContext(codeModule.getInternalBody().stream().filter(x-> x instanceof Import
                 || x instanceof ImportFrom).collect(Collectors.toList()), "author/project/"+filename+".py");
         PDGGraph fpdg = new PDGGraph(func,fcontext);
-        fpdg.getNodes().forEach(x-> System.out.println(x.getId()));
+//        fpdg.getNodes().forEach(x-> System.out.println(x.getId()));
         Guards guards = new Guards(com.utils.Utils.getFileContent(getPathToResources("author/project/"+lpatternname+".py")),lpatternModule);
         TypeWrapper wrapper = new TypeWrapper(guards);
         PDGBuildingContext mcontext = new PDGBuildingContext(lpatternModule.getInternalBody().stream().filter(x -> x instanceof Import

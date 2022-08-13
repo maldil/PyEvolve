@@ -1,16 +1,22 @@
 package com.adaptrule;
 
 import com.matching.fgpdg.MatchedNode;
+import com.matching.fgpdg.nodes.Guards;
+import com.matching.fgpdg.nodes.PDGNode;
 import org.python.antlr.PythonTree;
+import org.python.antlr.ast.Assign;
 import org.python.antlr.ast.Hole;
 import org.python.antlr.ast.Module;
 import org.python.antlr.ast.Name;
 import org.python.antlr.base.expr;
+import org.python.antlr.base.stmt;
+import org.python.core.PyObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AdaptRule {
     MatchedNode graph;
@@ -23,23 +29,30 @@ public class AdaptRule {
         this.rhsAST = rpatternModule;
     }
 
-    public Module getAdaptedRule() {
+    public Rule getAdaptedRule() {
+        Rule rule=new Rule();
         Module lhsSubstitutedCode = substituteLHStoTargetCode();
         System.out.println(lhsSubstitutedCode);
         Module renamedNames = renameRestOfTheRenamedVarsWithHoles(lhsSubstitutedCode);
         Module lhs = normalizeLHSContext(renamedNames);
         System.out.println(lhs);
-        Module rhs = createRHS(renamedNames,rhsAST);
+        List<PyObject> collect = this.graph.getAllMatchedNodes().stream().map(MatchedNode::getPatternNode).
+                map(PDGNode::getAstNode).collect(Collectors.toList());
+        collect.addAll(this.graph.getAllMatchedNodes().stream().map(MatchedNode::getCodeNode).
+                map(PDGNode::getAstNode).collect(Collectors.toList()));
+        rule.setLHS(lhs.toString());
+        Module rhs = createRHS(renamedNames,rhsAST,collect);
+        rule.setRHS(rhs.toString());
         System.out.println(rhs);
-        return rhs;
+        return rule;
     }
 
-    private Module createRHS(Module lhs, Module rhs) {
-        FindDeletesFromLHS deletes = new FindDeletesFromLHS();
+    private Module createRHS(Module lhs, Module rhs, List<PyObject> matchedNode) {
+        FindDeletesFromLHS deletes = new FindDeletesFromLHS(matchedNode);
         try {
             deletes.visit(lhs);
             while (true){
-                PythonTree updateTree= checkFinalDeleteNodeIsAChildOfOtherDeletes(deletes.deletes,deletes.finalDeletedNode);
+                PythonTree updateTree = checkFinalDeleteNodeIsAChildOfOtherDeletes(deletes.deletes,deletes.finalDeletedNode);
                 if (updateTree==deletes.finalDeletedNode)
                     break;
                 else{
@@ -47,6 +60,14 @@ public class AdaptRule {
                 }
             }
 
+//            List<PythonTree> deletesCopy = deletes.deletes;
+//            for (PythonTree de1 : deletes.deletes) {
+//                for (PythonTree de2 : deletes.deletes) {
+//                    if (de1!=de2 && Util.isChildNode(de1,de2)){
+//                        deletesCopy.remove(de1);
+//                    }
+//                }
+//            }
             DeleteAndUpdateVisitor updator = new DeleteAndUpdateVisitor(deletes.deletes,deletes.finalDeletedNode,rhs);
             updator.visit(lhs);
         } catch (Exception e) {
@@ -87,6 +108,9 @@ public class AdaptRule {
             PythonTree pASTNode = (PythonTree)matchedNode.getPatternNode().getAstNode();
             if (pASTNode!=null)
                 pASTNode.isPatternNode=true;
+            if (matchedNode.getCodeNode().getAstNode() instanceof stmt){
+                continue;
+            }
             if (codeAndParaNode.containsKey(matchedNode.getCodeNode().getAstNode())){
                 codeAndParaNode.get(matchedNode.getCodeNode().getAstNode()).add(pASTNode);
             }

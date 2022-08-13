@@ -7,6 +7,7 @@ import org.python.antlr.ast.*;
 import org.python.antlr.base.stmt;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class DeleteAndUpdateVisitor extends Visitor {
     java.util.List<PythonTree> del;
@@ -24,7 +25,20 @@ public class DeleteAndUpdateVisitor extends Visitor {
 
     @Override
     public Object visitAssign(Assign node) throws Exception {
+        for (PythonTree tree : del) {
+            if (node.getInternalValue()==tree && finalDel==node.getInternalValue()){
+                if(rhs.getInternalBody().get(0) instanceof Expr){
+                    node.setValue(((Expr)rhs.getInternalBody().get(0)).getInternalValue());
+                }
 
+            }
+            if (node.getChildren().remove(tree)) {
+                int location = node.getChildren().indexOf(tree);
+                if (location != -1) {
+                    node.getChildren().add(location,rhs);
+                }
+            }
+        }
         return super.visitAssign(node);
     }
 
@@ -56,9 +70,36 @@ public class DeleteAndUpdateVisitor extends Visitor {
 
     @Override
     public Object visitExpression(Expression node) throws Exception {
-
+        for (PythonTree tree : del) {
+            int location = -1;
+            if (node.getInternalBody().equals(tree)){
+                node.setBody(tree);
+            }
+            location =  node.getChildren().indexOf(tree);
+            node.getChildren().remove(tree);
+            if (location!=-1){
+                node.getChildren().add(location,tree);
+            }
+        }
         return super.visitExpression (node);
     }
+
+    @Override
+    public Object visitExpr(Expr  node) throws Exception{
+        for (PythonTree tree : del) {
+            if(node.getInternalValue()==tree){
+                node.setValue(tree);
+            }
+            if (node.getChildren()!=null&&node.getChildren().contains(tree)){
+                int location =  node.getChildren().indexOf(tree);
+                if (location!=-1){
+                    node.getChildren().add(location,tree);
+                }
+            }
+        }
+        return super.visitExpr(node);
+    }
+
 
     @Override
     public Object visitSuite(Suite node) throws Exception {
@@ -81,13 +122,38 @@ public class DeleteAndUpdateVisitor extends Visitor {
                     location+=1;
                 }
             }
+            java.util.List<stmt> deletables = new ArrayList<>();
+            for (stmt stmt : node.getInternalBody()) {
+                if (Util.isChildNode(tree, stmt)&&!Util.isChildNode(finalDel, stmt)){
+                    deletables.add(stmt);
+                }
+            }
+
+
+            for (stmt stmt : deletables) {
+                if (stmt instanceof Assign)
+                    node.getInternalBody().remove(stmt);
+            }
         }
         return super.visitFunctionDef (node);
     }
 
     @Override
     public Object visitAsyncFunctionDef(AsyncFunctionDef node) throws Exception {
-
+        for (PythonTree tree : del) {
+            int location = -1;
+            if (tree==finalDel && node.getInternalBody().contains(tree)){
+                location =  node.getInternalBody().indexOf(tree);
+            }
+            node.getInternalBody().remove(tree);
+            node.getChildren().remove(tree);
+            if (location!=-1){
+                for (stmt stmt : rhs.getInternalBody()) {
+                    node.getInternalBody().add(location,stmt);
+                    location+=1;
+                }
+            }
+        }
         return super.visitAsyncFunctionDef (node);
     }
 
@@ -117,37 +183,116 @@ public class DeleteAndUpdateVisitor extends Visitor {
 
     @Override
     public Object visitFor(For node) throws Exception {
-
-        return super.visitFor (node);
+        for (PythonTree tree : del) {
+            int location = -1;
+            if (tree==finalDel && node.getInternalBody().contains(tree)){
+                location =  node.getInternalBody().indexOf(tree);
+            }
+            node.getInternalBody().remove(tree);
+            node.getChildren().remove(tree);
+            if (location!=-1){
+                for (stmt stmt : rhs.getInternalBody()) {
+                    node.getInternalBody().add(location,stmt);
+                    location+=1;
+                }
+            }
+        }
+        return super.visitFor(node);
     }
 
     @Override
     public Object visitAsyncFor(AsyncFor node) throws Exception {
+        for (PythonTree tree : del) {
+            int location = -1;
+            if (tree==finalDel && node.getInternalBody().contains(tree)){
+                location =  node.getInternalBody().indexOf(tree);
+            }
+            node.getInternalBody().remove(tree);
+            node.getChildren().remove(tree);
+            if (location!=-1){
+                for (stmt stmt : rhs.getInternalBody()) {
+                    node.getInternalBody().add(location,stmt);
+                    location+=1;
+                }
+            }
+        }
+        return super.visitAsyncFor(node);
 
-        return super.visitAsyncFor (node);
     }
 
     @Override
     public Object visitWhile(While node) throws Exception {
-
+        for (PythonTree tree : del) {
+            int location = -1;
+            if (tree==finalDel && node.getInternalBody().contains(tree)){
+                location =  node.getInternalBody().indexOf(tree);
+            }
+            node.getInternalBody().remove(tree);
+            node.getChildren().remove(tree);
+            if (location!=-1){
+                for (stmt stmt : rhs.getInternalBody()) {
+                    node.getInternalBody().add(location,stmt);
+                    location+=1;
+                }
+            }
+        }
         return super.visitWhile (node);
     }
 
     @Override
     public Object visitIf(If node) throws Exception {
-
+        for (PythonTree tree : del) {
+            int location = -1;
+            if (tree==finalDel && node.getInternalBody().contains(tree)){
+                location =  node.getInternalBody().indexOf(tree);
+            }
+            node.getInternalBody().remove(tree);
+            node.getChildren().remove(tree);
+            if (location!=-1){
+                for (stmt stmt : rhs.getInternalBody()) {
+                    node.getInternalBody().add(location,stmt);
+                    location+=1;
+                }
+            }
+        }
         return super.visitIf (node);
     }
 
     @Override
     public Object visitWith(With node) throws Exception {
-
+        for (PythonTree tree : del) {
+            int location = -1;
+            if (tree==finalDel && node.getInternalBody().contains(tree)){
+                location =  node.getInternalBody().indexOf(tree);
+            }
+            node.getInternalBody().remove(tree);
+            node.getChildren().remove(tree);
+            if (location!=-1){
+                for (stmt stmt : rhs.getInternalBody()) {
+                    node.getInternalBody().add(location,stmt);
+                    location+=1;
+                }
+            }
+        }
         return super.visitWith (node);
     }
 
     @Override
     public Object visitAsyncWith(AsyncWith node) throws Exception {
-
+        for (PythonTree tree : del) {
+            int location = -1;
+            if (tree==finalDel && node.getInternalBody().contains(tree)){
+                location =  node.getInternalBody().indexOf(tree);
+            }
+            node.getInternalBody().remove(tree);
+            node.getChildren().remove(tree);
+            if (location!=-1){
+                for (stmt stmt : rhs.getInternalBody()) {
+                    node.getInternalBody().add(location,stmt);
+                    location+=1;
+                }
+            }
+        }
         return super.visitAsyncWith (node);
     }
 
@@ -160,14 +305,39 @@ public class DeleteAndUpdateVisitor extends Visitor {
 
     @Override
     public Object visitTryExcept(TryExcept node) throws Exception {
-
-
+        for (PythonTree tree : del) {
+            int location = -1;
+            if (tree==finalDel && node.getInternalBody().contains(tree)){
+                location =  node.getInternalBody().indexOf(tree);
+            }
+            node.getInternalBody().remove(tree);
+            node.getChildren().remove(tree);
+            if (location!=-1){
+                for (stmt stmt : rhs.getInternalBody()) {
+                    node.getInternalBody().add(location,stmt);
+                    location+=1;
+                }
+            }
+        }
         return super.visitTryExcept (node);
     }
 
     @Override
     public Object visitTryFinally(TryFinally node) throws Exception {
-
+        for (PythonTree tree : del) {
+            int location = -1;
+            if (tree==finalDel && node.getInternalBody().contains(tree)){
+                location =  node.getInternalBody().indexOf(tree);
+            }
+            node.getInternalBody().remove(tree);
+            node.getChildren().remove(tree);
+            if (location!=-1){
+                for (stmt stmt : rhs.getInternalBody()) {
+                    node.getInternalBody().add(location,stmt);
+                    location+=1;
+                }
+            }
+        }
         return super.visitTryFinally (node);
     }
 

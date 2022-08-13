@@ -6,12 +6,19 @@ import org.python.antlr.ast.*;
 import org.python.antlr.ast.Module;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.stmt;
+import org.python.core.PyObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class FindDeletesFromLHS extends Visitor {
     PythonTree finalDeletedNode=null;
+    List<PyObject> matchedNode;
     java.util.List<PythonTree> deletes = new ArrayList<>();
+
+    public FindDeletesFromLHS(List<PyObject> matchedNode) {
+        this.matchedNode = matchedNode;
+    }
 
 //    @Override
 //    public Object visitExpr(Expr node) throws Exception {
@@ -24,11 +31,31 @@ public class FindDeletesFromLHS extends Visitor {
     public Object unhandled_node(PythonTree node) throws Exception {
         if (node instanceof FunctionDef || node instanceof Module)
             return super.unhandled_node(node);
-        else if (node instanceof stmt && node.isPatternNode){
+        else if (node instanceof stmt && this.matchedNode.contains(node)){
             deletes.add(node);
+            int fline=0 ;
+            int line=0;
+            if (finalDeletedNode!=null) {
+                 fline = finalDeletedNode.getMyLineNumber() != -1 ? finalDeletedNode.getMyLineNumber() : finalDeletedNode.getLine();
+                 line = node.getMyLineNumber() != -1 ? node.getMyLineNumber() : node.getLine();
+            }
             if (finalDeletedNode==null)
                 finalDeletedNode=node;
-            else if (finalDeletedNode.getLine()<node.getLine())
+            else if (fline<line)
+                finalDeletedNode=node;
+        }
+        else if (node instanceof Call && this.matchedNode.contains(node)){
+            deletes.add(node);
+            int fline=0;
+            int line=0;
+            if (finalDeletedNode != null) {
+                 fline = finalDeletedNode.getMyLineNumber()!=-1 ? finalDeletedNode.getMyLineNumber():finalDeletedNode.getLine();
+                 line = node.getMyLineNumber()!=-1 ? node.getMyLineNumber():node.getLine();
+            }
+
+            if (finalDeletedNode==null)
+                finalDeletedNode=node;
+            else if (fline<line)
                 finalDeletedNode=node;
         }
         return super.unhandled_node(node);

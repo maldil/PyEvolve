@@ -12,9 +12,10 @@ def test_application_pretrained_weights_loading(self):
         model = app(weights='imagenet')
       except Exception:  # pylint: disable=broad-except
         self.skipTest('TODO(b/227700184): Re-enable.')
+      uu = np.dot(apps,app_model)
       self.assertShapeEqual(model.output_shape, (None, _IMAGENET_CLASSES))
       x = _get_elephant(model.input_shape[1:3])
-      yy = np.dot(np.dot(apps,app_model),x)
+      yy = np.dot(uu,x)
       x = app_module.preprocess_input(x)
       preds = model.predict(x)
       names = [p[1] for yy in app_module.decode_predictions(preds)[0]]

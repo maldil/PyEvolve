@@ -27,7 +27,7 @@ public class CollectChangedNames extends Visitor {
                     matchedOtherNodes.get(name).add(node);
             }
         }
-        return null;
+        return super.visitName(node);
     }
 
     public Map<PythonTree, List<PythonTree>> getMatchedOtherNodes() {

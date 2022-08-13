@@ -20,6 +20,14 @@ public class LHSNormalizer extends Visitor {
         this.start=holeStarter;
     }
 
+
+//    @Override
+//    public Object unhandled_node(PythonTree node) throws Exception {
+//        if(normalize(node))
+//            return null;
+//        return super.unhandled_node(node);
+//    }
+
     @Override
     public Object visitFor(For node)  throws Exception {
         if(normalize(node))
@@ -32,6 +40,17 @@ public class LHSNormalizer extends Visitor {
         if(normalize(node))
             return null;
         return super.visitExpr(node);
+    }
+
+    @Override
+    public Object visitAttribute(Attribute node)  throws Exception {
+
+        return super.visitAttribute(node);
+    }
+
+    @Override
+    public Object visitName(Name node)  throws Exception {
+        return super.visitName(node);
     }
 
     private boolean normalize(PythonTree node) {
@@ -62,6 +81,13 @@ public class LHSNormalizer extends Visitor {
         if(normalize(node))
             return null;
         return super.visitAssign(node);
+    }
+
+    @Override
+    public Object visitTryExcept(TryExcept node)  throws Exception {
+        if(normalize(node))
+            return null;
+        return super.visitTryExcept(node);
     }
 
     @Override

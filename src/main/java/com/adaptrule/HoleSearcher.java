@@ -13,6 +13,8 @@ public class HoleSearcher extends Visitor {
     boolean holeContained=false;
     private int largestHoleID=1;
     private List<expr> holes= new ArrayList<>();
+
+
     @Override
     public Object visitHole(Hole node) throws Exception {
         holeContained=true;
