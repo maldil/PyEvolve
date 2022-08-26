@@ -16,7 +16,7 @@ import static java.util.stream.Collectors.joining;
 public class BasicCombyOperations {
 
     private static final String matchCommand = "echo \"{0}\" | comby \"{1}\" -stdin -json-lines -match-newline-at-toplevel -match-only  -matcher {2} \"foo\"";
-    private static final String rewriteCommand = "echo '{0}' | comby '{1}' '{2}' -stdin -json-lines {3}";
+    private static final String rewriteCommand = "echo \"{0}\" | comby \"{1}\" \"{2}\" -stdin -json-lines \"{3}\"";
     private static final String substituteCommand = "comby '' '{0}' -substitute '[{1}]'";
     private static final String defaultLanguage = ".java";
 

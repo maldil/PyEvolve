@@ -4,10 +4,8 @@ import com.matching.fgpdg.MatchedNode;
 import com.matching.fgpdg.nodes.Guards;
 import com.matching.fgpdg.nodes.PDGNode;
 import org.python.antlr.PythonTree;
-import org.python.antlr.ast.Assign;
-import org.python.antlr.ast.Hole;
+import org.python.antlr.ast.*;
 import org.python.antlr.ast.Module;
-import org.python.antlr.ast.Name;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.stmt;
 import org.python.core.PyObject;
@@ -40,11 +38,19 @@ public class AdaptRule {
                 map(PDGNode::getAstNode).collect(Collectors.toList());
         collect.addAll(this.graph.getAllMatchedNodes().stream().map(MatchedNode::getCodeNode).
                 map(PDGNode::getAstNode).collect(Collectors.toList()));
-        rule.setLHS(lhs.toString());
+        rule.setLHS(getFunctionDef(lhs).toString());
         Module rhs = createRHS(renamedNames,rhsAST,collect);
-        rule.setRHS(rhs.toString());
-        System.out.println(rhs);
+        rule.setRHS(getFunctionDef(rhs).toString());
+//        System.out.println(getFunctionDef(rhs).toString());
         return rule;
+    }
+
+    public FunctionDef getFunctionDef(Module md){
+        for (stmt stmt : md.getInternalBody()) {
+            if (stmt instanceof FunctionDef)
+                return (FunctionDef)stmt;
+        }
+        return null;
     }
 
     private Module createRHS(Module lhs, Module rhs, List<PyObject> matchedNode) {
