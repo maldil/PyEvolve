@@ -60,3 +60,6 @@ We will now describe the APIs that can be used for above modification.
 # Running PyEvolve from the command line
 
 # Research
+
+## License
+All software provided in this repository is subject to the [Apache License Version 2.0](LICENSE).
