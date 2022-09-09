@@ -11,8 +11,15 @@ Table of Contents
    * [Running PyEvolve from the command line](#running-pyevolve-from-the-command-line)
    
 # General info 
-PyEvolve automates the frequently repeated code changes in Python systems. This tool presents a complete pipeline for mining and automating best code evolution practices, ensuring that the your project does not fall behind.
-We use [R-CPATMiner](https://github.com/maldil/R-CPATMiner) to mine frequently repeated code evolution practices in Python systems and then automate them.
+PyEvolve automates the frequently repeated code changes in Python systems. This tool presents a complete pipeline for mining and automating best code evolution practices, ensuring that the your project does not fall behind. The following is a high-level overview of the pipeline.
+
+![h](https://github.com/maldil/PyEvolve/blob/cpatminer/workflow.jpg)
+
+
+- **Phase 1:** We use [R-CPATMiner](https://github.com/maldil/R-CPATMiner) to mine best practices from version history of Python systems. You can find details on executing R-CPATMiner in its project description. 
+- **Phase 2:**
+- **Phase 3:**
+- **Phase 4:**
 
 
 
