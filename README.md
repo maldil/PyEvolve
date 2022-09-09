@@ -14,6 +14,10 @@ Table of Contents
 PyEvolve automates the frequently repeated code changes in Python systems. This tool presents a complete pipeline for mining and automating best code evolution practices, ensuring that the your project does not fall behind.
 
 # How to build PyEvolve
+To have fully build PyEvolve, you have to build following components locally and install it to your local maven repository.
+- We use [RulePharser](https://github.com/maldil/RulePharser) to generate an AST for Comby templates that includes both Python and Comby syntaxes. Follow the steps in [RulePharser](https://github.com/maldil/RulePharser) to build it locally and add it to your local maven repository.  
+
+
 
 # Research
 
