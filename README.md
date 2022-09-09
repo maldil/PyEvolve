@@ -11,7 +11,7 @@ Table of Contents
    * [Running PyEvolve from the command line](#running-pyevolve-from-the-command-line)
    
 # General info 
-PyEvolve automates the frequently repeated code changes in Python systems. This tool presents a complete pipeline for mining and automating best code evolution practices, ensuring that the project does not fall behind.
+PyEvolve automates the frequently repeated code changes in Python systems. This tool presents a complete pipeline for mining and automating best code evolution practices, ensuring that the your project does not fall behind.
 
 # How to build PyEvolve
 
