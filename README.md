@@ -12,6 +12,11 @@ Table of Contents
    
 # General info 
 PyEvolve automates the frequently repeated code changes in Python systems. This tool presents a complete pipeline for mining and automating best code evolution practices, ensuring that the your project does not fall behind.
+We use [R-CPATMiner](https://github.com/maldil/R-CPATMiner) to mine frequently repeated code evolution practices in Python systems and then automate them.
+
+
+
+
 
 # How to build PyEvolve
 To have fully build PyEvolve, you have to build following component locally and install it to your local maven repository.
@@ -19,9 +24,8 @@ To have fully build PyEvolve, you have to build following component locally and 
 
 After completing the above steps, `run./gradlew` build from the root directory to build the project. This will build the project and execute the test cases. If you want to build the project without running the tests, use the command `./gradlew build -x test`.
 
-
-# Research
-
 # API usage guidelines
 
 # Running PyEvolve from the command line
+
+# Research
