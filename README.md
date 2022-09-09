@@ -30,20 +30,20 @@ After completing the above steps, run `./gradlew` build from the root directory 
 # API usage guidelines
 We will discuss the APIs that can be used for code automation, using the following code example.
 
-The following is a best code evolution practice discovered by [R-CPATMiner](https://github.com/maldil/R-CPATMiner)
-```
+The following is a best code evolution practice discovered by [R-CPATMiner](https://github.com/maldil/R-CPATMiner).
+```python
 res = 0
 for elem in elems:
   res = res + elem
 ``` 
 ==>
-```
+```python
 res = np.sum(elems)
 ```
 
 Our goal is to transplant the above recommended practice to the target code listed below.
 
-```
+```python
 def getSum()
   n_diff = 0
   to_eval = getNumber()
@@ -55,7 +55,18 @@ return n_diff
 
 We will now describe the APIs that can be used for above modification. 
 
+### 1. With pattern and target function as input
+```java
+ConcreatePythonParser parser = new ConcreatePythonParser();
+Module mlPattern = parser.parseTemplates(clPattern);
+Module mrPattern = parser.parseTemplates(crPattern);
+Module mTarget = parser.parseTemplates(targetCode);
+MainAdaptor mAdaptor = new MainAdaptor();
+String adaptedCode = mAdaptor.adapt(mlPattern, mrPattern, mTarget)
+```
+### 2. With pattern and target file as input
 
+### 3. With pattern and target project as input
 
 # Running PyEvolve from the command line
 
