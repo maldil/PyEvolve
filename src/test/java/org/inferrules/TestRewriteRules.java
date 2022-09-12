@@ -184,6 +184,7 @@ public class TestRewriteRules {
     @Test
     void testPythonRewriteRule_Listing1() {
         String before = """
+                result = 0
                 for elem in elements:
                     result += elem""";
         String after = "result = np.sum(elements)";
@@ -361,6 +362,37 @@ public class TestRewriteRules {
         assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
         assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
     }
+
+    @Test
+    void testPythonRewriteRule_open_to_with() {
+        String before = "dataset = dataset.apply(\n" +
+                "       tf.contrib.data.batch_and_drop_remainder(FLAGS.batch_size)\n" +
+                "   )";
+
+        String after = "dataset = dataset.batch(FLAGS.batch_size, drop_remainder=True)";
+        RewriteRule rw = new RewriteRule(before, after,  Language.Python);
+        System.out.println(rw);
+
+    }
+
+
+    @Test
+    void testPythonRewriteRule_try_to_with() {
+        String before = """
+                olderr = np.seterr(divide='ignore')
+                try:
+                   actual = logit(a)
+                finally:
+                   np.seterr(olderr)
+                """;
+
+        String after = "with np.errstate(divide='ignore'):\n" +
+                "  actual = logit(a)";
+        RewriteRule rw = new RewriteRule(before, after,  Language.Python);
+        System.out.println(rw);
+
+    }
+
 
 
 }

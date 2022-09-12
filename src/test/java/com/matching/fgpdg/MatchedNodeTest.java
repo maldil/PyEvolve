@@ -427,7 +427,7 @@ class MatchedNodeTest {
 
     @Test
     void testSubGraphs38() throws Exception {
-        String filename="test32";
+        String filename="testm32";
         String patternname = "pattern15";
         List<MatchedNode> graphs =null;
         graphs = getMatchedNodes(filename, patternname, graphs);
@@ -439,6 +439,16 @@ class MatchedNodeTest {
     void testSubGraphs39() throws Exception {
         String filename="test26";
         String patternname = "pattern12";
+        List<MatchedNode> graphs =null;
+        graphs = getMatchedNodes(filename, patternname, graphs);
+        Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());
+//        Assertions.assertEquals(23,graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()).get(0).getCodePDGNodes().size());
+    }
+
+    @Test
+    void testSubGraphs40() throws Exception {
+        String filename="test32";
+        String patternname = "pattern15";
         List<MatchedNode> graphs =null;
         graphs = getMatchedNodes(filename, patternname, graphs);
         Assertions.assertEquals(1,graphs.stream().filter(MatchedNode::isAllChildsMatched).count());

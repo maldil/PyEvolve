@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import static org.inferrules.Utils.getMatchedNodes;
 
-public class TestPyFix {
+public class TestPyEvolve {
     @Test
     void testPipeline1() throws Exception {
         String filename="test26";
