@@ -1,23 +1,27 @@
 package com.utils;
 
-import com.matching.fgpdg.MatchedNode;
-import com.matching.fgpdg.PDGGraph;
+import com.matching.ConcreatePythonParser;
+import com.matching.fgpdg.*;
+import com.matching.fgpdg.nodes.Guards;
 import com.matching.fgpdg.nodes.PDGActionNode;
 import com.matching.fgpdg.nodes.PDGDataNode;
 import com.matching.fgpdg.nodes.PDGNode;
+import com.matching.fgpdg.nodes.TypeInfo.TypeWrapper;
+import io.vavr.control.Try;
 import org.apache.commons.io.IOUtils;
-import org.python.antlr.ast.Assign;
+import org.python.antlr.Visitor;
+import org.python.antlr.ast.*;
+import org.python.antlr.ast.Module;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.stmt;
+import org.w3c.dom.ls.LSOutput;
 
 import java.io.*;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Utils {
-
-
-
     static class Interval
     {
         int start;
@@ -77,10 +81,11 @@ public class Utils {
 //
 //    }
 
-    public static void markNodesInCode(String code, List<MatchedNode> pdgs,String fileName, String stylefile,String link) throws IOException {
+    public static void markNodesInCode(String code, List<MatchedNode> pdgs,String fileName, String stylefile,String link) {
         if(new File(code).exists())
         {
-            code = getFileContent(code);
+            String finalCode = code;
+            code = Try.of(() -> getFileContent(finalCode)).onFailure(System.err::println).get();
         }
 
         List<Interval> duration = new ArrayList<>();
@@ -259,9 +264,141 @@ public class Utils {
         return maxPDGNode;
     }
 
-//    public MatchedNode pruneMatchedNode(MatchedNode node){
-//
-//
-//
-//    }
+    public static ArrayList<File> getPythonFiles(File[] files) {
+        ArrayList<File> pythonFiles = new ArrayList<>();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                if (!file.getName().startsWith(".")) {
+                    pythonFiles.addAll(getPythonFiles(Objects.requireNonNull(file.listFiles()))); // Calls same method again.
+                }
+            } else {
+                if (file.getName().endsWith(".py")) {
+                    pythonFiles.add(file);
+                }
+            }
+        }
+        return pythonFiles;
+    }
+
+    public static String getPathToResources(String name){
+        File f = new File(name);
+        if (f.exists()) {
+            return f.getAbsolutePath();
+        }
+        return Utils.class.getClassLoader().getResource(name).getPath();
+
+    }
+
+    static class PyFuncDefVisitor extends Visitor {
+        ArrayList<FunctionDef> funcDefs = new ArrayList<>();
+        @Override
+        public Object visitFunctionDef(FunctionDef node) throws Exception {
+            funcDefs.add(node);
+            return super.visitFunctionDef (node);
+        }
+    }
+
+    public static Module getPythonModule(String fileName){
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        return parser.parse(fileName);
+    }
+
+    private static ArrayList<FunctionDef>  getAllFunctions(Module ast){
+        PyFuncDefVisitor fu = new PyFuncDefVisitor();
+        try {
+            fu.visit(ast);
+            return fu.funcDefs;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    public static void searchProjectForPatterns(String projectPath, String pattern, String outputPath) throws Exception {
+        File dir = new File(projectPath);
+        if (dir.listFiles()==null){
+            System.out.println("empty directory");
+            return;
+        }
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        Module patternModule = parser.parseTemplates(pattern);
+        ArrayList<File> files =  getPythonFiles(Objects.requireNonNull(dir.listFiles()));
+        Guards guards = new Guards(pattern,patternModule);
+        TypeWrapper wrapper = new TypeWrapper(guards);
+        PDGBuildingContext patternContext = new PDGBuildingContext(patternModule.getInternalBody().stream().filter(x -> x instanceof Import
+                || x instanceof ImportFrom).collect(Collectors.toList()),wrapper);
+        PDGGraph ppdg = new PDGGraph(patternModule,patternContext);
+
+        DotGraph pdg1 = new DotGraph(ppdg);
+        pdg1.toDotFile(new File(outputPath  +"____pattern_code__file___"+".dot"));
+        String projectName = new File(Configurations.PROJECT_REPOSITORY).toURI().
+                relativize(new File(projectPath).toURI()).getPath();
+        String gitHubProjectName =  "https://github.com/"+projectName+"blob/"+GitUtils.getBranch(GitUtils.connect(projectPath))+"/";
+        String gitHubMyProjectName =  "https://github.com/"+projectName.split("/")[1] +"/blob/"+GitUtils.getBranch(GitUtils.connect(projectPath))+"/";
+
+        for (File file : files) {
+            System.out.println("Processing "+file.getAbsolutePath());
+            String gitHubFilePath = gitHubProjectName+new File(Configurations.PROJECT_REPOSITORY+"/"+projectName).toURI().
+                    relativize(new File(file.toURI()).toURI()).getPath();
+            Module parse = getPythonModule (file.getAbsolutePath());
+            if (parse!=null){
+                List<stmt> codeImports = parse.getInternalBody().stream().filter(x -> x instanceof Import
+                        || x instanceof ImportFrom).collect(Collectors.toList());
+                ArrayList<FunctionDef> functions = getAllFunctions(parse);
+//            if (file.getAbsolutePath().equals("/Users/malinda/Documents/Research3/PROJECT_REPO/keras-team/keras/keras/datasets/mnist.py")) {
+                int num = 0;
+                if (functions.size()>0) {
+                    for (FunctionDef function : functions) {
+                        System.out.println("Function: " + function.getInternalName());
+                        try {
+                            String gitHubLocation= gitHubFilePath+"#L"+function.getLineno();
+                            String gitHubMyLocation = gitHubMyProjectName+new File(Configurations.PROJECT_REPOSITORY+"/"+projectName).toURI().
+                                    relativize(new File(file.toURI()).toURI()).getPath()+"#L"+function.getLineno();
+                            String relative = new File(Configurations.PROJECT_REPOSITORY).toURI().relativize(new File(file.getAbsolutePath()).toURI()).getPath();
+                            PDGBuildingContext cContext = new PDGBuildingContext(codeImports, relative);
+                            System.out.println(function.getInternalName());
+                            PDGGraph pdg = new PDGGraph(function, cContext);
+                            DotGraph dg = new DotGraph(pdg);
+                            dg.toDotFile(new File(outputPath+ "____code__file___" + ".dot"));
+                            MatchPDG match = new MatchPDG();
+                            List<MatchedNode> graphs = match.getSubGraphs(ppdg, pdg, patternContext, cContext);
+                            if (graphs != null) {
+                                graphs.forEach(x -> x.updateAllMatchedNodes(x, ppdg));
+                                if (graphs.stream().anyMatch(MatchedNode::isAllChildsMatched)) {
+                                    String paterntName = "";
+                                    if (function.getParent() != null && function.getParent() instanceof FunctionDef)
+                                        paterntName = ((FunctionDef) function.getParent()).getInternalName();
+                                    else if (function.getParent() != null && function.getParent() instanceof ClassDef)
+                                        paterntName = ((ClassDef) function.getParent()).getInternalName();
+                                    String fileName = paterntName + "____" + function.getInternalName();
+                                    File f = new File(outputPath+"matches/" + relative.substring(0, relative.length() - 3) + "____" + fileName + ".html");
+                                    if(f.exists() && !f.isDirectory()) {
+                                        fileName = paterntName + "____" + function.getInternalName()+"____" + num;
+                                    }
+                                    com.utils.Utils.markNodesInCode(file.getAbsolutePath(), graphs,
+                                            outputPath+"matches/" + relative.substring(0, relative.length() - 3) + "____" + fileName + ".html",
+                                            Arrays.stream(relative.split("/")).map(x -> "../").skip(1).collect(Collectors.joining()),gitHubLocation+"@"+gitHubMyLocation);
+                                    match.drawMatchedGraphs(pdg, graphs, outputPath+"matches/" + relative.substring(0, relative.length() - 3) + "____" + fileName + ".dot");
+                                    graphs.forEach(x -> x.updateAllMatchedNodes(x, ppdg));
+                                    num += 1;
+                                }
+                            }
+//                    match.drawMatchedGraphs(fpdg,graphs,"OUTPUT/matches/text1.dot");
+//                        if (graphs != null && graphs.stream().anyMatch(MatchedNode::isAllChildsMatched))
+                        } catch (IOException e) {
+                            System.out.println("Type File is Not available");
+                        }
+                    }
+                }
+                else {
+                    System.out.println("No functions");
+                }
+            }
+        }
+    }
+
+    public static Try<Module> getPythonModuleForTemplate(String fileName) {
+        ConcreatePythonParser parser = new ConcreatePythonParser();
+        return Try.of(()->parser.parseTemplates(FileIO.readStringFromFile(fileName)));
+    }
+
 }

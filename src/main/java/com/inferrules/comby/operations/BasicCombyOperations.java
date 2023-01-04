@@ -26,7 +26,7 @@ public class BasicCombyOperations {
 
 
     public static Try<CombyMatch> getMatch(String template, Node source, Language language, boolean isPerfect) {
-        Object[] arguments = {source.getValue(), template, language.getExtension()};
+        Object[] arguments = { source.getValue(), template, language.getExtension()};
         return Utilities.runBashCommand(MessageFormat.format(matchCommand, arguments))
                 .map(x -> new Gson().fromJson(x, CombyMatch.class))
                 .onFailure(x -> System.out.println(x.toString()))

@@ -23,6 +23,7 @@ class PDGGraphTest {
         try {
             context = new PDGBuildingContext(new ArrayList<>(),"author/project/pattern.py");
             PDGGraph pdg = new PDGGraph(parse,context);
+
             MatchPDG mpdg = new    MatchPDG();
             PDGGraph _pattern= mpdg.pruneAndCleanPatternPDG(pdg);
             DotGraph dg = new DotGraph(pdg);

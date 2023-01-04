@@ -164,11 +164,14 @@ public class TestRewriteRules {
     @Test
     void testPythonRewriteRule1() {
         String before = """
-                count = 0
-                for e in es:
-                    count += e
-                print(count)""";
-        String after = "count = np.sum(es)";
+                olderr = np.seterr(divide='ignore')
+                try:
+                  actual=logit(a)
+                finally:
+                  np.seterr(olderr)
+                """;
+        String after = "with np.errstate(divide='ignore'):\n" +
+                "  actual = logit(a)";
         String expectedMatch = """
                 :[[l1]] = 0
                 for :[[l5]] in :[[l6]]:
@@ -391,6 +394,24 @@ public class TestRewriteRules {
         RewriteRule rw = new RewriteRule(before, after,  Language.Python);
         System.out.println(rw);
 
+    }
+
+    @Test
+    void testPythonRewriteRule_If() {
+        String before = """
+                title = ""
+                if "title" in article:
+                  title = article["title"].strip()
+                else:
+                  title = "\"""";
+        String after = "title = article.get(\"title\", \"\").strip()";
+        String expectedMatch = """
+                for :[[l0]] in :[[l1]]:
+                    :[[l3]] += :[[l0]]""";
+        String expectedReplace = ":[[l3]] = np.sum(:[[l1]])";
+        RewriteRule rw = new RewriteRule(before, after,  Language.Python);
+        assertTrue(areAlphaEquivalent(expectedMatch,rw.getMatch().getTemplate()));
+        assertTrue(areAlphaEquivalent(expectedReplace,rw.getReplace().getTemplate()));
     }
 
 

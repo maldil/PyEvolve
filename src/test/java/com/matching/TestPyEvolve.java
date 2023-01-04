@@ -39,4 +39,27 @@ public class TestPyEvolve {
                 "    z = np.sum(ff.values())\n" +
                 "return z\n",changedCode.get().getRewrittenSource());
     }
+
+    @Test
+    void testPipelineForProject() throws Exception {
+        String filename="test26";
+        String lpatternname = "pattern12";
+        String rpatternname = "r_pattern12";
+        BasicCombyOperations op = new BasicCombyOperations();
+
+        Module codeModule = Utils.getPythonModule("author/project/"+filename+".py");
+        String code = codeModule.getInternalBody().get(1).toString();
+        Module lpatternModule = Utils.getPythonModuleForTemplate(Utils.getPathToResources("author/project/"+lpatternname+".py"));
+        Module rpatternModule = Utils.getPythonModuleForTemplate(Utils.getPathToResources("author/project/"+rpatternname+".py"));
+        List<MatchedNode> matchedNodes = getMatchedNodes(filename, lpatternname,rpatternname, codeModule, lpatternModule,rpatternModule);
+        List<MatchedNode> allMatchedGraphs = matchedNodes.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList());
+        AdaptRule aRule= new AdaptRule(allMatchedGraphs.get(0),codeModule,rpatternModule);
+        Rule rule = aRule.getAdaptedRule();
+        Try<CombyRewrite> changedCode = op.rewrite(rule.getLHS(), rule.getRHS(), code, ".python");
+        Assertions.assertEquals("def function1(sentence, callbacks):\n" +
+                "    ff = {one:1,two:2}\n" +
+                "    print(ff)\n" +
+                "    z = np.sum(ff.values())\n" +
+                "return z\n",changedCode.get().getRewrittenSource());
+    }
 }

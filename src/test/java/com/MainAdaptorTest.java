@@ -5,6 +5,7 @@ import com.inferrules.core.languageAdapters.Language;
 import com.matching.ConcreatePythonParser;
 import com.matching.fgpdg.nodes.Guards;
 import org.inferrules.Utils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Import;
@@ -33,5 +34,19 @@ class MainAdaptorTest {
                 || x instanceof ImportFrom).collect(Collectors.toList());
         Guards guards = new Guards("",lpatternModule);
         String adaptFunction = adaptor.adaptFunction(imports, guards, lpatternModule, rpatternModule, codeModule);
+    }
+
+    @Test
+    void transplantPatternToFile() {
+        String projectFile = "author/project/test26.py";
+        String LHS = "/Users/malinda/Documents/Research3/InferRules/src/test/resources/author/project/pattern12.py";
+        String RHS = "/Users/malinda/Documents/Research3/InferRules/src/test/resources/author/project/r_pattern12.py";
+        String s = MainAdaptor.transplantPatternToFile(projectFile, LHS, RHS);
+        Assertions.assertEquals("def function1(sentence, callbacks):\n" +
+                "    ff = {one:1,two:2}\n" +
+                "    print(ff)\n" +
+                "    z = np.sum(ff.values())\n" +
+                "return z\n",s);
+
     }
 }
