@@ -9,77 +9,138 @@ import com.matching.fgpdg.nodes.PDGNode;
 import com.matching.fgpdg.nodes.TypeInfo.TypeWrapper;
 import io.vavr.control.Try;
 import org.apache.commons.io.IOUtils;
+import org.python.antlr.PythonTree;
 import org.python.antlr.Visitor;
-import org.python.antlr.ast.*;
 import org.python.antlr.ast.Module;
+import org.python.antlr.ast.*;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.stmt;
-import org.w3c.dom.ls.LSOutput;
+import org.python.core.PyObject;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Utils {
-    static class Interval
-    {
-        int start;
-        int end;
-
-        public Interval(int start, int end)
+    private static int thresholdForIterations = 10;
+    public static List<PyObject> getMatchedASTSubGraph(MatchedNode matchedNode, FunctionDef def) {
+        List<PyObject> codeNodes = matchedNode.getAllMatchedNodes().stream().map(d->d.getCodeNode().getAstNode()).collect(Collectors.toList());
+        List<PyObject> withoutChildNodes = new ArrayList<>(getNonSubTreeASTNodes(codeNodes));
+        if (doesEveryNodeHaveTheSameParent(withoutChildNodes))
         {
-            super();
-            this.start = start;
-            this.end = end;
+            return withoutChildNodes;
+        }
+        else{
+            List<PyObject> parentNodes = visitOneLevelUPToGetCommonParents(withoutChildNodes);
+            for (int t=0;t<thresholdForIterations;t++){
+                if (doesEveryNodeHaveTheSameParent(parentNodes))
+                    return parentNodes;
+                parentNodes = visitOneLevelUPToGetCommonParents(parentNodes);
+
+            }
+            withoutChildNodes=parentNodes;
         }
 
-        public int getStart(){
-            return start;
-        }
 
-        public int getEnd(){
-            return end;
-        }
+        return withoutChildNodes;
+    }
 
-        @Override
-        public String toString() {
-            return "["+this.start+","+this.end+"]";
-        }
+    private static List<PyObject> visitOneLevelUPToGetCommonParents(List<PyObject> nodeList){
+        List<PyObject> newNodeList = new ArrayList<>();
+        List<PyObject> childList = new ArrayList<>();
+        for (int r =0;r<nodeList.size();r++){
+            PythonTree tree = (PythonTree)nodeList.get(r);
+            for (PyObject node : nodeList) {
+                if (node!=tree && tree.getParent()!=null){
+                    if (Utils.isChildNode(node,tree.getParent())){
+                        newNodeList.add(tree.getParent());
+                        childList.add(node);
+                    }
+                    else{
+                        if (!childList.contains(node)){
+                            newNodeList.add(node);
+                        }
 
-        @Override
-        public boolean equals(Object o) {
+                    }
+                }
 
-            // If the object is compared with itself then return true
-            if (o == this) {
-                return true;
+            }
+            if (doesEveryNodeHaveTheSameParent(newNodeList)){
+                return newNodeList;
+            }
+            else {
+                nodeList = newNodeList;
             }
 
-        /* Check if o is an instance of Complex or not
-          "null instanceof [type]" also returns false */
-            if (!(o instanceof Interval)) {
-                return false;
-            }
-
-            // typecast o to Complex so that we can compare data members
-            Interval c = (Interval) o;
-
-            // Compare the data members and return accordingly
-            return start == c.start
-                    && end == c.end;
         }
-    };
+        return newNodeList;
+    }
 
-//    public static void isAllNodesMatched(List<MatchedNode> grphs, PDGGraph pattern){
-//        for (MatchedNode grph : grphs) {
-//            for (PDGNode node : pattern.getNodes()) {
-//
-//            }
-//
-//            grph.getCodePDGNodes()
-//        }
-//
-//    }
+    private static boolean doesEveryNodeHaveTheSameParent(List<PyObject> nodes){
+        return nodes.stream().map(x->(PythonTree)x).map(PythonTree::getParent).filter(Objects::nonNull).collect(Collectors.toSet()).size() == 1;
+    }
+
+    private static List<PyObject> getNonSubTreeASTNodes(List<PyObject> codeNodes) {
+        List<List<PyObject>> permutations = codeNodes.stream().map(e1 -> codeNodes.stream().filter(e2 -> e2 != e1).
+                map(e3 -> Arrays.asList(e1, e3)).collect(Collectors.toList())).flatMap(List::stream).collect(Collectors.toList());
+        List<PyObject> parentNodes = new ArrayList<>();
+        for (List<PyObject> objects : permutations) {
+            if (objects.get(0)!=null && objects.get(1)!=null && Utils.isChildNode(objects.get(0),objects.get(1))){
+                updateTheListWithParentNode(parentNodes, objects, 1);
+
+            }
+            else if (objects.get(0)!=null && objects.get(1)!=null &&Utils.isChildNode(objects.get(1),objects.get(0))){
+                updateTheListWithParentNode(parentNodes, objects, 0);
+            }
+            else{
+                if (objects.get(0)!=null && objects.get(1)!=null ){
+                    updateTheListWithParentNode(parentNodes, objects, 0);
+                    updateTheListWithParentNode(parentNodes, objects, 1);
+                }
+            }
+        }
+        return parentNodes;
+    }
+
+    private static void updateTheListWithParentNode(List<PyObject> parentNodes, List<PyObject> objects, int i) {
+        if (parentNodes.stream().noneMatch(x -> Utils.isChildNode(objects.get(i), x))) {
+            for (int u = 0; u < parentNodes.size(); u++) {
+                if (Utils.isChildNode(parentNodes.get(u), objects.get(i))) {
+                    parentNodes.remove(u);
+                }
+            }
+            if (!parentNodes.contains(objects.get(i)))
+                parentNodes.add(objects.get(i));
+        }
+        parentNodes.remove(objects.get(0));
+    }
+
+
+    public static boolean isChildNode(PyObject childNode, PyObject parentNode){
+        CheckChildNode childChecker = new CheckChildNode(childNode);
+        try {
+            PythonTree tree = (PythonTree)parentNode;
+            childChecker.visit(tree);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return childChecker.isChild();
+    }
+
+
+    public static boolean isChildNode(PythonTree childNode, PythonTree parentNode){
+        CheckChildNode childChecker = new CheckChildNode(childNode);
+        try {
+            childChecker.visit(parentNode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return childChecker.isChild();
+    }
 
     public static void markNodesInCode(String code, List<MatchedNode> pdgs,String fileName, String stylefile,String link) {
         if(new File(code).exists())
@@ -113,7 +174,7 @@ public class Utils {
         writeMatchCodeToHTML(code, fileName, duration,stylefile,link);
     }
 
-    private static void writeMatchCodeToHTML(String code, String fileName, List<Interval> duration, String styleFile,String githubLink) {
+        private static void writeMatchCodeToHTML(String code, String fileName, List<Interval> duration, String styleFile,String githubLink) {
         String s = "\n<a href=\""+githubLink.split("@")[0] +"\">GitHubLink</a>"+"\n\n"+
                 "\n<a href=\""+githubLink.split("@")[1] +"\">GitMyHubLink</a>"+"\n\n"+
                 markupCode(duration.stream().map(x -> {
@@ -135,7 +196,18 @@ public class Utils {
 
         FileIO.writeStringToFile(sampleChange.toString(),
                 fileName);
-    }
+    };
+
+//    public static void isAllNodesMatched(List<MatchedNode> grphs, PDGGraph pattern){
+//        for (MatchedNode grph : grphs) {
+//            for (PDGNode node : pattern.getNodes()) {
+//
+//            }
+//
+//            grph.getCodePDGNodes()
+//        }
+//
+//    }
 
     public static List<Interval> getSortedList(List<Interval> duration){
         List<Interval> intervals =  (List<Interval>) ((ArrayList<Interval>) duration).clone();;
@@ -289,21 +361,12 @@ public class Utils {
 
     }
 
-    static class PyFuncDefVisitor extends Visitor {
-        ArrayList<FunctionDef> funcDefs = new ArrayList<>();
-        @Override
-        public Object visitFunctionDef(FunctionDef node) throws Exception {
-            funcDefs.add(node);
-            return super.visitFunctionDef (node);
-        }
-    }
-
     public static Module getPythonModule(String fileName){
         ConcreatePythonParser parser = new ConcreatePythonParser();
         return parser.parse(fileName);
     }
 
-    private static ArrayList<FunctionDef>  getAllFunctions(Module ast){
+    public static ArrayList<FunctionDef>  getAllFunctions(Module ast){
         PyFuncDefVisitor fu = new PyFuncDefVisitor();
         try {
             fu.visit(ast);
@@ -400,5 +463,102 @@ public class Utils {
         ConcreatePythonParser parser = new ConcreatePythonParser();
         return Try.of(()->parser.parseTemplates(FileIO.readStringFromFile(fileName)));
     }
+
+    public static List<PyObject> getContinousStatments(List<PyObject> subtree) {
+        int start = subtree.stream().map(x -> (PythonTree) x).map(PythonTree::getCharStartIndex).min(Integer::compare).get();
+        int stop = subtree.stream().map(x -> (PythonTree) x).map(PythonTree::getCharStopIndex).max(Integer::compare).get();
+        List<PyObject> continousNodes  = new ArrayList<>();
+        if (subtree.size()>0){
+            for (PythonTree child : ((PythonTree) subtree.get(0)).getParent().getChildren()) {
+                if (start<=child.getCharStartIndex() && child.getCharStartIndex()<=stop){
+                    continousNodes.add(child);
+                }
+            }
+        }
+        return continousNodes;
+    }
+
+    static class CheckChildNode extends Visitor{
+        private boolean isChild = false;
+        private PythonTree childTree=null;
+        public CheckChildNode(PythonTree cTree) {
+            this.childTree = cTree;
+        }
+
+        public CheckChildNode(PyObject cTree) {
+            this.childTree = (PythonTree)cTree;
+        }
+
+        @Override
+        public Object unhandled_node(PythonTree node) throws Exception {
+            if (childTree!=null && node.getChildren()!=null && node.getChildren().contains(childTree))
+                isChild=true;
+            return super.unhandled_node(node);
+        }
+        public boolean isChild() {
+            return isChild;
+        }
+    }
+
+static class Interval
+    {
+        int start;
+        int end;
+
+        public Interval(int start, int end)
+        {
+            super();
+            this.start = start;
+            this.end = end;
+        }
+
+        public int getStart(){
+            return start;
+        }
+
+        public int getEnd(){
+            return end;
+        }
+
+        @Override
+        public String toString() {
+            return "["+this.start+","+this.end+"]";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+
+            // If the object is compared with itself then return true
+            if (o == this) {
+                return true;
+            }
+
+        /* Check if o is an instance of Complex or not
+          "null instanceof [type]" also returns false */
+            if (!(o instanceof Interval)) {
+                return false;
+            }
+
+            // typecast o to Complex so that we can compare data members
+            Interval c = (Interval) o;
+
+            // Compare the data members and return accordingly
+            return start == c.start
+                    && end == c.end;
+        }
+    }
+
+    static class PyFuncDefVisitor extends Visitor {
+        ArrayList<FunctionDef> funcDefs = new ArrayList<>();
+        @Override
+        public Object visitFunctionDef(FunctionDef node) throws Exception {
+            funcDefs.add(node);
+            return super.visitFunctionDef (node);
+        }
+    }
+
+
+
+
 
 }

@@ -1,0 +1,1 @@
+np.linalg.multi_dot([:[l1], :[l2], :[l3]])

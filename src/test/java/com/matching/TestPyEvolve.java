@@ -9,6 +9,7 @@ import io.vavr.control.Try;
 import org.inferrules.Utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.python.antlr.ast.FunctionDef;
 import org.python.antlr.ast.Module;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class TestPyEvolve {
         Module rpatternModule = Utils.getPythonModuleForTemplate(Utils.getPathToResources("author/project/"+rpatternname+".py"));
         List<MatchedNode> matchedNodes = getMatchedNodes(filename, lpatternname,rpatternname, codeModule, lpatternModule,rpatternModule);
         List<MatchedNode> allMatchedGraphs = matchedNodes.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList());
-        AdaptRule aRule= new AdaptRule(allMatchedGraphs.get(0),codeModule,rpatternModule);
+        AdaptRule aRule= new AdaptRule(allMatchedGraphs.get(0), (FunctionDef) codeModule.getInternalBody().get(1),rpatternModule);
         Rule rule = aRule.getAdaptedRule();
         Try<CombyRewrite> changedCode = op.rewrite(rule.getLHS(), rule.getRHS(), code, ".python");
         Assertions.assertEquals("def function1(sentence, callbacks):\n" +
@@ -53,7 +54,7 @@ public class TestPyEvolve {
         Module rpatternModule = Utils.getPythonModuleForTemplate(Utils.getPathToResources("author/project/"+rpatternname+".py"));
         List<MatchedNode> matchedNodes = getMatchedNodes(filename, lpatternname,rpatternname, codeModule, lpatternModule,rpatternModule);
         List<MatchedNode> allMatchedGraphs = matchedNodes.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList());
-        AdaptRule aRule= new AdaptRule(allMatchedGraphs.get(0),codeModule,rpatternModule);
+        AdaptRule aRule= new AdaptRule(allMatchedGraphs.get(0), (FunctionDef) codeModule.getInternalBody().get(1),rpatternModule);
         Rule rule = aRule.getAdaptedRule();
         Try<CombyRewrite> changedCode = op.rewrite(rule.getLHS(), rule.getRHS(), code, ".python");
         Assertions.assertEquals("def function1(sentence, callbacks):\n" +

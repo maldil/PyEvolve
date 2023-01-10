@@ -1,5 +1,7 @@
 package com.utils;
 
+import io.vavr.control.Try;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,12 +26,7 @@ public class FileIO {
     }
 
     public static String readFile(String path){
-        try {
-            return Files.readString(Paths.get(path));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return Try.of(() -> Files.readString(Paths.get(path))).onFailure(System.err::println).get();
     }
 
     private String getPathToResources(String name){

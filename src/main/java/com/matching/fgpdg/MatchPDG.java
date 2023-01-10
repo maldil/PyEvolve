@@ -36,7 +36,7 @@ public class MatchPDG {
                 return startNodes.stream().map(x-> new MatchedNode(x.fst,x.snd,new HashSet<>(),patternContext,cContext)).collect(Collectors.toList());
             }
         }
-        return null;
+        return new ArrayList<>();
     }
 
     protected List<MatchedNode> getSubGraphs(PDGGraph pattern, PDGGraph code,PDGNode startNode){

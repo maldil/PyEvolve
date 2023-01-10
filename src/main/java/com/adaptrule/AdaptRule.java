@@ -18,10 +18,10 @@ import java.util.stream.Collectors;
 
 public class AdaptRule {
     MatchedNode graph;
-    Module targetCodeAST;
+    FunctionDef targetCodeAST;
     Module rhsAST;
     Map<PythonTree, Hole> nameToHole;
-    public AdaptRule(MatchedNode graph, Module targetCodeAST, Module rpatternModule) {
+    public AdaptRule(MatchedNode graph, FunctionDef targetCodeAST, Module rpatternModule) {
         this.graph = graph;
         this.targetCodeAST = targetCodeAST;
         this.rhsAST = rpatternModule;
@@ -29,18 +29,18 @@ public class AdaptRule {
 
     public Rule getAdaptedRule() {
         Rule rule=new Rule();
-        Module lhsSubstitutedCode = substituteLHStoTargetCode();
+        FunctionDef lhsSubstitutedCode = substituteLHStoTargetCode();
         System.out.println(lhsSubstitutedCode);
-        Module renamedNames = renameRestOfTheRenamedVarsWithHoles(lhsSubstitutedCode);
-        Module lhs = normalizeLHSContext(renamedNames);
+        FunctionDef renamedNames = renameRestOfTheRenamedVarsWithHoles(lhsSubstitutedCode);
+        FunctionDef lhs = normalizeLHSContext(renamedNames);
         System.out.println(lhs);
         List<PyObject> collect = this.graph.getAllMatchedNodes().stream().map(MatchedNode::getPatternNode).
                 map(PDGNode::getAstNode).collect(Collectors.toList());
         collect.addAll(this.graph.getAllMatchedNodes().stream().map(MatchedNode::getCodeNode).
                 map(PDGNode::getAstNode).collect(Collectors.toList()));
-        rule.setLHS(getFunctionDef(lhs).toString());
-        Module rhs = createRHS(renamedNames,rhsAST,collect);
-        rule.setRHS(getFunctionDef(rhs).toString());
+        rule.setLHS(lhs.toString());
+        FunctionDef rhs = createRHS(renamedNames,rhsAST,collect);
+        rule.setRHS(rhs.toString());
 //        System.out.println(getFunctionDef(rhs).toString());
         return rule;
     }
@@ -53,7 +53,7 @@ public class AdaptRule {
         return null;
     }
 
-    private Module createRHS(Module lhs, Module rhs, List<PyObject> matchedNode) {
+    private FunctionDef createRHS(FunctionDef lhs, Module rhs, List<PyObject> matchedNode) {
         FindDeletesFromLHS deletes = new FindDeletesFromLHS(matchedNode);
         try {
             deletes.visit(lhs);
@@ -93,7 +93,7 @@ public class AdaptRule {
         return finalNode;
     }
 
-    private Module normalizeLHSContext(Module code){
+    private FunctionDef normalizeLHSContext(FunctionDef code){
         HoleSearcher searcher = new HoleSearcher();
         try {
             searcher.visit(code);
@@ -108,7 +108,7 @@ public class AdaptRule {
         return code;
     }
 
-    private Module substituteLHStoTargetCode(){
+    private FunctionDef substituteLHStoTargetCode(){
         Map<PythonTree, List<PythonTree>> codeAndParaNode = new HashMap<>();
         for (MatchedNode matchedNode : graph.getAllMatchedNodes()) {
             PythonTree pASTNode = (PythonTree)matchedNode.getPatternNode().getAstNode();
@@ -138,7 +138,7 @@ public class AdaptRule {
         return targetCodeAST;
     }
 
-    private Module renameRestOfTheRenamedVarsWithHoles(Module targetCode){
+    private FunctionDef renameRestOfTheRenamedVarsWithHoles(FunctionDef targetCode){
         Map<PythonTree, List<PythonTree>> codeAndParaNode = new HashMap<>();
         CollectChangedNames changedNames = new CollectChangedNames(nameToHole.keySet());
         try {
