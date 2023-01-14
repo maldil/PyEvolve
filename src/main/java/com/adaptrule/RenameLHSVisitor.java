@@ -19,6 +19,16 @@ public class RenameLHSVisitor extends Visitor {
     Map<PythonTree,PythonTree> holeAndCode = new HashMap<>();
     Map<PythonTree, Hole> nameToHole = new HashMap<>();
     int largestHoleID=0;
+
+    @Override
+    public void preVisit(PyObject node) {
+
+    }
+
+    @Override
+    public void postVisit(PyObject node) {
+
+    }
     @Override
     public Object visitAssign(Assign node)  throws Exception {
         for (Map.Entry<PythonTree, List<PythonTree>> entry : codeAndPara.entrySet()) {

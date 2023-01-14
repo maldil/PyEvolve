@@ -7,6 +7,7 @@ import org.python.antlr.Visitor;
 import org.python.antlr.ast.*;
 import org.python.antlr.ast.Module;
 import org.python.antlr.base.mod;
+import org.python.core.PyObject;
 import org.python.modules._hashlib;
 import org.python.modules._imp$new_module_exposer;
 
@@ -50,6 +51,16 @@ public class Guards {
 
     static class PyNameVisitor extends Visitor {
         private HashMap<String, List<Pair<Integer, Integer>>> mapRowCol = new HashMap<>();
+
+        @Override
+        public void preVisit(PyObject node) {
+
+        }
+
+        @Override
+        public void postVisit(PyObject node) {
+
+        }
 
         @Override
         public Object visitName(Name node) throws Exception {

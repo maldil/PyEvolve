@@ -7,15 +7,11 @@ import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.python.antlr.AnalyzingParser;
-import org.python.antlr.ParseException;
 import org.python.antlr.PythonTree;
 import org.python.antlr.Visitor;
 import org.python.antlr.ast.*;
 import org.python.antlr.ast.Module;
-import org.python.antlr.base.expr;
-import org.python.antlr.base.mod;
-import org.python.antlr.base.slice;
-import org.python.antlr.base.stmt;
+import org.python.antlr.base.*;
 import org.python.core.PyObject;
 
 import java.io.IOException;
@@ -36,6 +32,8 @@ public class ConcreatePythonParser  {
             file = new ANTLRInputStream(inputStream.getInputStream(fileName));
             PythonParser parser =new PythonParser(file, inputStream.getName(), "UTF-8");
             mod mod = parser.parseModule();
+            ParentUpdater pUpdater = new ParentUpdater();
+            pUpdater.visit(mod);
             return  (Module)mod;
         } catch (Exception | NoClassDefFoundError e) {
             return null;
@@ -118,6 +116,16 @@ public class ConcreatePythonParser  {
                 node.setValue(lhole);
             }
             return super.visitIndex (node);
+        }
+
+        @Override
+        public void preVisit(PyObject node) {
+
+        }
+
+        @Override
+        public void postVisit(PyObject node) {
+
         }
 
         @Override
@@ -659,6 +667,16 @@ public class ConcreatePythonParser  {
             return super.visitExpr(node);
         }
 
+        @Override
+        public void preVisit(PyObject node) {
+
+        }
+
+        @Override
+        public void postVisit(PyObject node) {
+
+        }
+
         private void updateParent(stmt node) {
             for (PythonTree child : node.getChildren()) {
                 child.setParent(node);
@@ -774,6 +792,20 @@ public class ConcreatePythonParser  {
             }
             node.getInternalFunc().setParent(node);
             return super.visitCall(node);
+        }
+
+        @Override
+        public Object visitTryExcept(TryExcept node)  throws Exception{
+            updateParent(node);
+            for (excepthandler handler : node.getInternalHandlers()) {
+                handler.setParent(node);
+            }
+            for (stmt stmt : node.getInternalBody()) {
+                stmt.setParent(node);
+            }
+
+            return super.visitTryExcept(node);
+
         }
 
     }

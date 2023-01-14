@@ -5,6 +5,7 @@ import org.python.antlr.ast.AlphHole;
 import org.python.antlr.ast.For;
 import org.python.antlr.ast.Hole;
 import org.python.antlr.base.expr;
+import org.python.core.PyObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,16 @@ public class HoleSearcher extends Visitor {
     private int largestHoleID=1;
     private List<expr> holes= new ArrayList<>();
 
+
+    @Override
+    public void preVisit(PyObject node) {
+
+    }
+
+    @Override
+    public void postVisit(PyObject node) {
+
+    }
 
     @Override
     public Object visitHole(Hole node) throws Exception {

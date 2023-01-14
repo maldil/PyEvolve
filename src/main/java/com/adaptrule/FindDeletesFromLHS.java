@@ -16,6 +16,17 @@ public class FindDeletesFromLHS extends Visitor {
     List<PyObject> matchedNode;
     java.util.List<PythonTree> deletes = new ArrayList<>();
 
+
+    @Override
+    public void preVisit(PyObject node) {
+
+    }
+
+    @Override
+    public void postVisit(PyObject node) {
+
+    }
+
     public FindDeletesFromLHS(List<PyObject> matchedNode) {
         this.matchedNode = matchedNode;
     }
@@ -45,7 +56,14 @@ public class FindDeletesFromLHS extends Visitor {
                 finalDeletedNode=node;
         }
         else if (node instanceof Call && this.matchedNode.contains(node)){
-            deletes.add(node);
+            if (node.getParent() !=null && node.getParent() instanceof Expr){
+                deletes.add(node.getParent());
+            }
+            else{
+                deletes.add(node);
+            }
+
+
             int fline=0;
             int line=0;
             if (finalDeletedNode != null) {
@@ -53,10 +71,20 @@ public class FindDeletesFromLHS extends Visitor {
                  line = node.getMyLineNumber()!=-1 ? node.getMyLineNumber():node.getLine();
             }
 
-            if (finalDeletedNode==null)
-                finalDeletedNode=node;
-            else if (fline<line)
-                finalDeletedNode=node;
+            if (finalDeletedNode==null) {
+                if(node.getParent()!=null && node.getParent() instanceof Expr){
+                    finalDeletedNode = node.getParent();
+                }else{
+                finalDeletedNode = node;
+                }
+            }
+            else if (fline<line){
+                if(node.getParent()!=null && node.getParent() instanceof Expr){
+                    finalDeletedNode = node.getParent();
+                }else{
+                    finalDeletedNode = node;
+                }
+            }
         }
         return super.unhandled_node(node);
     }

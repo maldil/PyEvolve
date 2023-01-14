@@ -8,6 +8,7 @@ import org.python.antlr.ast.*;
 import org.python.antlr.base.expr;
 import org.python.antlr.base.stmt;
 import org.python.core.PyLong;
+import org.python.core.PyObject;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,16 @@ public class LHSNormalizer extends Visitor {
 //            return null;
 //        return super.unhandled_node(node);
 //    }
+
+    @Override
+    public void preVisit(PyObject node) {
+
+    }
+
+    @Override
+    public void postVisit(PyObject node) {
+
+    }
 
     @Override
     public Object visitFor(For node)  throws Exception {

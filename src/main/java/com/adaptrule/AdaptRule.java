@@ -38,9 +38,9 @@ public class AdaptRule {
                 map(PDGNode::getAstNode).collect(Collectors.toList());
         collect.addAll(this.graph.getAllMatchedNodes().stream().map(MatchedNode::getCodeNode).
                 map(PDGNode::getAstNode).collect(Collectors.toList()));
-        rule.setLHS(lhs.toString());
+        rule.setLHS(lhs.getInternalBody().stream().map(Object::toString).collect(Collectors.joining("\n")));
         FunctionDef rhs = createRHS(renamedNames,rhsAST,collect);
-        rule.setRHS(rhs.toString());
+        rule.setRHS(rhs.getInternalBody().stream().map(Object::toString).collect(Collectors.joining("\n")));
 //        System.out.println(getFunctionDef(rhs).toString());
         return rule;
     }
@@ -62,7 +62,15 @@ public class AdaptRule {
                 if (updateTree==deletes.finalDeletedNode)
                     break;
                 else{
-                    deletes.finalDeletedNode=updateTree;
+                    if (updateTree instanceof Call && updateTree.getParent()!=null && updateTree.getParent() instanceof Expr){
+                        deletes.finalDeletedNode=updateTree.getParent();
+                    }
+                    else{
+                        deletes.finalDeletedNode=updateTree;
+                    }
+
+
+
                 }
             }
 

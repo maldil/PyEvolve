@@ -5,6 +5,7 @@ import org.python.antlr.Visitor;
 import org.python.antlr.ast.Module;
 import org.python.antlr.ast.*;
 import org.python.antlr.base.stmt;
+import org.python.core.PyObject;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -17,6 +18,17 @@ public class DeleteAndUpdateVisitor extends Visitor {
         this.del=deletes;
         this.finalDel=finalDeletedNode;
         this.rhs=rhs;
+    }
+
+
+    @Override
+    public void preVisit(PyObject node) {
+
+    }
+
+    @Override
+    public void postVisit(PyObject node) {
+
     }
 
     private void removeChild(PythonTree node){

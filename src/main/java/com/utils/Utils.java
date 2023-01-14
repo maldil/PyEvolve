@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -81,7 +82,18 @@ public class Utils {
     }
 
     private static boolean doesEveryNodeHaveTheSameParent(List<PyObject> nodes){
-        return nodes.stream().map(x->(PythonTree)x).map(PythonTree::getParent).filter(Objects::nonNull).collect(Collectors.toSet()).size() == 1;
+        Set<PyObject> parents = new HashSet<>();
+        for (PyObject node : nodes) {
+            PythonTree n = (PythonTree)node;
+            if (node instanceof Call && ((Call) node).getParent()!=null && ((Call) node).getParent() instanceof Expr){
+                parents.add(((Call) node).getParent().getParent());
+            }
+            else if (n.getParent()!=null){
+                parents.add(((PythonTree) node).getParent());
+            }
+        }
+
+        return parents.size() == 1;
     }
 
     private static List<PyObject> getNonSubTreeASTNodes(List<PyObject> codeNodes) {
@@ -103,7 +115,16 @@ public class Utils {
                 }
             }
         }
-        return parentNodes;
+        List<PyObject> updatedParentNodes = new ArrayList<>();
+        for (PyObject node : parentNodes) {
+            if (node instanceof Call && ((Call) node).getParent() instanceof Expr){
+                updatedParentNodes.add(((Call) node).getParent());
+            }
+            else
+                updatedParentNodes.add(node);
+        }
+
+        return updatedParentNodes;
     }
 
     private static void updateTheListWithParentNode(List<PyObject> parentNodes, List<PyObject> objects, int i) {
@@ -490,6 +511,17 @@ public class Utils {
         }
 
         @Override
+        public void preVisit(PyObject node) {
+
+        }
+
+        @Override
+        public void postVisit(PyObject node) {
+
+        }
+
+
+        @Override
         public Object unhandled_node(PythonTree node) throws Exception {
             if (childTree!=null && node.getChildren()!=null && node.getChildren().contains(childTree))
                 isChild=true;
@@ -555,7 +587,18 @@ static class Interval
             funcDefs.add(node);
             return super.visitFunctionDef (node);
         }
+        @Override
+        public void preVisit(PyObject node) {
+
+        }
+
+        @Override
+        public void postVisit(PyObject node) {
+
+        }
     }
+
+
 
 
 

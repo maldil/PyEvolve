@@ -9,20 +9,24 @@ import java.nio.file.Paths;
 
 public class FileIO {
     public static void writeStringToFile(String string, String outputFile) {
-        try {
-            File f = new File(outputFile);
-            if (!f.getParentFile().exists()){
-                f.getParentFile().mkdirs();
-            }
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
-            writer.write(string);
-            writer.flush();
-            writer.close();
-        } catch (Exception e) {
-			/*e.printStackTrace();
-			System.exit(0);*/
-            System.err.println(e.getMessage());
+        File f = new File(outputFile);
+        if (!f.getParentFile().exists()){
+            f.getParentFile().mkdirs();
+            System.err.println("Path does not exist, creating the path " + f.getParentFile().getPath());
         }
+        if (f.exists()){
+            System.err.println("File does not exist, creating the file " + f.getParentFile().getPath());
+        }
+        Try.of(()-> Files.writeString(Paths.get(outputFile),string)).onFailure(System.err::println).
+                onSuccess(x->System.out.println("File successfully wrote to " +outputFile));
+
+    }
+
+    private static void writeString(String string, String outputFile) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+        writer.write(string);
+        writer.flush();
+        writer.close();
     }
 
     public static String readFile(String path){

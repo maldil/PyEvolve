@@ -5,6 +5,7 @@ import org.python.antlr.Visitor;
 import org.python.antlr.ast.Assign;
 import org.python.antlr.ast.Name;
 import org.python.antlr.base.expr;
+import org.python.core.PyObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,5 +33,15 @@ public class CollectChangedNames extends Visitor {
 
     public Map<PythonTree, List<PythonTree>> getMatchedOtherNodes() {
         return matchedOtherNodes;
+    }
+
+    @Override
+    public void preVisit(PyObject node) {
+
+    }
+
+    @Override
+    public void postVisit(PyObject node) {
+
     }
 }

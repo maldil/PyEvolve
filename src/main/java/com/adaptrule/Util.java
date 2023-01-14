@@ -2,6 +2,7 @@ package com.adaptrule;
 
 import org.python.antlr.PythonTree;
 import org.python.antlr.Visitor;
+import org.python.core.PyObject;
 
 public class Util {
     public static boolean isChildNode(PythonTree childNode,PythonTree parentNode){
@@ -25,6 +26,16 @@ public class Util {
             if (node.getChildren()!=null && node.getChildren().contains(childTree))
                 isChild=true;
             return super.unhandled_node(node);
+        }
+
+        @Override
+        public void preVisit(PyObject node) {
+
+        }
+
+        @Override
+        public void postVisit(PyObject node) {
+
         }
         public boolean isChild() {
             return isChild;
