@@ -136,6 +136,12 @@ PyEvolve can assist you if you have a rule encoded in ComBy syntax and want to Â
 
 
 # Running PyEvolve in VirtualBox Image
+1. Download VirtualBox from [https://www.virtualbox.org](https://www.virtualbox.org)
+2. Download the VirtualBox image from [Link](). This virtual machine runs MacOS and requires xx GB of free space on your system. It has all of the required dependencies so that you can start using the tools right away.
+3. 
+
+
+
 
 # Research
 We will add citation information as soon as possible.
