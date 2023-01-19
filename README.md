@@ -65,7 +65,8 @@ Configurations.PROJECT_REPOSITORY
 
        
    
-```Configurations.TYPE_REPOSITORY
+```
+Configurations.TYPE_REPOSITORY
 |
 |--pythonInfer
         |
