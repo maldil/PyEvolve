@@ -44,12 +44,38 @@ for :[[l2]] in :[l3]:
    :[[l1]]=:[[l1]]+:[[l2]]
 ```  
 1. Clone the project [PyEvolve](https://github.com/pythonInfer/PyEvolve.git)
-1. Update `Configurations.PROJECT_REPOSITORY` and `Configurations.TYPE_REPOSITORY` configurations with valid paths. 
-2. Clone the project [PatternTest](https://github.com/pythonInfer/PatternTest) to the directory `Configurations.PROJECT_REPOSITORY + "/pythonInfer/"`
-3. Execute the script [type_infer.py](https://github.com/pythonInfer/PyEvolve/blob/master/type_infer.py) to infer type information of the project [PatternTest](https://github.com/pythonInfer/PatternTest)
-4. Copy the generated `json` files into the folder `Configurations.TYPE_REPOSITORY + "/pythonInfer/PatternTest/"`
-5. Execute the following code to get all the usages of the Pattern
+2. Update `Configurations.PROJECT_REPOSITORY` and `Configurations.TYPE_REPOSITORY` configurations with valid paths. 
+3. Clone the project [PatternTest](https://github.com/pythonInfer/PatternTest) to the directory `Configurations.PROJECT_REPOSITORY + "/pythonInfer/"`
+4. Execute the script [type_infer.py](https://github.com/pythonInfer/PyEvolve/blob/master/type_infer.py) to infer type information of the project [PatternTest](https://github.com/pythonInfer/PatternTest)
+5. Copy the generated `json` files into the folder `Configurations.TYPE_REPOSITORY + "/pythonInfer/PatternTest/"`
 
+It is important to have the directory structure of the folders `Configurations.PROJECT_REPOSITORY` and `Configurations.TYPE_REPOSITORY` as below. 
+
+```
+Configurations.PROJECT_REPOSITORY
+|
+|--pythonInfer
+        |
+        |--PatternTest
+                |
+                |- file1.py
+                |- file2.py
+```
+
+
+       
+   
+```Configurations.TYPE_REPOSITORY
+|
+|--pythonInfer
+        |
+        |--PatternTest
+                |
+                |- file1.json
+                |- file2.json
+ ```
+
+6. Following code can be used to get all the usages of the Pattern
 ```java
 import com.utils.Utils;
 import org.junit.jupiter.api.Test;
@@ -78,7 +104,8 @@ public class DetectPattern {
 
 ## Using PyEvolve for transplanting a rule
 ### To a file
-PyEvolve can assist you if you have a rule encoded in ComBy syntax and want to  transplant it to a Python file.
+PyEvolve can assist you if you have a rule encoded in ComBy syntax and want to  transplant it to a Python file. First, you should follow the steps described in the section
+"[Using PyEvolve to identify code usages](#using-pyevolve-to-identify-code-usages)" to prepare the data and arrange them into folders. 
 
 ```java
     void transplantPatternToFile() {
@@ -108,56 +135,16 @@ PyEvolve can assist you if you have a rule encoded in ComBy syntax and want to �
 ```
 
 
-
-## Using PyEvolve for automation
-We will discuss the APIs that can be used for code automation, using the following code example.
-
-The following is a best code evolution practice discovered by [R-CPATMiner](https://github.com/maldil/R-CPATMiner).
-```python
-res = 0
-for elem in elems:
-  res = res + elem
-``` 
-==>
-```python
-res = np.sum(elems)
-```
-
-Our goal is to transplant the above recommended practice to the target code listed below.
-
-```python
-def getSum()
-  n_diff = 0
-  to_eval = getNumber()
-  for dif in to_eval.getDiff():
-    total = n_diff + dif
-    n_diff = total
-return n_diff    
-```
-
-We will now describe the APIs that can be used for above modification. 
-
-### 1. With pattern and target function as input
-```java
-MainAdaptor adaptor = new MainAdaptor();
-Module codeModule = getPythonModule("/pathToFunction.py"); // pathToFunction is the String value of the file path which contains the above target code.
-Module lpatternModule = getPythonModuleForTemplate("/pathToLPattern.py");// pathToLPattern is the string value of the file path which has the LHS of the pattern.
-Module rpatternModule = getPythonModuleForTemplate("/pathToRPattern.py"); // pathToRFunction is the string value of the file path which has the RHS of the pattern.
-List<stmt> imports = lpatternModule.getInternalBody().stream().filter(x -> x instanceof Import
-                || x instanceof ImportFrom).collect(Collectors.toList());
-Guards guards = new Guards("/pathToLPattern.py",lpatternModule);
-String adaptedCode = adaptor.adaptFunction(imports, guards, lpatternModule, rpatternModule, codeModule); // adaptedCode is the final adapted code
-```
-
 # Running PyEvolve in VirtualBox Image
 
 # Research
 We will add citation information as soon as possible.
 
-If you are using R-CPATMiner in your research, please cite the following papers:
+If you are using PyEvolve in your research, please cite the following papers:
 
-Malinda Dilhara, Danny Dig, and Ameya Ketkar, PyEvolve: Automating Frequent Code Changes in Python ML Systems," 45th International Conference on Software Engineering (ICSE 2022), Melbourne, Australia.
+*Malinda Dilhara, Danny Dig, and Ameya Ketkar, PyEvolve: Automating Frequent Code Changes in Python ML Systems," 45th International Conference on Software Engineering (ICSE 2022), Melbourne, Australia.*
 
+```
 @inproceedings{Dilhara:ICSE:2023:PyEvolve,
 author = {Dilhara, Malinda and Dig, Danny and Ketkar, Ameya},
 title = {PyEvolve: Automating Frequent Code Changes in Python ML Systems},
@@ -168,7 +155,7 @@ location = {Melbourne, Australia},
 publisher = {ACM},
 address = {New York, NY, USA},
 }
-
+```
 
 # License
 All software provided in this repository is subject to the [Apache License Version 2.0](LICENSE).
