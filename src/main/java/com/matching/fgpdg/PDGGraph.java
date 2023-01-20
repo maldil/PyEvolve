@@ -5,7 +5,7 @@ import com.matching.fgpdg.nodes.ast.AlphanumericHole;
 import com.matching.fgpdg.nodes.ast.LazyHole;
 import com.utils.Assertions;
 
-import org.eclipse.jdt.core.dom.ASTNode;
+
 import org.python.antlr.ast.*;
 import org.python.antlr.ast.List;
 import org.python.antlr.ast.Module;
@@ -2473,7 +2473,7 @@ public class PDGGraph implements Serializable {
     private PDGGraph buildPDG(PDGNode control, String branch,
                               IfExp astNode) {
 
-        PDGDataNode dummy = new PDGDataNode(null, ASTNode.SIMPLE_NAME,
+        PDGDataNode dummy = new PDGDataNode(null, PyObject.NAME,
                 PDGNode.PREFIX_DUMMY + astNode.getCharStopIndex(), "boolean", PDGNode.PREFIX_DUMMY, false, true);
 
         PDGGraph pdg = buildArgumentPDG(control, branch,
@@ -2482,10 +2482,10 @@ public class PDGGraph implements Serializable {
                 astNode, PyObject.IFEXP);
         pdg.mergeSequentialData(node, CONDITION);
         PDGGraph tg = buildArgumentPDG(node, "T", astNode.getInternalBody());
-        tg.mergeSequentialData(new PDGActionNode(node, "T", null, ASTNode.ASSIGNMENT,
+        tg.mergeSequentialData(new PDGActionNode(node, "T", null, PyObject.ASSIGN,
                 null, null, "="), PARAMETER);
         PDGGraph fg = buildArgumentPDG(node, "F", astNode.getInternalOrelse());
-        fg.mergeSequentialData(new PDGActionNode(node, "F", null, ASTNode.ASSIGNMENT,
+        fg.mergeSequentialData(new PDGActionNode(node, "F", null, PyObject.ASSIGN,
                 null, null, "="), PARAMETER);
         fg.mergeSequentialData(new PDGDataNode(dummy), DEFINITION);
         pdg.mergeBranches(tg, fg);

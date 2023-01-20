@@ -3,20 +3,28 @@ plugins {
     id 'antlr'
     id 'idea'
     id 'application'
+    id "org.springframework.boot" version "2.2.2.RELEASE"
+
 }
 
 group 'com.inferrules'
 version '1.0-SNAPSHOT'
+
 
 repositories {
     mavenLocal()
     mavenCentral()
 }
 
-mainClassName = 'com.inferrules.Infer'
+application {
+    // Define the main class for the application.
+    mainClass = 'com.MainAdaptor'
+}
+
+mainClassName = 'com.MainAdaptor'
 jar{
     manifest{
-        attributes 'Main-Class': 'com.inferrules.Infer'
+        attributes 'Main-Class': 'com.MainAdaptor'
     }
 }
 
@@ -25,16 +33,15 @@ dependencies {
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.8'
     implementation group: 'com.google.guava', name: 'guava', version: '31.0.1-jre'
     implementation group: 'io.vavr', name: 'vavr', version: '0.10.4'
-    implementation group: 'org.eclipse.jdt', name:'org.eclipse.jdt.core', version:'3.24.0'
     implementation group: 'org.python', name:'jython3', version:'0.0.10-SNAPSHOT'
     implementation group: 'com.ibm.wala', name:'com.ibm.wala.cast.python.ml', version:'0.0.1-SNAPSHOT'
-    compile 'com.ibm.icu:icu4j:70.1'
-    compile 'net.steppschuh.markdowngenerator:markdowngenerator:1.3.1.1'
-    compile 'commons-cli:commons-cli:1.5.0'
-    compile 'com.google.guava:guava:29.0-jre'
+    implementation 'com.ibm.icu:icu4j:70.1'
+    implementation 'net.steppschuh.markdowngenerator:markdowngenerator:1.3.1.1'
+    implementation 'commons-cli:commons-cli:1.5.0'
+    implementation 'com.google.guava:guava:29.0-jre'
     testImplementation group: 'org.junit.jupiter', name:'junit-jupiter-api', version:'5.7.0'
     testRuntimeOnly group: 'org.junit.jupiter', name:'junit-jupiter-engine', version:'5.7.0'
-    compile 'org.eclipse.jgit:org.eclipse.jgit:4.6.0.201612231935-r'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:4.6.0.201612231935-r'
 }
 generateGrammarSource {
     maxHeapSize = "128m"

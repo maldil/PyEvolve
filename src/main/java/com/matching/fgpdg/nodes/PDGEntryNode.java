@@ -1,6 +1,5 @@
 package com.matching.fgpdg.nodes;
 
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.python.core.PyObject;
 
 public class PDGEntryNode extends PDGNode {

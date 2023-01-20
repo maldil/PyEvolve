@@ -4,43 +4,46 @@ import com.adaptrule.AdaptRule;
 import com.adaptrule.Rule;
 import com.inferrules.comby.jsonResponse.CombyRewrite;
 import com.inferrules.comby.operations.BasicCombyOperations;
-import com.inferrules.core.RewriteRule;
-import com.inferrules.core.languageAdapters.Language;
 import com.matching.fgpdg.*;
 import com.matching.fgpdg.nodes.Guards;
 import com.matching.fgpdg.nodes.TypeInfo.TypeWrapper;
 import com.utils.FileIO;
 import com.utils.Utils;
 import io.vavr.control.Try;
-import org.antlr.runtime.Token;
-import org.python.antlr.ast.*;
+import org.apache.commons.cli.*;
 import org.python.antlr.ast.Module;
-import org.python.antlr.base.expr;
+import org.python.antlr.ast.*;
 import org.python.antlr.base.stmt;
 import org.python.core.PyObject;
-import org.w3c.dom.ls.LSOutput;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.utils.Utils.getPathToResources;
 
 public class MainAdaptor {
-    public String adaptFunction(List<stmt> imports, Guards guard, Module pLeft, Module pRight, Module function) throws Exception {
-        List<MatchedNode> matchedNodes = getMatchedNodes(imports, guard, function, pLeft);
-        FunctionDef func = (FunctionDef) function.getInternalBody().stream().filter(x -> x instanceof FunctionDef).findFirst().get();
-        List<MatchedNode> allMatchedGraphs = matchedNodes.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList());
-        AdaptRule aRule = new AdaptRule(allMatchedGraphs.get(0), Utils.getAllFunctions(pLeft).get(0), pRight);
-        BasicCombyOperations op = new BasicCombyOperations();
-        Try<CombyRewrite> changedCode = op.rewrite(aRule.getAdaptedRule().getLHS(), aRule.getAdaptedRule().getRHS(), func.toString(), ".python");
-        return changedCode.get().getRewrittenSource();
-
-    }
+    public static void main(String[] args) {
+        System.out.println("In main");
+        var input = parseCommandLineArgs(args);
+        List<File> patterns = FileIO.readAllFiles(".py", input.get("Patterns"));
+        System.out.println(patterns);
+        Configurations.PROJECT_REPOSITORY = input.get("ProjectRepos");
+        Configurations.TYPE_REPOSITORY = input.get("Types");
+        String[] files = FileIO.readFile(input.get("ProjectFiles")).split("\n");
+        System.out.println(Arrays.toString(files));
+        for (File l_ : patterns.stream().filter(t -> t.getName().startsWith("l_")).collect(Collectors.toList())) {
+            System.out.println("File ++++++++"+l_);
+            File r_ = new File(l_.getParentFile()+ "/r_"+ l_.getName().substring(2));
+            for (String refactoringFile : files) {
+                MainAdaptor.transplantPatternToFile(refactoringFile, l_.getPath(), r_.getPath());
+            }
+        }
+            }
 
     public static List<MatchedNode> getMatchedNodes(String filename, String lpatternname, FunctionDef func, List<stmt> importStmt, Module lpatternModule) {
         List<MatchedNode> graphs = new ArrayList<>();
@@ -61,15 +64,16 @@ public class MainAdaptor {
 
         Try.of(() -> Files.createDirectories(Paths.get(new File("OUTPUT/matches/" + filename.
                 substring(0, filename.lastIndexOf('.')) + ".dot").getParent()))).onFailure(System.err::println);
+        if (Configurations.CREATE_DEBUG_IMAGES){
+            match.drawMatchedGraphs(fpdg, graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),
+                    "OUTPUT/matches/" + filename.substring(0, filename.lastIndexOf('.')) + ".dot");
+            com.utils.Utils.markNodesInCode(Configurations.PROJECT_REPOSITORY + filename,
+                    graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()), "OUTPUT/matches/" +
+                            filename.substring(0, filename.lastIndexOf('.')) + ".html", "", "x@x");
+        }
 
-        match.drawMatchedGraphs(fpdg, graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),
-                "OUTPUT/matches/" + filename.substring(0, filename.lastIndexOf('.')) + ".dot");
-        com.utils.Utils.markNodesInCode(Configurations.PROJECT_REPOSITORY + filename,
-                graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()), "OUTPUT/matches/" +
-                        filename.substring(0, filename.lastIndexOf('.')) + ".html", "", "x@x");
         return graphs;
     }
-
 
     public static List<MatchedNode> getMatchedNodes(String filename, String lpatternname, Module codeModule, Module lpatternModule) {
         List<MatchedNode> graphs;
@@ -106,12 +110,14 @@ public class MainAdaptor {
 
         Try.of(() -> Files.createDirectories(Paths.get(new File("OUTPUT/matches/" + filename.
                 substring(0, filename.lastIndexOf('.')) + ".dot").getParent()))).onFailure(System.err::println);
+        if (Configurations.CREATE_DEBUG_IMAGES){
+            match.drawMatchedGraphs(fpdg, graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),
+                    "OUTPUT/matches/" + filename.substring(0, filename.lastIndexOf('.')) + ".dot");
+            com.utils.Utils.markNodesInCode(Configurations.PROJECT_REPOSITORY + filename,
+                    graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()), "OUTPUT/matches/" +
+                            filename.substring(0, filename.lastIndexOf('.')) + ".html", "", "x@x");
 
-        match.drawMatchedGraphs(fpdg, graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()),
-                "OUTPUT/matches/" + filename.substring(0, filename.lastIndexOf('.')) + ".dot");
-        com.utils.Utils.markNodesInCode(Configurations.PROJECT_REPOSITORY + filename,
-                graphs.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList()), "OUTPUT/matches/" +
-                        filename.substring(0, filename.lastIndexOf('.')) + ".html", "", "x@x");
+        }
         return graphs;
     }
 
@@ -163,12 +169,17 @@ public class MainAdaptor {
                 int charStopIndex = ((FunctionDef) stmt).getInternalBody().get(((FunctionDef) stmt).getInternalBody().size() - 1).getCharStopIndex();
                 adaptedFunction = MainAdaptor.transplantPatternToFunction(filename, (FunctionDef) stmt, imports, LHS, RHS,sourceCode);
 
-                int numberOfTrailingSpacesAndNewLines = sourceCode.substring(charStartIndex,charStopIndex).length() - sourceCode.substring(charStartIndex,charStopIndex).trim().length();
+                int numberOfTrailingSpacesAndNewLines = 0;
+
+                if (sourceCode.length()<charStopIndex) charStopIndex= sourceCode.length();
+                numberOfTrailingSpacesAndNewLines = sourceCode.substring(charStartIndex,charStopIndex).length() - sourceCode.substring(charStartIndex,charStopIndex).trim().length();
 
                 if (!adaptedFunction.equals("")) {
+                    if (sourceCode.length()<charStartIndex) charStartIndex=sourceCode.length();
                     adaptedFile.append(sourceCode, previousStop, charStartIndex).append(adaptedFunction);
                     previousStop = charStopIndex-numberOfTrailingSpacesAndNewLines;
                 } else if(previousStop<=charStopIndex) {
+                    if (sourceCode.length()<charStartIndex) charStartIndex=sourceCode.length();
                     adaptedFile.append(sourceCode, previousStop, charStopIndex);
                     previousStop = charStopIndex-numberOfTrailingSpacesAndNewLines;
                 }
@@ -198,7 +209,7 @@ public class MainAdaptor {
 
             int spaceForIndentation = getSpaceForIndentation(def,continuousStmts);
 
-            FunctionDef newdef = new FunctionDef(def.getToken(), def.getInternalName(), def.getInternalArgs(), continuousStmts, def.getInternalDecorator_list(), def.getInternalReturns());
+                FunctionDef newdef = new FunctionDef(def.getToken(), def.getInternalName(), def.getInternalArgs(), continuousStmts, def.getInternalDecorator_list(), def.getInternalReturns());
 
 
             String refactorableCode = newdef.getInternalBody().stream().map(Object::toString).collect(Collectors.joining("\n"));
@@ -253,6 +264,54 @@ public class MainAdaptor {
             }
         }
         return 0;
+    }
+
+    public static Map<String, String> parseCommandLineArgs(String[] args){
+        Options options = new Options();
+
+        Option projects = new Option("r", "repositories", true, "Path for project repository");
+        projects.setRequired(true);
+        options.addOption(projects);
+
+        Option types = new Option("t", "types", true, "Path for type repository");
+        types.setRequired(true);
+        options.addOption(types);
+
+        Option refactoringFiles = new Option("f", "files", true, "The text file contains the file paths of Python files that need to be refactored.");
+        refactoringFiles.setRequired(false);
+        options.addOption(refactoringFiles);
+
+        Option patterns = new Option("p", "patterns", true, "Path for code patterns");
+        refactoringFiles.setRequired(true);
+        options.addOption(patterns);
+
+//        Option specification = new Option("s", "patterns", true, "File that specifies relations of the pattern files in the patterns folder");
+//        specification.setRequired(true);
+//        options.addOption(specification);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd = null;//not a good practice, it serves it purpose
+        try {
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("utility-name", options);
+            System.exit(1);
+        }
+        return Map.of("ProjectRepos", cmd.getOptionValue("repositories").replace("\\n","\n"), "Types",cmd.getOptionValue("types").replace("\\n","\n"),
+                "ProjectFiles",cmd.getOptionValue("files"),"Patterns",cmd.getOptionValue("patterns"));
+    }
+
+    public String adaptFunction(List<stmt> imports, Guards guard, Module pLeft, Module pRight, Module function) throws Exception {
+        List<MatchedNode> matchedNodes = getMatchedNodes(imports, guard, function, pLeft);
+        FunctionDef func = (FunctionDef) function.getInternalBody().stream().filter(x -> x instanceof FunctionDef).findFirst().get();
+        List<MatchedNode> allMatchedGraphs = matchedNodes.stream().filter(MatchedNode::isAllChildsMatched).collect(Collectors.toList());
+        AdaptRule aRule = new AdaptRule(allMatchedGraphs.get(0), Utils.getAllFunctions(pLeft).get(0), pRight);
+        BasicCombyOperations op = new BasicCombyOperations();
+        Try<CombyRewrite> changedCode = op.rewrite(aRule.getAdaptedRule().getLHS(), aRule.getAdaptedRule().getRHS(), func.toString(), ".python");
+        return changedCode.get().getRewrittenSource();
+
     }
 
 }

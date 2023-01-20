@@ -5,10 +5,7 @@ import com.matching.fgpdg.nodes.TypeInfo.TypeWrapper;
 import com.matching.fgpdg.nodes.ast.AlphanumericHole;
 import com.matching.fgpdg.nodes.ast.LazyHole;
 import com.utils.Assertions;
-import org.eclipse.jdt.core.dom.ArrayAccess;
-import org.eclipse.jdt.core.dom.ImportDeclaration;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.SimpleName;
+
 import org.python.antlr.PythonTree;
 import org.python.antlr.ast.*;
 import org.python.antlr.base.expr;

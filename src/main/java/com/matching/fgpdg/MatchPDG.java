@@ -9,6 +9,8 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.matching.fgpdg.Configurations.CREATE_DEBUG_IMAGES;
+
 public class MatchPDG {
     public HashSet<PDGNode> visitedASTNodes= new HashSet<>();
     PDGBuildingContext patternContext;PDGBuildingContext codeContext;
@@ -18,11 +20,11 @@ public class MatchPDG {
         PDGGraph _pattern=pruneAndCleanPatternPDG(pattern);
         HashSet<PDGNode> patternNodes = _pattern.getNodes();
         DotGraph dg = new DotGraph(_pattern);
-        dg.toDotFile(new File("./OUTPUT/"  +"____pruned_pattern__file___"+".dot"));
-        DotGraph dgc = new DotGraph(code);
-        dgc.toDotFile(new File("./OUTPUT/"  +"____code__file___"+".dot"));
-
-
+        if (CREATE_DEBUG_IMAGES) {
+            dg.toDotFile(new File("./OUTPUT/"  +"____pruned_pattern__file___"+".dot"));
+            DotGraph dgc = new DotGraph(code);
+            dgc.toDotFile(new File("./OUTPUT/"  +"____code__file___"+".dot"));
+        }
         HashSet<PDGNode> codeNodes = code.getNodes();
         ArrayList<Pair<PDGNode,PDGNode>> startNodes = new ArrayList<>();
         PDGNode maxDOF = Utils.getMaxDOF(patternNodes);
