@@ -49,7 +49,7 @@ for :[[l2]] in :[l3]:
 4. Execute the script [type_infer.py](https://github.com/pythonInfer/PyEvolve/blob/master/type_infer.py) to infer type information of the project [PatternTest](https://github.com/pythonInfer/PatternTest)
 5. Copy the generated `json` files into the folder `Configurations.TYPE_REPOSITORY + "/pythonInfer/PatternTest/"`
 
-It is important to have the directory structure of the folders `Configurations.PROJECT_REPOSITORY` and `Configurations.TYPE_REPOSITORY` as below. 
+It is important to have the directory structure of the folders `Configurations.PROJECT_REPOSITORY` and `Configurations.TYPE_REPOSITORY` as below. For example, we consider the project `pythonInfer/PatternTest`.
 
 ```
 Configurations.PROJECT_REPOSITORY
